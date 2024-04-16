@@ -1,0 +1,141 @@
+body {
+    margin: 0;
+    font-family: 'Roboto Condensed';
+}
+
+#popup-navbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 101px;
+}
+
+#logo {
+    width: 40px;
+    
+}
+
+.helping-icons {
+    width: 21px;
+}
+
+#popup-container {
+    background-color: #222222;
+    min-width: 320px;
+    min-height: 420px;
+
+    display: flex;
+    flex-direction: column;
+    row-gap: 35px;
+}
+
+h3 {
+    color: white;
+    margin: 0;
+    font-weight: 100;
+    font-size: 16px;
+}
+
+h1 {
+    color: #6BC9FF;
+    margin: 0;
+    font-size: 36px;
+    font-weight: 600;
+
+    text-shadow: 1px 5px 5px rgba(0,0,0,0.5);
+}
+
+#popup-navbar {
+    min-width: 100%;
+    background-color: #6BC9FF;
+    height: 50px;
+}
+
+#popup-info-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    row-gap: 12px;
+}
+
+#popup-modeselector-container {
+    display: flex;
+    flex-direction: column;
+    row-gap: 24px;
+    align-items: center;
+}
+
+.popup-modeselector-btn {
+    width: 92%;
+    height: 50px; 
+    border-radius: 9px;
+    border: none;
+    background-color: #6BC9FF;
+    display: flex;
+    align-items: center; /* Center the content vertically */
+    padding: 0 10px; /* Add padding to the sides */
+    transition: background-color 100ms linear; /* Add transition for background color */
+}
+
+.modebtn-content {
+    display: flex;
+    margin-left: 12%;
+    text-align: center;
+    align-items: center; /* Center the content vertically */
+}
+
+.modeselector-text {
+    font-family: 'Roboto';
+    color: black;
+    font-weight: 500;
+    font-size: 19px;
+}
+
+.mode-selector {
+    margin: 0;
+    float:left;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 19px;
+    height: 19px;
+    border: 2px solid #4282A7;
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+    background-color: #4282A7;
+    flex-shrink: 0; /* Prevent the radio button from shrinking */
+    transition: background-color 100ms linear, box-shadow 100ms linear; /* Add transition for background color and box-shadow */
+}
+
+.mode-selector:checked {
+    background-color: #6BC9FF;
+    border-color: #4282A7;
+    box-shadow: 0 0px 0px rgba(255, 255, 255, 0.1), inset 0 1px 2px rgba(255, 255, 255, 0.9); /* Adding an inset shadow for the checked state */
+}
+
+
+  
+
+
+@-webkit-keyframes scale-up-center {
+0% {
+    -webkit-transform: scale(0.5);
+            transform: scale(0.5);
+}
+100% {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+}
+}
+@keyframes scale-up-center {
+0% {
+    -webkit-transform: scale(0.5);
+            transform: scale(0.5);
+}
+100% {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+}
+}

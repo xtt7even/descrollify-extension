@@ -1,15 +1,17 @@
 {
     "manifest_version": 3,
-    "name": "Extension1",
+    "name": "Short Blocker",
     "version": "0.1",
-    "description": "My First Extension",
+    "description": "The Best Short Blocker In The World!",
     "icons": {
-      "48": "icon48.png"
+      "48": "icon48.png",
+      "96": "icon96.png"
     },
     "action": {
       "default_popup": "popup.html",
       "default_icon": {
-        "48": "icon48.png"
+        "48": "icon48.png",
+        "96": "icon96.png"
       }
     },
     "background": {

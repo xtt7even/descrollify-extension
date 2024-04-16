@@ -31,11 +31,7 @@ function getShort() {
 }
 
 function buildBlocker(short) {
-
     const blockerContainer = buildBlockerContainer(short);
-
-    // const blockerImage = buildBlockerLogo();
-    // blockerContainer.append(blockerImage);
 
     const blockerText = buildBlockerText();
     blockerContainer.appendChild(blockerText);
