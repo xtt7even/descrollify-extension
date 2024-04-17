@@ -1,13 +1,5 @@
 'use strict';
 
-// (async () => {
-//     const src = chrome.runtime.getURL("custom_libs/blockerBuilder.js");
-//     const blockerBuilder = await import(src);
-//     blockerBuilder.buildBlocker();
-// }) ();
-
-// import buildBlocker from 'custom_libs/blockerBuilder';
-
 function locateShort() {
     // Returns a promise to asynchronously locate an element by its ID
     return new Promise((resolve, reject) => {
@@ -32,11 +24,6 @@ function locateShort() {
     });
 }
 
-// Event listener for initial page load
-window.onload = (event) => {
-    shortScanner();
-}
-
 // Event listener for page change
 window.addEventListener('yt-navigate-finish', function() {
     shortScanner();
@@ -46,6 +33,7 @@ window.addEventListener('yt-navigate-finish', function() {
 function shortScanner () {
     if (document.getElementById("blocker-container")) {
         document.getElementById("blocker-container").remove();
+        return;
     }
 
     let short;
@@ -54,6 +42,7 @@ function shortScanner () {
     .then(() => {
         const blocker = buildBlocker(short);
         short.prepend(blocker);
+        pauseVideo();
         removeUnecessaryElements();
         justAFunnyConsoleStuff();
     })
@@ -68,6 +57,14 @@ function justAFunnyConsoleStuff() {
     console.log("Blocker: *WOOOOOOOP*... *WOOOOOOOOP*... SHORT VIDEO DETECTED, TAKE ACTIONS IMMEDIATELY!")
     console.log("Blocker: Trying to inject the BLOCKER, AAAAUGH IT'S HARD!!!!")
     console.log("Blocker: CAPTAIN! Injected THE ANTI-SHORT BLOCKER!!! FOR NOW WE'RE SAFE CAPTAIN!")
+}
+
+function pauseVideo() {
+    const videoElement = document.querySelector('video');
+    // If a video element is found and it's currently playing
+    if (videoElement && !videoElement.paused) {
+        videoElement.pause();
+    }
 }
 
 //injecting google Roboto Condensed font for the popup
@@ -98,8 +95,14 @@ function removeUnecessaryElements() {
 function buildBlocker(short) {
     const blockerContainer = buildBlockerContainer(short);
 
-    const blockerText = buildBlockerText();
-    blockerContainer.appendChild(blockerText);
+    const blockerUpperText = buildBlockerText("Pause the endless scroll: Is your time being spent on what truly matters?");
+    blockerContainer.appendChild(blockerUpperText);
+
+    const blockerLogo = buildBlockerLogo();
+    blockerContainer.append(blockerLogo);
+
+    const blockerLowerText = buildBlockerText("Each moment spent on short videos chips away at your ability to sustain attention on important tasks");
+    blockerContainer.appendChild(blockerLowerText);
     return blockerContainer;
 }
 
@@ -112,15 +115,15 @@ function buildBlockerContainer(short) {
 
     blockerContainer.style.width = width.toString() + 'px';
     blockerContainer.style.height = height.toString() + 'px';
-    return blockerContainer;
-}
+        return blockerContainer;
+    }
 
-function buildBlockerText() {
+function buildBlockerText(text) {
     const textContainer = document.createElement('div');
     textContainer.setAttribute('id', 'text-container')
     
     const blockerText = document.createElement("h2");
-    blockerText.innerText = "Pause the endless scroll: Is your time being spent on what truly matters?";
+    blockerText.innerText = text;
     blockerText.setAttribute('id', 'big-text')
 
     textContainer.append(blockerText);
@@ -129,5 +132,9 @@ function buildBlockerText() {
 }
 
 function buildBlockerLogo() {
-    return imageCircle
+    const blockerLogo = document.createElement("img");
+    blockerLogo.src = chrome.runtime.getURL("./images/logo_transparent_white.png");
+    blockerLogo.alt = "logo";
+    blockerLogo.setAttribute('id', 'blocker-logo');
+    return blockerLogo;
 }

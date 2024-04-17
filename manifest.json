@@ -7,6 +7,10 @@
       "48": "icon48.png",
       "96": "icon96.png"
     },
+    "web_accessible_resources": [{
+      "resources": ["/images/logo_transparent_white.png"],
+      "matches": ["<all_urls>"]
+      }],
     "action": {
       "default_popup": "popup.html",
       "default_icon": {
@@ -20,24 +24,16 @@
     "content_scripts": [
       {
         "matches": [
-          "https://*.youtube.com/*"  ,
-          "https://*.nytimes.com/*"
+          "https://*.youtube.com/*"
         ],
         "js": ["content.js"],
         "css": ["blocker.css"]
       }
     ],
-    "browser_action": {
-      "default_popup": "popup.html",
-      "default_icon": {
-        "16": "icon16.png",
-        "48": "icon48.png",
-        "128": "icon128.png"
-      }
-    },
     "permissions": [
       "tabs",
       "storage",
+      "offscreen",
       "activeTab"
     ],
     "options_page": "options.html"
