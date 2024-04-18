@@ -33,7 +33,6 @@ window.addEventListener('yt-navigate-finish', function() {
 function shortScanner () {
     if (document.getElementById("blocker-container")) {
         document.getElementById("blocker-container").remove();
-        return;
     }
 
     let short;
@@ -59,7 +58,6 @@ function pickASetOfLines() {
         .then(data => {
             const lines = data;
             const random = Math.floor(Math.random() * lines.upper_lines.length);
-            console.log(lines);
             return { upperline: lines.upper_lines[random], lowerline: lines.lower_lines[random] };
         })
         .catch(error => {
