@@ -39,8 +39,9 @@ function shortScanner () {
     let short;
     locateShort()
     .then((result) => short = result)
-    .then(() => {
-        const blocker = buildBlocker(short);
+    //I was very tired when I add this async await, so I have 0 clue how does that helps me here, but without it it doesn't work (self-reminder to figure it out)
+    .then(async () => {
+        const blocker = await buildBlocker(short);
         short.prepend(blocker);
         pauseVideo();
         removeUnecessaryElements();
@@ -51,6 +52,22 @@ function shortScanner () {
         console.log("Blocker: No SHORT VIDEOS (*face of disgust*) in sight, captain, we're safe!")
     });
 }
+
+function pickASetOfLines() {
+    return fetch(chrome.runtime.getURL('/lines.json'))
+        .then(response => response.json())
+        .then(data => {
+            const lines = data;
+            const random = Math.floor(Math.random() * lines.upper_lines.length);
+            console.log(lines);
+            return { upperline: lines.upper_lines[random], lowerline: lines.lower_lines[random] };
+        })
+        .catch(error => {
+            console.error('Error fetching JSON:', error);
+            throw error; // re-throwing the error to propagate it further if needed
+        });
+}
+
 
 //just for fun, not necessary
 function justAFunnyConsoleStuff() {
@@ -92,20 +109,34 @@ function removeUnecessaryElements() {
 }
 
 
-function buildBlocker(short) {
+async function buildBlocker(short) {
     const blockerContainer = buildBlockerContainer(short);
 
-    const blockerUpperText = buildBlockerText("Pause the endless scroll: Is your time being spent on what truly matters?");
-    blockerContainer.appendChild(blockerUpperText);
+    try {
+        //generating a set of randomly picked upper and lower lines
+        const linesSet = await pickASetOfLines();
 
-    const blockerLogo = buildBlockerLogo();
-    blockerContainer.append(blockerLogo);
 
-    const blockerLowerText = buildBlockerText("Each moment spent on short videos chips away at your ability to sustain attention on important tasks");
-    blockerContainer.appendChild(blockerLowerText);
-    return blockerContainer;
+        //upper line
+        const blockerUpperText = buildBlockerText(linesSet.upperline);
+        blockerContainer.appendChild(blockerUpperText);
+
+        //logo
+        const blockerLogo = buildBlockerLogo();
+        blockerContainer.append(blockerLogo);
+
+
+        //lower line
+        const blockerLowerText = buildBlockerText(linesSet.lowerline);
+        blockerContainer.appendChild(blockerLowerText);
+
+        return blockerContainer;
+    } catch (error) {
+        // Handle errors if necessary
+        console.error('Error building blocker:', error);
+        throw error; // re-throwing the error to propagate it further if needed
+    }
 }
-
 function buildBlockerContainer(short) {
     const blockerContainer = document.createElement("div");
     blockerContainer.setAttribute("id", "blocker-container");   
