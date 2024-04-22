@@ -33,7 +33,6 @@
     "permissions": [
       "tabs",
       "storage",
-      "offscreen",
       "activeTab"
     ],
     "options_page": "options.html"

@@ -62,7 +62,7 @@ function pickASetOfLines() {
         })
         .catch(error => {
             console.error('Error fetching JSON:', error);
-            throw error; // re-throwing the error to propagate it further if needed
+            throw error; 
         });
 }
 
@@ -83,6 +83,7 @@ function pauseVideo() {
 }
 
 //injecting google Roboto Condensed font for the popup
+//??? Try to move it to the popup.html, what does it has to do with the content.js and why do we need it in the accessed website DOM
 var link = document.createElement('link');
 link.setAttribute('rel', 'stylesheet');
 link.setAttribute('type', 'text/css');
@@ -124,6 +125,13 @@ async function buildBlocker(short) {
         blockerContainer.append(blockerLogo);
 
 
+        blockerLogo.addEventListener('click', () => {
+            (async () => {
+                const response = await chrome.runtime.sendMessage({greeting: "escapedscrolling"});
+                window.location.href = ".."
+            })(); 
+        })
+
         //lower line
         const blockerLowerText = buildBlockerText(linesSet.lowerline);
         blockerContainer.appendChild(blockerLowerText);
@@ -160,10 +168,13 @@ function buildBlockerText(text) {
     return textContainer;
 }
 
+
+
 function buildBlockerLogo() {
     const blockerLogo = document.createElement("img");
     blockerLogo.src = chrome.runtime.getURL("./images/logo_transparent_white.png");
     blockerLogo.alt = "logo";
+    // blockerLogo.setAttribute('onclick', "window.location.href = 'https://www.youtube.com'");
     blockerLogo.setAttribute('id', 'blocker-logo');
     return blockerLogo;
 }
