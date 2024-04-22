@@ -14,7 +14,8 @@ chrome.runtime.onMessage.addListener(
             chrome.storage.session.get(["numberOfEscapes"])
             .then((result) => {
                 currentEscapes = result;
-                chrome.storage.session.set({ "numberOfEscapes": Object.hasOwn(currentEscapes, "numberOfEscapes") ? currentEscapes["numberOfEscapes"] + 1: 0}).then(() => {
+                updatedEscapes = Object.hasOwn(currentEscapes, "numberOfEscapes") ? currentEscapes["numberOfEscapes"] + 1: 0;
+                chrome.storage.session.set({ "numberOfEscapes": updatedEscapes}).then(() => {
                     sendResponse({farewell: "good!"});
                 });
             })
