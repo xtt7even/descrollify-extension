@@ -24,20 +24,43 @@ function locateShort() {
     });
 }
 
+async function isAllowedToWatch () {
+    const storage = await chrome.storage.local.get();
+    // console.log([storage.watchedVideosCounter, storage.watchedVideosLimit])
+    if (!(storage.watchedVideosCounter > storage.watchedVideosLimit)) {
+        // console.log("no need to block")
+        return true;
+    }
+    return false;
+}
+
+async function addVideoWatch() {
+    const storage = await chrome.storage.local.get();
+    await chrome.storage.local.set({"watchedVideosCounter": storage.watchedVideosCounter + 1});
+    // console.log("added video watch");
+}
+
 // Event listener for page change
 window.addEventListener('yt-navigate-finish', function() {
     shortScanner();
 });
 
 // Function to scan for short video element
-function shortScanner () {
+async function shortScanner () {
     if (document.getElementById("blocker-container")) {
         document.getElementById("blocker-container").remove();
     }
 
+
     let short;
     locateShort()
-    .then((result) => short = result)
+    .then(async (result) => {
+        short = result
+        if (await isAllowedToWatch()) {
+            addVideoWatch()
+            throw 0;
+        }
+    })
     //I was very tired when I add this async await, so I have 0 clue how does that helps me here, but without it it doesn't work (self-reminder to figure it out)
     .then(async () => {
         const blocker = await buildBlocker(short);

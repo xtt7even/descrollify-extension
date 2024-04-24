@@ -12,15 +12,19 @@ async function initializeStorage() {
     console.log(storageData)
 
     if (!Object.hasOwn(storageData, "mode")) {
-        chrome.storage.session.set({"mode": "WATCH A FEW MODE"});
+        chrome.storage.local.set({"mode": "WATCH A FEW MODE"});
     }
 
     if (!Object.hasOwn(storageData, "numberOfEscapes")) {
-        chrome.storage.session.set({ "numberOfEscapes": 0})
+        chrome.storage.local.set({ "numberOfEscapes": 0})
     }
 
-    if (!Object.hasOwn(storageData, "watchedVideosCounter")) {
-        chrome.storage.session.set({ "watchedVideosCounter": 0})
+    if (Object.hasOwn(storageData, "watchedVideosCounter")) {
+        chrome.storage.local.set({ "watchedVideosCounter": 0})
+    }
+
+    if (!Object.hasOwn(storageData, "watchedVideosLimit")) {
+        chrome.storage.local.set({ "watchedVideosLimit": 3})
     }
 }
 
@@ -35,12 +39,11 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
-        initializeStorage();
         if (request.greeting === "escapedscrolling") {
             chrome.storage.local.get(["numberOfEscapes"])
             .then((result) => {
                 // updatedEscapes = Object.hasOwn(result, "numberOfEscapes") ? result["numberOfEscapes"] + 1: 0;
-                chrome.storage.local.set({ "numberOfEscapes": result + 1});
+                chrome.storage.local.set({ "numberOfEscapes": result.numberOfEscapes + 1});
             })
         }
         if (request.mode) {
@@ -49,12 +52,25 @@ chrome.runtime.onMessage.addListener(
     }
 );
 
-function changeWatchMode(newMode) {
-    chrome.storage.local.get(["mode"]).then((result) => {
-        chrome.storage.local.set({"mode": newMode});
+async function changeWatchMode(newMode) {
+    await chrome.storage.local.get(["mode"]).then(async (result) => {
+        await chrome.storage.local.set({"mode": newMode});
+        await chrome.storage.local.set({"watchedVideosCounter": 0});
     });
+    setWatchLimit(newMode);
 }
 
-function trackShortWatches () {
+function setWatchLimit (mode) {
+    
+    if (mode === "TOTAL FOCUS MODE") {
+        chrome.storage.local.set({"watchedVideosLimit": 0});
+    }
 
+    if (mode === "WATCH A FEW MODE") {
+        chrome.storage.local.set({"watchedVideosLimit": 3});
+    }
+
+    if (mode === "LET ME WATCH MODE") {
+        chrome.storage.local.set({"watchedVideosLimit": Number.MAX_VALUE});
+    }
 }
