@@ -10,18 +10,26 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
         if (request.greeting === "escapedscrolling") {
-            let currentEscapes;
             chrome.storage.session.get(["numberOfEscapes"])
             .then((result) => {
-                currentEscapes = result;
-                updatedEscapes = Object.hasOwn(currentEscapes, "numberOfEscapes") ? currentEscapes["numberOfEscapes"] + 1: 0;
+                updatedEscapes = Object.hasOwn(result, "numberOfEscapes") ? result["numberOfEscapes"] + 1: 0;
                 chrome.storage.session.set({ "numberOfEscapes": updatedEscapes}).then(() => {
                     sendResponse({farewell: "good!"});
                 });
             })
-            
-
-            
+        }
+        if (request.mode) {
+            changeWatchMode(request.mode);
         }
     }
 );
+
+function changeWatchMode(newMode) {
+    chrome.storage.session.get(["mode"]).then((result) => {
+        chrome.storage.session.set({"mode": newMode});
+    });
+}
+
+// function trackShortWatches () {
+
+// }
