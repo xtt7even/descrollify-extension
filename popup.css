@@ -68,6 +68,7 @@ h1 {
 
 .popup-modeselector-btn {
     width: 92%;
+    cursor: pointer;
     height: 50px; 
     border-radius: 9px;
     border: none;
@@ -105,6 +106,7 @@ h1 {
     outline: none;
     cursor: pointer;
     background-color: #4282A7;
+    pointer-events: none;
     flex-shrink: 0; /* Prevent the radio button from shrinking */
     transition: background-color 100ms linear, box-shadow 100ms linear; /* Add transition for background color and box-shadow */
 }
