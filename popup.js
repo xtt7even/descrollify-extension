@@ -11,24 +11,25 @@ async function setEscapes() {
     counter.innerHTML = storage.numberOfEscapes + ' TIMES';   
 }
 
-
-
 async function setMode() {
     let buttons = document.getElementsByClassName('popup-modeselector-btn');
 
-    chrome.storage.local.get(["mode"]).then((result) => {
-        if (!Object.hasOwn(result, "mode")) {
-            chrome.storage.local.set({"mode": "WATCH A FEW MODE"});
-        }
-    });
+    const modeObject = await chrome.storage.local.get(["mode"])
+    if (!Object.hasOwn(modeObject, "mode")) {
+        chrome.storage.local.set({"mode": "WATCH A FEW MODE"});
+        return;
+    }
 
+    //TODO: Add deletion function on popup close
     for (let button = 0; button < buttons.length; button++) {
-        buttons[button].onclick = async function() {
-            const radioButton =  buttons[button].querySelector('.mode-selector');
-            radioButton.checked = true;
+        const buttonText = buttons[button].querySelector('.modeselector-text');
+        const radioButton =  buttons[button].querySelector('.mode-selector');
 
-            const buttonElement = buttons[button].querySelector('.modeselector-text');
-            const response = await chrome.runtime.sendMessage({mode: buttonElement.innerHTML});
+        if (buttonText.innerHTML === modeObject.mode) radioButton.checked = true;
+
+        buttons[button].onclick = async function() {
+            radioButton.checked = true;
+            const response = await chrome.runtime.sendMessage({mode: buttonText.innerHTML});
         }
     }
 }
