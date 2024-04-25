@@ -24,11 +24,13 @@ function locateShort() {
     });
 }
 
+/**
+ * Function that checks if user is allowed to watch a video
+ * @returns True - allowed to watch, false - not allowed to watch
+ */
 async function isAllowedToWatch () {
     const storage = await chrome.storage.local.get();
-    // console.log([storage.watchedVideosCounter, storage.watchedVideosLimit])
     if (!(storage.watchedVideosCounter > storage.watchedVideosLimit)) {
-        // console.log("no need to block")
         return true;
     }
     return false;
@@ -37,13 +39,17 @@ async function isAllowedToWatch () {
 async function addVideoWatch() {
     const storage = await chrome.storage.local.get();
     await chrome.storage.local.set({"watchedVideosCounter": storage.watchedVideosCounter + 1});
-    // console.log("added video watch");
 }
 
 // Event listener for page change
 window.addEventListener('yt-navigate-finish', function() {
     shortScanner();
 });
+
+
+// !!!
+// ___IMPORTANT TODO___: Refactor all the mess inside shortScanner, locateShort and functions related to the blocker building!
+// !!!
 
 // Function to scan for short video element
 async function shortScanner () {
@@ -105,14 +111,6 @@ function pauseVideo() {
     }
 }
 
-//injecting google Roboto Condensed font for the popup
-//??? Try to move it to the popup.html, what does it has to do with the content.js and why do we need it in the accessed website DOM
-var link = document.createElement('link');
-link.setAttribute('rel', 'stylesheet');
-link.setAttribute('type', 'text/css');
-link.setAttribute('href', 'https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap');
-document.head.appendChild(link);
-
 //Function to remove video sequence to prevent scrolling, and short video overlay. 
 function removeUnecessaryElements() {
     //Getting video sequence array (usually 4-10 videos), and then delete all elements except the first.
@@ -129,6 +127,7 @@ function removeUnecessaryElements() {
         overlayElements[i].remove();   
     }
 }
+
 
 
 async function buildBlocker(short) {

@@ -1,4 +1,6 @@
-//Initialize on install
+/**
+ * Calls initializeStorage() if user just installed the extension
+ */
 chrome.runtime.onInstalled.addListener((details) => {
     //details.reason === "update" is ONLY FOR DEBUGGING!!!
     if (details.reason === "install" || details.reason === "update") { 
@@ -7,6 +9,9 @@ chrome.runtime.onInstalled.addListener((details) => {
     }
 });
 
+/**
+ * Initializes the storage if there is no necessary params in it
+ */
 async function initializeStorage() {
     const storageData = await chrome.storage.local.get();
     console.log(storageData)
@@ -19,7 +24,7 @@ async function initializeStorage() {
         chrome.storage.local.set({ "numberOfEscapes": 0})
     }
 
-    if (Object.hasOwn(storageData, "watchedVideosCounter")) {
+    if (!Object.hasOwn(storageData, "watchedVideosCounter")) {
         chrome.storage.local.set({ "watchedVideosCounter": 0})
     }
 
@@ -28,21 +33,24 @@ async function initializeStorage() {
     }
 }
 
-chrome.storage.onChanged.addListener((changes, namespace) => {
-    for (let [key, { oldValue, newValue }] of Object.entries(changes)) {
-        console.log(
-        `Storage key "${key}" in namespace "${namespace}" changed.`,
-        `Old value was "${oldValue}", new value is "${newValue}".`
-        );
-    }
-});
+// Debugging stuff
+// chrome.storage.onChanged.addListener((changes, namespace) => {
+//     for (let [key, { oldValue, newValue }] of Object.entries(changes)) {
+//         console.log(
+//             `Storage key "${key}" in namespace "${namespace}" changed.`,
+//             `Old value was "${oldValue}", new value is "${newValue}".`
+//         );
+//     }
+// });
 
+/**
+ * Listener for a different messages sent from content.js or the popup.js
+ */
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
         if (request.greeting === "escapedscrolling") {
             chrome.storage.local.get(["numberOfEscapes"])
             .then((result) => {
-                // updatedEscapes = Object.hasOwn(result, "numberOfEscapes") ? result["numberOfEscapes"] + 1: 0;
                 chrome.storage.local.set({ "numberOfEscapes": result.numberOfEscapes + 1});
             })
         }
@@ -52,25 +60,35 @@ chrome.runtime.onMessage.addListener(
     }
 );
 
+/**
+ * Function that changes the watch mode in the storage
+ * @param {string} newMode - New mode selected by an user 
+ */
 async function changeWatchMode(newMode) {
-    await chrome.storage.local.get(["mode"]).then(async (result) => {
-        await chrome.storage.local.set({"mode": newMode});
-        await chrome.storage.local.set({"watchedVideosCounter": 0});
-    });
+    await chrome.storage.local.set({"mode": newMode});
+    await chrome.storage.local.set({"watchedVideosCounter": 0});
     setWatchLimit(newMode);
 }
 
+/**
+ * Function that is called by changeWatchMode to change the max allowed numbers of watched videos
+ * @param {string} mode - Mode based on which we set our watch limit
+ * @returns void
+ */
 function setWatchLimit (mode) {
     
     if (mode === "TOTAL FOCUS MODE") {
         chrome.storage.local.set({"watchedVideosLimit": 0});
+        return;
     }
 
     if (mode === "WATCH A FEW MODE") {
         chrome.storage.local.set({"watchedVideosLimit": 3});
+        return;
     }
 
     if (mode === "LET ME WATCH MODE") {
         chrome.storage.local.set({"watchedVideosLimit": Number.MAX_VALUE});
+        return;
     }
 }
