@@ -5,9 +5,8 @@ function locateShort() {
     return new Promise((resolve, reject) => {
         let intervalIterations = 0; // Counter to track iterations for the interval
         const waitForShort = setInterval(() => {
-            const url = new URL(window.location.href);
-            //Check if either maximum iterations reached or the URL doesn't include the target substring
-            if (intervalIterations > 3 || !url.href.includes('shorts')) {
+            //Check if maximum number of iterations reached
+            if (intervalIterations > 3) {
                 clearInterval(waitForShort);
                 reject();
             }
@@ -43,42 +42,43 @@ async function addVideoWatch() {
 
 // Event listener for page change
 window.addEventListener('yt-navigate-finish', function() {
-    shortScanner();
+    removeBlocker()
+
+    const url = new URL(window.location.href);
+    if (url.href.includes('shorts')) scanForShort();
+
 });
 
-
-// !!!
-// ___IMPORTANT TODO___: Refactor all the mess inside shortScanner, locateShort and functions related to the blocker building!
-// !!!
-
-// Function to scan for short video element
-async function shortScanner () {
+function removeBlocker() {
     if (document.getElementById("blocker-container")) {
         document.getElementById("blocker-container").remove();
     }
+}
+// !!!
+// ___IMPORTANT TODO___: Refactor all the mess inside scanForShort, locateShort and functions related to the blocker building!
+// !!!
+
+// Function to scan for short video element
+async function scanForShort () {
+    if (await isAllowedToWatch()) {
+        addVideoWatch()
+        console.log("Allowed to watch because of the mode");
+        throw 0;
+    }
+
+    let short = await locateShort();
+    console.log(short)
+    if (!short) {
+        console.error("No short located on this page"); 
+        throw 0;
+    }
 
 
-    let short;
-    locateShort()
-    .then(async (result) => {
-        short = result
-        if (await isAllowedToWatch()) {
-            addVideoWatch()
-            throw 0;
-        }
-    })
-    //I was very tired when I add this async await, so I have 0 clue how does that helps me here, but without it it doesn't work (self-reminder to figure it out)
-    .then(async () => {
-        const blocker = await buildBlocker(short);
-        short.prepend(blocker);
-        pauseVideo();
-        removeUnecessaryElements();
-        justAFunnyConsoleStuff();
-    })
-    .catch(() => {
-        // The case when short video element cannot be located
-        console.log("Blocker: No SHORT VIDEOS (*face of disgust*) in sight, captain, we're safe!")
-    });
+    const blocker = await buildBlocker(short);
+    short.prepend(blocker);
+    pauseVideo();
+    removeUnecessaryElements();
+    justAFunnyConsoleStuff();
 }
 
 function pickASetOfLines() {
@@ -137,7 +137,6 @@ async function buildBlocker(short) {
         //generating a set of randomly picked upper and lower lines
         const linesSet = await pickASetOfLines();
 
-
         //upper line
         const blockerUpperText = buildBlockerText(linesSet.upperline);
         blockerContainer.appendChild(blockerUpperText);
@@ -145,7 +144,6 @@ async function buildBlocker(short) {
         //logo
         const blockerLogo = buildBlockerLogo();
         blockerContainer.append(blockerLogo);
-
 
         blockerLogo.addEventListener('click', () => {
             (async () => {
@@ -189,7 +187,6 @@ function buildBlockerText(text) {
 
     return textContainer;
 }
-
 
 
 function buildBlockerLogo() {

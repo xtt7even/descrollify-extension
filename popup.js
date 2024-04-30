@@ -37,7 +37,6 @@ async function setMode() {
 async function getStorageData() {
     const storageData = await chrome.storage.local.get();
     return storageData;
-    console.log(storageData)
 }
 
 
