@@ -107,6 +107,7 @@ function pauseVideo() {
     const videoElement = document.querySelector('video');
     // If a video element is found and it's currently playing
     if (videoElement && !videoElement.paused) {
+        videoElement.click();
         videoElement.pause();
     }
 }
