@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Short Blocker",
+    "name": "Descrollify",
     "version": "0.1",
     "description": "The Best Short Blocker In The World!",
     "icons": {
@@ -31,9 +31,7 @@
       }
     ],
     "permissions": [
-      "tabs",
-      "storage",
-      "activeTab"
+      "storage"
     ],
     "options_page": "options.html"
   }

@@ -7,11 +7,12 @@
     <script src="./popup.js"></script>
 </head>
 <body>
+    <iframe id="iframe-settings" src="/options.html" frameborder="0"></iframe>
     <div id="popup-container">
         <nav id="popup-navbar">
-            <img class='helping-icons' src="images/question-mark-round-icon.png" alt="help">
-            <img id='logo' src="images/logo_transparent_white.png" alt="logo">
-            <img class='helping-icons' src="images/setting-icon.png" alt="settings icon">
+            <button class="popup-navbar-btn" id="info-btn"><img class='helping-icons' src="images/question-mark-round-icon.png" alt="help"></button>
+            <button class="popup-navbar-btn"><img id='logo' src="images/logo_transparent_white.png" alt="logo"></button>
+            <button class="popup-navbar-btn" id="settings-btn"><img class='helping-icons' src="images/setting-icon.png" alt="settings icon"></button>
         </nav>
         
         <div id="popup-info-container">

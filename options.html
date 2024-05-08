@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="popup.css">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap">
+
+</head>
+<body>
+    
+    <nav id="popup-navbar">
+        <button class="popup-navbar-btn" id="info-btn"><img class='helping-icons' src="images/question-mark-round-icon.png" alt="help"></button>
+        <img id='logo' src="images/logo_transparent_white.png" alt="logo">
+        <button id='close-btn'><img id='close-btn-image' src="images/close-line-icon.png" alt="logo"></button>
+    </nav>  
+
+    <div id="options-container">
+        <div id="options-header"><h2>SETTINGS</h2></div>
+        <div class="options-subheader"><h3>GENERAL</h3></div>
+        <div class="options-section">
+            <button class="options-btn">
+                <p>RESET STATISTICS</p>
+            </button>
+        </div>
+        <div class="options-subheader"><h3>MODES SETTINGS</h3></div>
+        <div class="options-section">
+            <h4>Total Focus Mode</h4>
+            <button class="options-btn">
+                <p>Also hide short videos thumbnails and previews</p>
+                <input type="radio" name="hide-thumbnails" class="mode-selector" disabled>
+            </button>
+            <button class="options-btn">
+                <p>Automatically redirect back on short video open</p>
+                <input type="radio" name="auto-redirect" class="mode-selector" disabled>
+            </button>
+        </div>
+        <div class="options-section">
+            <h4>Watch A Few Mode</h4>
+            <button class="options-btn" disabled>
+                <p>Max number of videos allowed to watch before blocking</p>
+                <input type="radio" name="set-maxnumber" class="mode-selector" disabled>
+            </button>
+            <button class="options-btn" disabled>
+                <p>Remove blocker after</p>
+                <input type="" name="blocker-remove-timeout" class="mode-selector" disabled>
+            </button>
+        </div>
+        <div class="options-section">
+            <h4>Let Me Watch Mode</h4>
+            <button class="options-btn" disabled>
+                <p>Remind me about this mode being activated</p>
+                <input type="text" name="chillmode-reminder" class="mode-selector" disabled>
+            </button>
+        </div>
+    
+    </div>
+</body>
+</html>

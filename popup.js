@@ -1,9 +1,27 @@
 'use strict'
 window.addEventListener('load', async function(event) {
-
     await setEscapes();
     await setMode();
+    setListeners();
 });
+
+function setListeners() {
+    const infoBtn = document.getElementById("info-btn");
+    const settingsBtn = document.getElementById("settings-btn");
+
+    infoBtn.addEventListener("click", () => {
+        chrome.tabs.create({url: "extension://llbeomiepdfkkldghiinkibjkdkanknl/info.html"});
+        console.log("infobtn fired")
+    });
+
+    settingsBtn.addEventListener("click", () => {
+        // window.location.href = "extension://llbeomiepdfkkldghiinkibjkdkanknl/options.html";
+        // chrome.runtime.openOptionsPage();
+        // chrome.windows.create({ url: chrome.runtime.getURL("/options.html"), type: 
+        // "popup", height : 800, width : 500 });
+        console.log("settingsbtn fired")
+    });
+}
 
 async function setEscapes() {
     const storage = await getStorageData();
