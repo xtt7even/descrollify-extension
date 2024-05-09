@@ -14,13 +14,28 @@ function setListeners() {
         console.log("infobtn fired")
     });
 
-    settingsBtn.addEventListener("click", () => {
-        // window.location.href = "extension://llbeomiepdfkkldghiinkibjkdkanknl/options.html";
-        // chrome.runtime.openOptionsPage();
-        // chrome.windows.create({ url: chrome.runtime.getURL("/options.html"), type: 
-        // "popup", height : 800, width : 500 });
-        console.log("settingsbtn fired")
+    settingsBtn.addEventListener("click", async () => {
+        console.log("hello");
+        createSettingsOverlay();
+        const iframe = document.getElementById('iframe-settings');
+        iframe.onload = () => {
+            const closeBtn = iframe.contentDocument.getElementById('close-btn');
+            closeBtn.onclick = () => {
+                iframe.remove();
+            };
+        };
     });
+}
+
+
+
+function createSettingsOverlay() {
+    var iframe = document.createElement('iframe');
+
+    iframe.id = "iframe-settings";
+    iframe.src = "/options.html";
+
+    document.body.prepend(iframe);
 }
 
 async function setEscapes() {
