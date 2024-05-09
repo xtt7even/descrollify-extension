@@ -216,7 +216,6 @@ h1 {
     background-color: #6BC9FF;
     border-radius: 9px;
     border: none;
-    color: black;
     padding: 10px;
     box-sizing: border-box;
     width: 100%;
@@ -228,6 +227,11 @@ h1 {
     font-size: 16px;
     font-weight: 300;
     max-width: 80%;
+
+    font-family: 'Roboto';
+    color: black;
+    font-weight: 500;
+    font-size: 19px;
 }
 
 .options-section {
