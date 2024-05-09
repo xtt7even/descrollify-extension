@@ -45,7 +45,9 @@ window.addEventListener('yt-navigate-finish', function() {
     removeBlocker()
 
     const url = new URL(window.location.href);
-    if (url.href.includes('shorts')) scanForShort();
+    if (url.href.includes('shorts')) {
+        scanForShort();
+    }
 
 });
 
@@ -72,8 +74,7 @@ async function scanForShort () {
         console.error("No short located on this page"); 
         throw 0;
     }
-
-
+    getVideoDuration();
     const blocker = await buildBlocker(short);
     short.prepend(blocker);
     pauseVideo();
@@ -197,4 +198,26 @@ function buildBlockerLogo() {
     // blockerLogo.setAttribute('onclick', "window.location.href = 'https://www.youtube.com'");
     blockerLogo.setAttribute('id', 'blocker-logo');
     return blockerLogo;
+}
+
+//Stats retriever functions
+
+function getVideoDuration () {
+    const durationElement = document.querySelector('meta[itemprop="duration"]');
+    if (durationElement) {
+        const rawDuration = durationElement.getAttribute('content');
+        const result = parseRawDuration(rawDuration);
+        console.log(result);
+        return result;
+    } else {
+        return "Duration not found";
+    }
+}
+
+function parseRawDuration(rawDuration) {
+    const rawMinSec = rawDuration.slice(2, rawDuration.length - 1);
+    console.log(rawMinSec);
+    const minSecArr = rawMinSec.split('M');
+    console.log(minSecArr);
+    return {minutes: minSecArr[0], seconds: minSecArr[1]}; 
 }
