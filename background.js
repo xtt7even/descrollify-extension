@@ -31,6 +31,26 @@ async function initializeStorage() {
     if (!Object.hasOwn(storageData, "watchedVideosLimit")) {
         chrome.storage.local.set({ "watchedVideosLimit": 3})
     }
+
+    if (!Object.hasOwn(storageData, "lmwSessionHistory")) {
+        chrome.storage.local.set({"lmwSessionHistory": []})
+    }
+
+    if (!Object.hasOwn(storageData, "lmwAverage")) {
+        chrome.storage.local.set({"lmwAverage": 0})
+    }
+    
+    if (!Object.hasOwn(storageData, "totalWatchTime")) {
+        chrome.storage.local.set({"totalWatchTime": {hours: 0, munutes: 0, seconds: 0}})
+    }
+
+    if (!Object.hasOwn(storageData, "averageWatchTime")) {
+        chrome.storage.local.set({"averageWatchTime": {hours: 0, munutes: 0, seconds: 0}})
+    }
+
+    if (!Object.hasOwn(storageData, "savedTime")) {
+        chrome.storage.local.set({ "savedTime": {hours: 0, munutes: 0, seconds: 0}})
+    }
 }
 
 // Debugging stuff

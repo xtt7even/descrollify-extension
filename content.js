@@ -37,16 +37,29 @@ async function isAllowedToWatch () {
 
 async function addVideoWatch() {
     const storage = await chrome.storage.local.get();
+    console.log(storage);
     await chrome.storage.local.set({"watchedVideosCounter": storage.watchedVideosCounter + 1});
 }
 
 // Event listener for page change
-window.addEventListener('yt-navigate-finish', function() {
+window.addEventListener('yt-navigate-finish', async function() {
     removeBlocker()
 
     const url = new URL(window.location.href);
+    const isOnShort = await chrome.storage.local.get("isOnShortPage");
+    console.log(isOnShort);
     if (url.href.includes('shorts')) {
+        // If URL includes "shorts" set isOnShortPage to true (session based storage)
+        console.log("on short page = true")
+        chrome.storage.local.set({"isOnShortPage": true})
         scanForShort();
+    }
+    //if the page doesn't include "short" but isOnShortPage WAS true before, that means the user closed or exited short page, so we need to update LMW mode averages
+    else if (isOnShort) {
+        console.log("Updating LMW storage");
+        chrome.storage.local.set({"isOnShortPage": false})
+        updateLmwAverage();
+        
     }
 
 });
@@ -202,6 +215,41 @@ function buildBlockerLogo() {
 
 //Stats retriever functions
 
+async function statsUpdater() {
+    const storage = await chrome.storage.local.get();
+    console.log(storage)
+    if (storage.mode === "LET ME WATCH MODE") {
+        lmwAvgUpdater(storage);
+    }
+}
+
+async function updateLmwAverage() {
+    let sessionSum = 0;
+
+    chrome.storage.local.set({"lmwSessionHistory": [56, 16, 2]});
+
+    const storage = await chrome.storage.local.get();
+    if (storage.watchedVideosCounter > 2) { 
+        appendLmwCounter(storage)
+    }
+    chrome.storage.local.set({"watchedVideosCounter": 0})
+
+    for (let i = 0; i < storage.lmwSessionHistory.length; i++) {
+        sessionSum += parseInt(storage.lmwSessionHistory[i]);        
+        console.log(sessionSum);
+    }
+
+    const average = sessionSum / storage.lmwSessionHistory.length; 
+    console.log(average)
+    chrome.storage.local.set({"lmwAverage": average});
+}
+
+async function appendLmwCounter(storage) {
+    let sessionArray = storage["lmwSessionHistory"];
+    sessionArray.push(storage.watchedVideosCounter);
+    chrome.storage.local.set({"lmwSessionHistory": appendedSession})
+}
+
 function getVideoDuration () {
     const durationElement = document.querySelector('meta[itemprop="duration"]');
     if (durationElement) {
@@ -214,10 +262,33 @@ function getVideoDuration () {
     }
 }
 
+// Quick comment: function returns watched duration of the video by user, fires on yt-navigation event, neccessary to calculate average watchtime
+// TODO: Finish getWatchedTime()!!!
+// function getWatchedTime(flagToExit) {
+//     const 
+//     const watchInterval = setInterval(() => {
+//         if (flagToExit) {
+//             clearInterval(watchInterval);
+//         }
+
+//         const progressBar = document.querySelector(".progress-bar-played");
+//         const styleString = divElement.style.cssText;
+    
+//         const watchedRatio = () => {
+//             return styleString.match(/(?:\d*\.)?\d+/g);
+//         };
+//         console.log(watchedRatio);
+//     }, 300);
+
+
+
+    
+
+//     const result = {minutes}
+// }
+
 function parseRawDuration(rawDuration) {
     const rawMinSec = rawDuration.slice(2, rawDuration.length - 1);
-    console.log(rawMinSec);
     const minSecArr = rawMinSec.split('M');
-    console.log(minSecArr);
     return {minutes: minSecArr[0], seconds: minSecArr[1]}; 
 }
