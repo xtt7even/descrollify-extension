@@ -44,12 +44,13 @@ async function addVideoWatch() {
 // Event listener for page change
 window.addEventListener('yt-navigate-finish', async function() {
     removeBlocker()
-
+    
     const url = new URL(window.location.href);
     const isOnShort = await chrome.storage.local.get("isOnShortPage");
     console.log(isOnShort);
     if (url.href.includes('shorts')) {
         // If URL includes "shorts" set isOnShortPage to true (session based storage)
+        updateWatchedTime(false);
         console.log("on short page = true")
         chrome.storage.local.set({"isOnShortPage": true})
         scanForShort();
@@ -107,14 +108,6 @@ function pickASetOfLines() {
             console.error('Error fetching JSON:', error);
             throw error; 
         });
-}
-
-
-//just for fun, not necessary
-function justAFunnyConsoleStuff() {
-    console.log("Blocker: *WOOOOOOOP*... *WOOOOOOOOP*... SHORT VIDEO DETECTED, TAKE ACTIONS IMMEDIATELY!")
-    console.log("Blocker: Trying to inject the BLOCKER, AAAAUGH IT'S HARD!!!!")
-    console.log("Blocker: CAPTAIN! Injected THE ANTI-SHORT BLOCKER!!! FOR NOW WE'RE SAFE CAPTAIN!")
 }
 
 function pauseVideo() {
@@ -226,9 +219,11 @@ async function statsUpdater() {
 async function updateLmwAverage() {
     let sessionSum = 0;
 
-    chrome.storage.local.set({"lmwSessionHistory": [56, 16, 2]});
-
     const storage = await chrome.storage.local.get();
+
+    // Append lmw counter only if watchedVideosCounter is greater than 2, 
+    //      becuase user can accidentally open short page, watch 0 videos, and therefore fill the lmw history with zeros changing average value
+    //      watching at least 2 videos usually means that user is scrolling intentionally
     if (storage.watchedVideosCounter > 2) { 
         appendLmwCounter(storage)
     }
@@ -264,28 +259,26 @@ function getVideoDuration () {
 
 // Quick comment: function returns watched duration of the video by user, fires on yt-navigation event, neccessary to calculate average watchtime
 // TODO: Finish getWatchedTime()!!!
-// function getWatchedTime(flagToExit) {
-//     const 
-//     const watchInterval = setInterval(() => {
-//         if (flagToExit) {
-//             clearInterval(watchInterval);
-//         }
+function updateWatchedTime(flagToExit) {
+    const watchInterval = setInterval(() => {
+        if (flagToExit) {
+            clearInterval(watchInterval);
+            //reset currentVideoWatchTime to 0 somehow here
+        }
 
-//         const progressBar = document.querySelector(".progress-bar-played");
-//         const styleString = divElement.style.cssText;
+        const progressBar = document.querySelector(".progress-bar-played");
+        const styleString = progressBar.style.cssText;
     
-//         const watchedRatio = () => {
-//             return styleString.match(/(?:\d*\.)?\d+/g);
-//         };
-//         console.log(watchedRatio);
-//     }, 300);
+        const watchedRatio = styleString.match(/(?:\d*\.)?\d+/g);
+        // console.log(watchedRatio);
 
-
-
-    
-
-//     const result = {minutes}
-// }
+        const videoDuration = getVideoDuration()
+        // console.log(parseFloat(watchedRatio));
+        const watchedTime = videoDuration.minutes === 1 ? {minites: 0, seconds: 60 / parseInt(watchedRatio)} : {minites: 0, seconds: videoDuration.seconds * parseFloat(watchedRatio)};
+        chrome.storage.local.set({"currentVideoWatchTime": watchedTime});
+        // console.log(watchedTime);
+    }, 1000);
+}
 
 function parseRawDuration(rawDuration) {
     const rawMinSec = rawDuration.slice(2, rawDuration.length - 1);

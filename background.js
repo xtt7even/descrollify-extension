@@ -39,6 +39,10 @@ async function initializeStorage() {
     if (!Object.hasOwn(storageData, "lmwAverage")) {
         chrome.storage.local.set({"lmwAverage": 0})
     }
+
+    if (!Object.hasOwn(storageData, "currentVideoWatchTime")) {
+        chrome.storage.local.set({"currentVideoWatchTime": {minutes: 0, seconds: 0}})
+    }
     
     if (!Object.hasOwn(storageData, "totalWatchTime")) {
         chrome.storage.local.set({"totalWatchTime": {hours: 0, munutes: 0, seconds: 0}})
