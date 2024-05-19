@@ -1,5 +1,7 @@
 'use strict';
 
+let videoTimer;
+
 function locateShort() {
     // Returns a promise to asynchronously locate an element by its ID
     return new Promise((resolve, reject) => {
@@ -41,25 +43,36 @@ async function addVideoWatch() {
     await chrome.storage.local.set({"watchedVideosCounter": storage.watchedVideosCounter + 1});
 }
 
+window.onload = () => {
+    videoTimer = new VideoTimer();
+};
 // Event listener for page change
 window.addEventListener('yt-navigate-finish', async function() {
     removeBlocker()
     
+    await videoTimer.saveWatchTime();
+    videoTimer.stopWatchTimer();
+    
+
+    //for debugging only!!!!!!
+        const storage = await chrome.storage.local.get();
+        console.log(storage);
+    //for debugging only!!!!!!
+
     const url = new URL(window.location.href);
-    const isOnShort = await chrome.storage.local.get("isOnShortPage");
-    console.log(isOnShort);
+    const pagePosition = await chrome.storage.local.get("isOnShortPage");
     if (url.href.includes('shorts')) {
         // If URL includes "shorts" set isOnShortPage to true (session based storage)
-        updateWatchedTime(false);
-        console.log("on short page = true")
-        chrome.storage.local.set({"isOnShortPage": true})
         scanForShort();
+        videoTimer.startWatchTimer();
+        chrome.storage.local.set({"isOnShortPage": true})
     }
     //if the page doesn't include "short" but isOnShortPage WAS true before, that means the user closed or exited short page, so we need to update LMW mode averages
-    else if (isOnShort) {
+    else if (pagePosition.isOnShortPage) {
         console.log("Updating LMW storage");
         chrome.storage.local.set({"isOnShortPage": false})
         updateLmwAverage();
+        await chrome.storage.local.set({"watchedVideosCounter": 0});
         
     }
 
@@ -245,43 +258,128 @@ async function appendLmwCounter(storage) {
     chrome.storage.local.set({"lmwSessionHistory": appendedSession})
 }
 
+//____IMPORTANT TODO____
+//  meta[itemprop="duration"] IS NOT ALWAYS UPDATING, need to find another way of getting duration, for example by using Date();
 function getVideoDuration () {
     const durationElement = document.querySelector('meta[itemprop="duration"]');
     if (durationElement) {
         const rawDuration = durationElement.getAttribute('content');
         const result = parseRawDuration(rawDuration);
-        console.log(result);
         return result;
     } else {
         return "Duration not found";
     }
 }
 
+function convertSecToMin(currentSessionTime) {
+    const convertedHours = currentSessionTime.seconds / 3600
+    const convertedMinutes = currentSessionTime.seconds / 60;
+    const convertedSeconds = currentSessionTime.seconds;
+
+    return {hours: convertedHours, minutes: convertedMinutes, seconds: convertedSeconds};
+}
+
+async function updateTotalWatchtime() {
+    // const fetchedTotalWatchTime = await chrome.storage.local.get("totalLmwWatchTime");
+    // // console.log(fetchedTotalWatchTime)
+    // const totalWatchTime = fetchedTotalWatchTime.totalLmwWatchTime;
+    // console.log("totalWatchTime",totalWatchTime)
+    // const fetchedSessionTime = await chrome.storage.local.get("currentVideoWatchTime");
+    // // console.log( "fetchedSessionTime",fetchedSessionTime)
+    // const currentSessionTime = fetchedSessionTime.currentVideoWatchTime;
+    // console.log("non-converted", currentSessionTime)
+
+    // const convertedSessionTime = convertSecToMin(currentSessionTime);
+    // console.log("converted", convertedSessionTime)
+
+    // const updatedTotalWatchTime = {
+    //     hours: totalWatchTime.hours + convertedSessionTime.hours,
+    //     minutes: totalWatchTime.minutes + convertedSessionTime.minutes, 
+    //     seconds: totalWatchTime.seconds + convertedSessionTime.seconds
+    // } 
+
+    // console.log("updated total watch time:", updatedTotalWatchTime)
+
+    // chrome.storage.local.set({"totalLmwWatchTime": updatedTotalWatchTime})
+}
+
 // Quick comment: function returns watched duration of the video by user, fires on yt-navigation event, neccessary to calculate average watchtime
 // TODO: Finish getWatchedTime()!!!
-function updateWatchedTime(flagToExit) {
-    const watchInterval = setInterval(() => {
-        if (flagToExit) {
-            clearInterval(watchInterval);
-            //reset currentVideoWatchTime to 0 somehow here
-        }
 
-        const progressBar = document.querySelector(".progress-bar-played");
+class VideoTimer {
+    constructor() {
+        this.watchInterval = null;
+        this.videoDuration = getVideoDuration();
+    }
+
+    startWatchTimer() {
+        console.log("start watch timer")
+        this.videoDuration = getVideoDuration();
+        this.watchInterval = setInterval(() => {
+            const watchedRatio = getWatchedRatio();
+            console.log(this.videoDuration);
+
+            const watchedTime = {
+                hours: Math.floor(this.videoDuration.seconds * parseFloat(watchedRatio) / 3600), 
+                minutes: Math.floor(this.videoDuration.seconds * parseFloat(watchedRatio) / 60), 
+                seconds: Math.floor(this.videoDuration.seconds * parseFloat(watchedRatio))
+            };
+            console.log(watchedTime, watchedRatio)
+
+            //TODO: Somehow save the time when video stoped playing but start the timer again each time, example below, but this is working only for 1 video cycle
+            // if (watchedRatio >= 0.90) {
+            //     console.log("watched full video")
+            //     await this.saveWatchTime();
+            //     this.stopWatchTimer();
+            // } 
+
+            chrome.storage.local.set({"currentVideoWatchTime": watchedTime});
+        }, 1000);
+    }
+
+    stopWatchTimer() {
+        clearInterval(this.watchInterval);
+        console.log("stop watchtimer")
+    }
+
+    async saveWatchTime() {
+        const fetchedTotalWatchTime = await chrome.storage.local.get("totalLmwWatchTime");
+        const totalWatchTime = fetchedTotalWatchTime.totalLmwWatchTime;
+        console.log("totalWatchTime",totalWatchTime)
+        const fetchedSessionTime = await chrome.storage.local.get("currentVideoWatchTime");
+        const currentSessionTime = fetchedSessionTime.currentVideoWatchTime;
+        console.log("currentSessionTime", currentSessionTime)
+
+
+        const updatedTotalWatchTime = {
+            hours: totalWatchTime.hours + currentSessionTime.hours,
+            minutes: totalWatchTime.minutes + currentSessionTime.minutes, 
+            seconds: totalWatchTime.seconds + currentSessionTime.seconds
+        } 
+        
+        chrome.storage.local.set({"totalLmwWatchTime": updatedTotalWatchTime})
+        chrome.storage.local.set({"currentVideoWatchTime": {hours: 0, minutes: 0, seconds: 0}});
+    }
+}
+
+function getWatchedRatio() {
+    try {
+        const progressBar = document.querySelector(".progress-bar-played"); 
         const styleString = progressBar.style.cssText;
     
-        const watchedRatio = styleString.match(/(?:\d*\.)?\d+/g);
-        // console.log(watchedRatio);
-
-        const videoDuration = getVideoDuration()
-        // console.log(parseFloat(watchedRatio));
-        const watchedTime = videoDuration.minutes === 1 ? {minites: 0, seconds: 60 / parseInt(watchedRatio)} : {minites: 0, seconds: videoDuration.seconds * parseFloat(watchedRatio)};
-        chrome.storage.local.set({"currentVideoWatchTime": watchedTime});
-        // console.log(watchedTime);
-    }, 1000);
+        //Finds a number or decimal match in a raw style string
+        const watchedRatio = styleString.match(/(?:\d*\.)?\d+/g); 
+        return watchedRatio;
+    } catch (error) {
+        throw new Error("Unable to locate watchedRatio. error message:", error)
+    }
 }
+
 
 function parseRawDuration(rawDuration) {
     const rawMinSec = rawDuration.slice(2, rawDuration.length - 1);
     const minSecArr = rawMinSec.split('M');
-    return {minutes: minSecArr[0], seconds: minSecArr[1]}; 
+    return {minutes: parseInt(minSecArr[0]), seconds: parseInt(minSecArr[1])}; 
 }
+
+//debug only function!!! 
