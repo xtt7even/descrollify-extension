@@ -289,13 +289,6 @@ async function appendLmwCounter(storage) {
     chrome.storage.local.set({"lmwSessionHistory": sessionArray})
 }
 
-function convertSecToMin(currentSessionTime) {
-    const convertedHours = currentSessionTime.seconds / 3600
-    const convertedMinutes = currentSessionTime.seconds / 60;
-    const convertedSeconds = currentSessionTime.seconds;
-
-    return {hours: convertedHours, minutes: convertedMinutes, seconds: convertedSeconds};
-}
 
 // Quick comment: function returns watched duration of the video by user, fires on yt-navigation event, neccessary to calculate average watchtime
 // TODO: Finish getWatchedTime()!!!
