@@ -340,12 +340,21 @@ class VideoTimer {
         const convertedElapsedTime = this.convertSecToMin(elapsedTime);
         // console.log("convertedElapsedTime", convertedElapsedTime);
 
-        const updatedTotalWatchTime = {
+        const updatedTotalWatchTime = this.formatTime({
             hours: totalWatchTime.hours + convertedElapsedTime.hours,
             minutes: totalWatchTime.minutes + convertedElapsedTime.minutes, 
             seconds: totalWatchTime.seconds + convertedElapsedTime.seconds
-        } 
+        });
+
         console.log("updatedTotalWatchTime", updatedTotalWatchTime);
-        chrome.storage.local.set({"totalLmwWatchTime": updatedTotalWatchTime})
+        chrome.storage.local.set({"totalLmwWatchTime": updatedTotalWatchTime});
+    }
+
+    formatTime(timeToFormat) {
+        const formatedHours = Math.floor(timeToFormat.seconds / 3600);
+        const formatedMinutes = Math.floor(timeToFormat.seconds / 60);
+        const secondsRemaining = timeToFormat.seconds % 60; 
+
+        return {hours: formatedHours, minutes: formatedMinutes, seconds: secondsRemaining};
     }
 }
