@@ -305,11 +305,11 @@ class VideoTimer {
     }
 
     convertSecToMin(elapsedTime) {
-        const convertedHours = Math.floor(elapsedTime / 3600000);
-        const convertedMinutes = Math.floor(elapsedTime / 60000);
-        const convertedSeconds = Math.floor(elapsedTime / 1000);
-    
-        return {hours: convertedHours, minutes: convertedMinutes, seconds: convertedSeconds};
+        const convertedToSeconds = Math.floor(elapsedTime / 1000);
+
+        const result = this.formatSeconds(convertedToSeconds);
+        console.log("result", result);
+        return result;
     }
 
     startWatchTimer() {
@@ -340,21 +340,50 @@ class VideoTimer {
         const convertedElapsedTime = this.convertSecToMin(elapsedTime);
         // console.log("convertedElapsedTime", convertedElapsedTime);
 
-        const updatedTotalWatchTime = this.formatTime({
+        let updatedTotalWatchTime = this.formatTotalTime({
             hours: totalWatchTime.hours + convertedElapsedTime.hours,
             minutes: totalWatchTime.minutes + convertedElapsedTime.minutes, 
             seconds: totalWatchTime.seconds + convertedElapsedTime.seconds
         });
 
+        
+
         console.log("updatedTotalWatchTime", updatedTotalWatchTime);
         chrome.storage.local.set({"totalLmwWatchTime": updatedTotalWatchTime});
     }
 
-    formatTime(timeToFormat) {
-        const formatedHours = Math.floor(timeToFormat.seconds / 3600);
-        const formatedMinutes = Math.floor(timeToFormat.seconds / 60);
-        const secondsRemaining = timeToFormat.seconds % 60; 
+    formatSeconds(seconds) {
+        const formatedHours = Math.floor(seconds / 3600);
+        const formatedMinutes = Math.floor(seconds / 60);
+        const secondsRemaining = seconds % 60; 
 
         return {hours: formatedHours, minutes: formatedMinutes, seconds: secondsRemaining};
+    }
+
+    formatTotalTime(timeToFormat) {
+        let formatedHours;
+        let formatedMinutes;
+        let secondsRemaining;
+        let minutesRemaining;
+
+        if (timeToFormat.minutes >= 60) {
+            formatedHours = timeToFormat.hours + Math.floor(timeToFormat.minutes / 60);
+            minutesRemaining = timeToFormat.minutes % 60;
+        }
+        else {
+            formatedHours = timeToFormat.hours + Math.floor(timeToFormat.seconds / 3600);
+        }
+
+        if (timeToFormat.seconds >= 60) {
+            formatedMinutes = timeToFormat.minutes + Math.floor(timeToFormat.seconds / 60);
+            secondsRemaining = timeToFormat.seconds % 60; 
+        }
+
+
+        return {
+            hours: formatedHours, 
+            minutes: minutesRemaining ? minutesRemaining : timeToFormat.minutes, 
+            seconds: secondsRemaining ? secondsRemaining : timeToFormat.seconds
+        };
     }
 }
