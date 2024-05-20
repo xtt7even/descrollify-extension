@@ -50,9 +50,9 @@ window.onload = () => {
 window.addEventListener('yt-navigate-finish', async function() {
     removeBlocker()
     
-    await videoTimer.saveWatchTime();
+    const videoElement = document.querySelector('video');
     videoTimer.stopWatchTimer();
-    
+
 
     //for debugging only!!!!!!
         const storage = await chrome.storage.local.get();
@@ -63,14 +63,17 @@ window.addEventListener('yt-navigate-finish', async function() {
     const pagePosition = await chrome.storage.local.get("isOnShortPage");
     if (url.href.includes('shorts')) {
         // If URL includes "shorts" set isOnShortPage to true (session based storage)
+        addVideoListeners(videoElement);
         scanForShort();
         videoTimer.startWatchTimer();
         chrome.storage.local.set({"isOnShortPage": true})
     }
     //if the page doesn't include "short" but isOnShortPage WAS true before, that means the user closed or exited short page, so we need to update LMW mode averages
     else if (pagePosition.isOnShortPage) {
-        console.log("Updating LMW storage");
         chrome.storage.local.set({"isOnShortPage": false})
+
+        removeVideoListeners(videoElement);
+
         updateLmwAverage();
         await chrome.storage.local.set({"watchedVideosCounter": 0});
         
@@ -229,6 +232,34 @@ async function statsUpdater() {
     }
 }
 
+function addVideoListeners (videoElement) {
+
+    if (videoElement) {
+        videoElement.addEventListener('pause', handleVideoPause);
+        videoElement.addEventListener('play', handleVideoPlay);
+    }   
+    console.log("[Short Blocker] Added video event listeners")
+}
+
+function removeVideoListeners (videoElement) {
+    if (videoElement) {
+        videoElement.removeEventListener('pause', handleVideoPause);
+        videoElement.removeEventListener('play', handleVideoPlay);
+    }   
+    console.log("[Short Blocker] Removed video event listeners")
+}
+
+async function handleVideoPause() {
+    // console.log("Video Pause");
+    videoTimer.stopWatchTimer();
+}
+
+async function handleVideoPlay() {
+    // console.log("Video Play")
+    videoTimer.startWatchTimer();
+}
+
+//TODO: Fix video counter stats calculation, it doesn't work anymore
 async function updateLmwAverage() {
     let sessionSum = 0;
 
@@ -255,20 +286,7 @@ async function updateLmwAverage() {
 async function appendLmwCounter(storage) {
     let sessionArray = storage["lmwSessionHistory"];
     sessionArray.push(storage.watchedVideosCounter);
-    chrome.storage.local.set({"lmwSessionHistory": appendedSession})
-}
-
-//____IMPORTANT TODO____
-//  meta[itemprop="duration"] IS NOT ALWAYS UPDATING, need to find another way of getting duration, for example by using Date();
-function getVideoDuration () {
-    const durationElement = document.querySelector('meta[itemprop="duration"]');
-    if (durationElement) {
-        const rawDuration = durationElement.getAttribute('content');
-        const result = parseRawDuration(rawDuration);
-        return result;
-    } else {
-        return "Duration not found";
-    }
+    chrome.storage.local.set({"lmwSessionHistory": sessionArray})
 }
 
 function convertSecToMin(currentSessionTime) {
@@ -279,107 +297,62 @@ function convertSecToMin(currentSessionTime) {
     return {hours: convertedHours, minutes: convertedMinutes, seconds: convertedSeconds};
 }
 
-async function updateTotalWatchtime() {
-    // const fetchedTotalWatchTime = await chrome.storage.local.get("totalLmwWatchTime");
-    // // console.log(fetchedTotalWatchTime)
-    // const totalWatchTime = fetchedTotalWatchTime.totalLmwWatchTime;
-    // console.log("totalWatchTime",totalWatchTime)
-    // const fetchedSessionTime = await chrome.storage.local.get("currentVideoWatchTime");
-    // // console.log( "fetchedSessionTime",fetchedSessionTime)
-    // const currentSessionTime = fetchedSessionTime.currentVideoWatchTime;
-    // console.log("non-converted", currentSessionTime)
-
-    // const convertedSessionTime = convertSecToMin(currentSessionTime);
-    // console.log("converted", convertedSessionTime)
-
-    // const updatedTotalWatchTime = {
-    //     hours: totalWatchTime.hours + convertedSessionTime.hours,
-    //     minutes: totalWatchTime.minutes + convertedSessionTime.minutes, 
-    //     seconds: totalWatchTime.seconds + convertedSessionTime.seconds
-    // } 
-
-    // console.log("updated total watch time:", updatedTotalWatchTime)
-
-    // chrome.storage.local.set({"totalLmwWatchTime": updatedTotalWatchTime})
-}
-
 // Quick comment: function returns watched duration of the video by user, fires on yt-navigation event, neccessary to calculate average watchtime
 // TODO: Finish getWatchedTime()!!!
 
 class VideoTimer {
     constructor() {
         this.watchInterval = null;
-        this.videoDuration = getVideoDuration();
+
+        this.isStarted = false;
+
+        this.startTime = null;
+        this.endTime = null;
+
+    }
+
+    convertSecToMin(elapsedTime) {
+        const convertedHours = Math.floor(elapsedTime / 3600000);
+        const convertedMinutes = Math.floor(elapsedTime / 60000);
+        const convertedSeconds = Math.floor(elapsedTime / 1000);
+    
+        return {hours: convertedHours, minutes: convertedMinutes, seconds: convertedSeconds};
     }
 
     startWatchTimer() {
-        console.log("start watch timer")
-        this.videoDuration = getVideoDuration();
-        this.watchInterval = setInterval(() => {
-            const watchedRatio = getWatchedRatio();
-            console.log(this.videoDuration);
+        if (!this.isStarted) {
+            this.startTime = Date.parse(new Date());
+            this.isStarted = true;
+        }
 
-            const watchedTime = {
-                hours: Math.floor(this.videoDuration.seconds * parseFloat(watchedRatio) / 3600), 
-                minutes: Math.floor(this.videoDuration.seconds * parseFloat(watchedRatio) / 60), 
-                seconds: Math.floor(this.videoDuration.seconds * parseFloat(watchedRatio))
-            };
-            console.log(watchedTime, watchedRatio)
-
-            //TODO: Somehow save the time when video stoped playing but start the timer again each time, example below, but this is working only for 1 video cycle
-            // if (watchedRatio >= 0.90) {
-            //     console.log("watched full video")
-            //     await this.saveWatchTime();
-            //     this.stopWatchTimer();
-            // } 
-
-            chrome.storage.local.set({"currentVideoWatchTime": watchedTime});
-        }, 1000);
+        console.log("started watchtimer")
     }
 
-    stopWatchTimer() {
-        clearInterval(this.watchInterval);
-        console.log("stop watchtimer")
+    async stopWatchTimer() {
+        if (this.isStarted) {    
+            this.endTime = Date.parse(new Date());
+            const elapsedTime = this.endTime - this.startTime;
+            
+            await this.saveWatchTime(elapsedTime);
+            this.isStarted = false;
+            console.log("[Short Blocker] Video paused, elapsed time: ", elapsedTime);
+        }
     }
 
-    async saveWatchTime() {
+    async saveWatchTime(elapsedTime) {
         const fetchedTotalWatchTime = await chrome.storage.local.get("totalLmwWatchTime");
         const totalWatchTime = fetchedTotalWatchTime.totalLmwWatchTime;
-        console.log("totalWatchTime",totalWatchTime)
-        const fetchedSessionTime = await chrome.storage.local.get("currentVideoWatchTime");
-        const currentSessionTime = fetchedSessionTime.currentVideoWatchTime;
-        console.log("currentSessionTime", currentSessionTime)
+        // console.log("totalWatchTime",totalWatchTime)
 
+        const convertedElapsedTime = this.convertSecToMin(elapsedTime);
+        // console.log("convertedElapsedTime", convertedElapsedTime);
 
         const updatedTotalWatchTime = {
-            hours: totalWatchTime.hours + currentSessionTime.hours,
-            minutes: totalWatchTime.minutes + currentSessionTime.minutes, 
-            seconds: totalWatchTime.seconds + currentSessionTime.seconds
+            hours: totalWatchTime.hours + convertedElapsedTime.hours,
+            minutes: totalWatchTime.minutes + convertedElapsedTime.minutes, 
+            seconds: totalWatchTime.seconds + convertedElapsedTime.seconds
         } 
-        
+        console.log("updatedTotalWatchTime", updatedTotalWatchTime);
         chrome.storage.local.set({"totalLmwWatchTime": updatedTotalWatchTime})
-        chrome.storage.local.set({"currentVideoWatchTime": {hours: 0, minutes: 0, seconds: 0}});
     }
 }
-
-function getWatchedRatio() {
-    try {
-        const progressBar = document.querySelector(".progress-bar-played"); 
-        const styleString = progressBar.style.cssText;
-    
-        //Finds a number or decimal match in a raw style string
-        const watchedRatio = styleString.match(/(?:\d*\.)?\d+/g); 
-        return watchedRatio;
-    } catch (error) {
-        throw new Error("Unable to locate watchedRatio. error message:", error)
-    }
-}
-
-
-function parseRawDuration(rawDuration) {
-    const rawMinSec = rawDuration.slice(2, rawDuration.length - 1);
-    const minSecArr = rawMinSec.split('M');
-    return {minutes: parseInt(minSecArr[0]), seconds: parseInt(minSecArr[1])}; 
-}
-
-//debug only function!!! 
