@@ -104,12 +104,10 @@ async function scanForShort () {
         console.error("No short located on this page"); 
         throw 0;
     }
-    getVideoDuration();
     const blocker = await buildBlocker(short);
     short.prepend(blocker);
     pauseVideo();
     removeUnecessaryElements();
-    justAFunnyConsoleStuff();
 }
 
 function pickASetOfLines() {
@@ -327,7 +325,8 @@ class VideoTimer {
             const elapsedTime = (this.endTime - this.startTime) // * 8; // multiplier is only for debugging, to test time formatting
             
             if (elapsedTime > 0) {
-                await this.saveWatchTime(elapsedTime);  
+                await this.saveWatchTime(elapsedTime); 
+                // await calculateSavedTime(); 
             } 
 
             this.isStarted = false;
@@ -336,12 +335,24 @@ class VideoTimer {
     }
 
     async saveWatchTime(elapsedTime) {
-        const fetchedTotalWatchTime = await chrome.storage.local.get("totalLmwWatchTime");
-        const totalWatchTime = fetchedTotalWatchTime.totalLmwWatchTime;
-        // console.log("totalWatchTime",totalWatchTime)
+        await this.saveTotalTime(elapsedTime);
+        // await this.saveSessionTime();
+    }
 
+    async saveSessionTime(elapsedTime) {
+        const { mode: currentMode } = await chrome.storage.local.get("mode");
+        const {sessionLmwWatchTime: currentLmwSession} = await chrome.storage.local.get("sessionLmwWatchTime");
         const convertedElapsedTime = this.convertSecToMin(elapsedTime);
-        // console.log("convertedElapsedTime", convertedElapsedTime);
+
+    }
+
+    async resetSessionTime() {
+
+    }
+
+    async saveTime(elapsedTime){
+        const { totalLmwWatchTime: totalWatchTime } = await chrome.storage.local.get("totalLmwWatchTime");
+        const convertedElapsedTime = this.convertSecToMin(elapsedTime);
 
         let updatedTotalWatchTime = this.formatTotalTime({
             hours: totalWatchTime.hours + convertedElapsedTime.hours,
@@ -349,8 +360,7 @@ class VideoTimer {
             seconds: totalWatchTime.seconds + convertedElapsedTime.seconds
         });
 
-        const currentModeRaw = await chrome.storage.local.get("mode");
-        const currentMode = currentModeRaw.mode;
+        const { mode: currentMode } = await chrome.storage.local.get("mode");
         // console.log("currentMode", currentMode);
 
         if (currentMode == "WATCH A FEW MODE") {
@@ -362,7 +372,6 @@ class VideoTimer {
             chrome.storage.local.set({"totalLmwWatchTime": updatedTotalWatchTime});
         }
 
-        console.log("updatedTotalWatchTime", updatedTotalWatchTime);
     }
 
     formatSeconds(seconds) {
@@ -404,3 +413,26 @@ class VideoTimer {
         };
     }
 }
+
+// async function calculateSavedTime () {
+//     const lmwTimeRaw = await chrome.storage.local.get("totalLmwWatchTime");
+//     const wafTimeRaw = await chrome.storage.local.get("totalWafWatchTime");
+//     const lmwTime = lmwTimeRaw.totalLmwWatchTime;
+//     const wafTime = wafTimeRaw.totalWafWatchTime
+
+//     const lmwTimeInMs = (lmwTime.hours * 3600000) + (lmwTime.minutes * 60000) + (lmwTime.seconds * 1000);
+//     const wafTimeInMs = (wafTime.hours * 3600000) + (wafTime.minutes * 60000) + (wafTime.seconds * 1000);
+
+
+//     const savedTime = lmwTimeInMs > wafTimeInMs ? {
+//         hours: Math.max(0, lmwTime.hours - wafTime.hours), 
+//         minutes: Math.max(0, lmwTime.minutes - wafTime.minutes),
+//         seconds: Math.max(0, lmwTime.seconds - wafTime.seconds)
+//     } : { //<------- did I really do that right now....
+//         hours: 0,
+//         minutes: 0,
+//         seconds: 0
+//     }
+
+//     chrome.storage.local.set({"savedTime": savedTime});
+// }
