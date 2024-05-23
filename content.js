@@ -302,11 +302,15 @@ class VideoTimer {
 
     }
 
-    convertSecToMin(elapsedTime) {
+    /**
+     * Converts elapsed time in ms to an object {hours: , minutes: , seconds:}
+     * @param {Number} elapsedTime Elapsed time in ms
+     * @returns 
+     */
+    formatElapsedTime(elapsedTime) {
         const convertedToSeconds = Math.floor(elapsedTime / 1000);
 
         const result = this.formatSeconds(convertedToSeconds);
-        console.log("result", result);
         return result;
     }
 
@@ -319,6 +323,9 @@ class VideoTimer {
         console.log("started watchtimer")
     }
 
+    /**
+     *  Stops the watch timer, calculates elapsed time in ms and saves watch time if necessary.
+     */
     async stopWatchTimer() {
         if (this.isStarted) {    
             this.endTime = Date.parse(new Date());
@@ -334,6 +341,10 @@ class VideoTimer {
         }
     }
 
+    /**
+     * Saves watch times based on current mode
+     * @param {Number} elapsedTime Elapsed time in ms
+     */
     async saveWatchTime(elapsedTime) {
         const { mode: currentMode } = await chrome.storage.local.get("mode");
         if (currentMode == "WATCH A FEW MODE") {
@@ -346,14 +357,22 @@ class VideoTimer {
         }
     }
 
+    /**
+     * Resets session time (both LMW and WAF modes)
+     */
     async resetSessionTime() {
         chrome.storage.local.set({"sessionLmwWatchTime": {hours: 0, minutes: 0, seconds: 0}});
         chrome.storage.local.set({"sessionWafWatchTime": {hours: 0, minutes: 0, seconds: 0}});
     }
 
+    /**
+     * Saves elapsed time to a provided storage value
+     * @param {Number} elapsedTime Elapsed time in ms 
+     * @param {String} timeMode Time value in the storage to save to, for example "sessionLmwWatchTime" or "totalWafWatchTime"
+     */
     async saveTime(elapsedTime, timeMode){
         const { [timeMode]: totalWatchTime } = await chrome.storage.local.get(timeMode);
-        const convertedElapsedTime = this.convertSecToMin(elapsedTime);
+        const convertedElapsedTime = this.formatElapsedTime(elapsedTime);
 
         let updatedTime = this.formatTotalTime({
             hours: totalWatchTime.hours + convertedElapsedTime.hours,
@@ -364,6 +383,11 @@ class VideoTimer {
         chrome.storage.local.set({[timeMode]: updatedTime});
     }
 
+    /**
+     * Formats seconds value into an object {hours, minutes, seconds}
+     * @param {Number} seconds Seconds value to turn format into an object
+     * @returns 
+     */
     formatSeconds(seconds) {
         const formatedHours = Math.floor(seconds / 3600);
         const formatedMinutes = Math.floor(seconds / 60);
@@ -372,6 +396,11 @@ class VideoTimer {
         return {hours: formatedHours, minutes: formatedMinutes, seconds: secondsRemaining};
     }
 
+    /**
+     * Formats provided object {hours, minutes, seconds} into an usual clock type format (60 seconds, 60 minutes)
+     * @param {Object} timeToFormat Object {hours, minutes, seconds} to format 
+     * @returns 
+     */
     formatTotalTime(timeToFormat) {
         let formatedHours;
         let formatedMinutes;
