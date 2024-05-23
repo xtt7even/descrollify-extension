@@ -61,11 +61,11 @@ async function initializeStorage() {
     }
 
     if (!Object.hasOwn(storageData, "sessionLmwWatchTimeHistory")) {
-        chrome.storage.local.set({ "sessionLmwWatchTime": []})
+        chrome.storage.local.set({ "sessionLmwWatchTimeHistory": []})
     }
     
     if (!Object.hasOwn(storageData, "sessionWafWatchTimeHistory")) {
-        chrome.storage.local.set({ "sessionWafWatchTime": []})
+        chrome.storage.local.set({ "sessionWafWatchTimeHistory": []})
     }
 }
 

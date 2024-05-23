@@ -11,6 +11,10 @@ async function resetWatchStats() {
     chrome.storage.local.set({"averageWatchTime": {hours: 0, minutes: 0, seconds: 0}})
 
     chrome.storage.local.set({ "savedTime": {hours: 0, minutes: 0, seconds: 0}})
+
+    chrome.storage.local.set({ "sessionLmwWatchTime": {hours: 0, minutes: 0, seconds: 0}})
+
+    chrome.storage.local.set({ "sessionWafWatchTime": {hours: 0, minutes: 0, seconds: 0}})
     console.log("watch reset")
     console.log(await chrome.storage.local.get())
 } 

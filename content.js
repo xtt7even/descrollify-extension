@@ -338,26 +338,20 @@ class VideoTimer {
         const { mode: currentMode } = await chrome.storage.local.get("mode");
         if (currentMode == "WATCH A FEW MODE") {
             this.saveTime(elapsedTime, "totalWafWatchTime");
+            this.saveTime(elapsedTime, "sessionWafWatchTime");
         }
         else if (currentMode == "LET ME WATCH MODE") {
             this.saveTime(elapsedTime, "totalLmwWatchTime");
+            this.saveTime(elapsedTime, "sessionLmwWatchTime");
         }
     }
 
-    async saveSessionTime(elapsedTime) {
-        const { mode: currentMode } = await chrome.storage.local.get("mode");
-        const {sessionLmwWatchTime: currentLmwSession} = await chrome.storage.local.get("sessionLmwWatchTime");
-        const convertedElapsedTime = this.convertSecToMin(elapsedTime);
-
-    }
-
     async resetSessionTime() {
-
+        chrome.storage.local.set({"sessionLmwWatchTime": {hours: 0, minutes: 0, seconds: 0}});
+        chrome.storage.local.set({"sessionWafWatchTime": {hours: 0, minutes: 0, seconds: 0}});
     }
 
     async saveTime(elapsedTime, timeMode){
-        // const fetchedTotalWatchTime = await chrome.storage.local.get("totalLmwWatchTime");
-        // const totalWatchTime = fetchedTotalWatchTime.totalLmwWatchTime;
         const { [timeMode]: totalWatchTime } = await chrome.storage.local.get(timeMode);
         const convertedElapsedTime = this.convertSecToMin(elapsedTime);
 
@@ -409,26 +403,3 @@ class VideoTimer {
         };
     }
 }
-
-// async function calculateSavedTime () {
-//     const lmwTimeRaw = await chrome.storage.local.get("totalLmwWatchTime");
-//     const wafTimeRaw = await chrome.storage.local.get("totalWafWatchTime");
-//     const lmwTime = lmwTimeRaw.totalLmwWatchTime;
-//     const wafTime = wafTimeRaw.totalWafWatchTime
-
-//     const lmwTimeInMs = (lmwTime.hours * 3600000) + (lmwTime.minutes * 60000) + (lmwTime.seconds * 1000);
-//     const wafTimeInMs = (wafTime.hours * 3600000) + (wafTime.minutes * 60000) + (wafTime.seconds * 1000);
-
-
-//     const savedTime = lmwTimeInMs > wafTimeInMs ? {
-//         hours: Math.max(0, lmwTime.hours - wafTime.hours), 
-//         minutes: Math.max(0, lmwTime.minutes - wafTime.minutes),
-//         seconds: Math.max(0, lmwTime.seconds - wafTime.seconds)
-//     } : { //<------- did I really do that right now....
-//         hours: 0,
-//         minutes: 0,
-//         seconds: 0
-//     }
-
-//     chrome.storage.local.set({"savedTime": savedTime});
-// }
