@@ -335,8 +335,13 @@ class VideoTimer {
     }
 
     async saveWatchTime(elapsedTime) {
-        await this.saveTotalTime(elapsedTime);
-        // await this.saveSessionTime();
+        const { mode: currentMode } = await chrome.storage.local.get("mode");
+        if (currentMode == "WATCH A FEW MODE") {
+            this.saveTime(elapsedTime, "totalWafWatchTime");
+        }
+        else if (currentMode == "LET ME WATCH MODE") {
+            this.saveTime(elapsedTime, "totalLmwWatchTime");
+        }
     }
 
     async saveSessionTime(elapsedTime) {
@@ -350,28 +355,19 @@ class VideoTimer {
 
     }
 
-    async saveTime(elapsedTime){
-        const { totalLmwWatchTime: totalWatchTime } = await chrome.storage.local.get("totalLmwWatchTime");
+    async saveTime(elapsedTime, timeMode){
+        // const fetchedTotalWatchTime = await chrome.storage.local.get("totalLmwWatchTime");
+        // const totalWatchTime = fetchedTotalWatchTime.totalLmwWatchTime;
+        const { [timeMode]: totalWatchTime } = await chrome.storage.local.get(timeMode);
         const convertedElapsedTime = this.convertSecToMin(elapsedTime);
 
-        let updatedTotalWatchTime = this.formatTotalTime({
+        let updatedTime = this.formatTotalTime({
             hours: totalWatchTime.hours + convertedElapsedTime.hours,
             minutes: totalWatchTime.minutes + convertedElapsedTime.minutes, 
             seconds: totalWatchTime.seconds + convertedElapsedTime.seconds
         });
 
-        const { mode: currentMode } = await chrome.storage.local.get("mode");
-        // console.log("currentMode", currentMode);
-
-        if (currentMode == "WATCH A FEW MODE") {
-            // console.log("[Short Blocker] Tracking 'WAF' mode");
-            chrome.storage.local.set({"totalWafWatchTime": updatedTotalWatchTime});
-        }
-        else if (currentMode == "LET ME WATCH MODE") {
-            // console.log("[Short Blocker] Tracking 'LMW' mode");
-            chrome.storage.local.set({"totalLmwWatchTime": updatedTotalWatchTime});
-        }
-
+        chrome.storage.local.set({[timeMode]: updatedTime});
     }
 
     formatSeconds(seconds) {
