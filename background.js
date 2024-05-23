@@ -40,20 +40,24 @@ async function initializeStorage() {
         chrome.storage.local.set({"lmwAverage": 0})
     }
 
-    if (!Object.hasOwn(storageData, "currentVideoWatchTime")) {
-        chrome.storage.local.set({"currentVideoWatchTime": {hours: 0, minutes: 0, seconds: 0}})
-    }
+    // if (!Object.hasOwn(storageData, "currentVideoWatchTime")) {
+    //     chrome.storage.local.set({"currentVideoWatchTime": {hours: 0, minutes: 0, seconds: 0}})
+    // }
     
     if (!Object.hasOwn(storageData, "totalLmwWatchTime")) {
         chrome.storage.local.set({"totalLmwWatchTime": {hours: 0, minutes: 0, seconds: 0}})
     }
 
-    if (!Object.hasOwn(storageData, "averageWatchTime")) {
-        chrome.storage.local.set({"averageWatchTime": {hours: 0, minutes: 0, seconds: 0}})
-    }
+    // if (!Object.hasOwn(storageData, "averageWatchTime")) {
+    //     chrome.storage.local.set({"averageWatchTime": {hours: 0, minutes: 0, seconds: 0}})
+    // }
 
     if (!Object.hasOwn(storageData, "savedTime")) {
         chrome.storage.local.set({ "savedTime": {hours: 0, minutes: 0, seconds: 0}})
+    }
+    
+    if (!Object.hasOwn(storageData, "totalWafWatchTime")) {
+        chrome.storage.local.set({ "totalWafWatchTime": {hours: 0, minutes: 0, seconds: 0}})
     }
 }
 

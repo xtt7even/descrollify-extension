@@ -250,12 +250,12 @@ function removeVideoListeners (videoElement) {
 }
 
 async function handleVideoPause() {
-    // console.log("Video Pause");
+    console.log("Video Pause");
     videoTimer.stopWatchTimer();
 }
 
 async function handleVideoPlay() {
-    // console.log("Video Play")
+    console.log("Video Play")
     videoTimer.startWatchTimer();
 }
 
@@ -324,9 +324,12 @@ class VideoTimer {
     async stopWatchTimer() {
         if (this.isStarted) {    
             this.endTime = Date.parse(new Date());
-            const elapsedTime = this.endTime - this.startTime;
+            const elapsedTime = (this.endTime - this.startTime) // * 8; // multiplier is only for debugging, to test time formatting
             
-            await this.saveWatchTime(elapsedTime);
+            if (elapsedTime > 0) {
+                await this.saveWatchTime(elapsedTime);  
+            } 
+
             this.isStarted = false;
             console.log("[Short Blocker] Video paused, elapsed time: ", elapsedTime);
         }
@@ -346,10 +349,20 @@ class VideoTimer {
             seconds: totalWatchTime.seconds + convertedElapsedTime.seconds
         });
 
-        
+        const currentModeRaw = await chrome.storage.local.get("mode");
+        const currentMode = currentModeRaw.mode;
+        // console.log("currentMode", currentMode);
+
+        if (currentMode == "WATCH A FEW MODE") {
+            // console.log("[Short Blocker] Tracking 'WAF' mode");
+            chrome.storage.local.set({"totalWafWatchTime": updatedTotalWatchTime});
+        }
+        else if (currentMode == "LET ME WATCH MODE") {
+            // console.log("[Short Blocker] Tracking 'LMW' mode");
+            chrome.storage.local.set({"totalLmwWatchTime": updatedTotalWatchTime});
+        }
 
         console.log("updatedTotalWatchTime", updatedTotalWatchTime);
-        chrome.storage.local.set({"totalLmwWatchTime": updatedTotalWatchTime});
     }
 
     formatSeconds(seconds) {
@@ -378,11 +391,15 @@ class VideoTimer {
             formatedMinutes = timeToFormat.minutes + Math.floor(timeToFormat.seconds / 60);
             secondsRemaining = timeToFormat.seconds % 60; 
         }
+        //TODO: figure out if it's neccessary as there time calculations became wrong for some reason 
+        else {
+            formatedMinutes = timeToFormat.minutes + Math.floor(timeToFormat.seconds / 60);
+        }
 
 
         return {
             hours: formatedHours, 
-            minutes: minutesRemaining ? minutesRemaining : timeToFormat.minutes, 
+            minutes: minutesRemaining ? minutesRemaining : formatedMinutes, 
             seconds: secondsRemaining ? secondsRemaining : timeToFormat.seconds
         };
     }
