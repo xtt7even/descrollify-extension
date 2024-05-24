@@ -1,25 +1,29 @@
 'use strict'
 
 //ONLY FOR DEBUG!!!!
-async function resetWatchStats() {
-    chrome.storage.local.set({"lmwAverage": 0})
+// async function resetWatchStats() {
+//     chrome.storage.local.set({"lmwAverage": 0})
 
-    chrome.storage.local.set({"currentVideoWatchTime": {hours: 0, minutes: 0, seconds: 0}})
+//     chrome.storage.local.set({"currentVideoWatchTime": {hours: 0, minutes: 0, seconds: 0}})
 
-    chrome.storage.local.set({"totalLmwWatchTime": {hours: 0, minutes: 0, seconds: 0}})
+//     chrome.storage.local.set({"totalLmwWatchTime": {hours: 0, minutes: 0, seconds: 0}})
 
-    chrome.storage.local.set({"averageWatchTime": {hours: 0, minutes: 0, seconds: 0}})
+//     chrome.storage.local.set({"averageWatchTime": {hours: 0, minutes: 0, seconds: 0}})
 
-    chrome.storage.local.set({ "savedTime": {hours: 0, minutes: 0, seconds: 0}})
+//     chrome.storage.local.set({ "savedTime": {hours: 0, minutes: 0, seconds: 0}})
 
-    chrome.storage.local.set({ "sessionLmwWatchTime": {hours: 0, minutes: 0, seconds: 0}})
+//     chrome.storage.local.set({ "sessionLmwWatchTime": {hours: 0, minutes: 0, seconds: 0}})
 
-    chrome.storage.local.set({ "sessionWafWatchTime": {hours: 0, minutes: 0, seconds: 0}})
-    console.log("watch reset")
-    console.log(await chrome.storage.local.get())
-} 
+//     chrome.storage.local.set({ "sessionWafWatchTime": {hours: 0, minutes: 0, seconds: 0}})
 
-resetWatchStats();
+//     chrome.storage.local.set({ "sessionLmwWatchTimeHistory": []})
+
+//     chrome.storage.local.set({ "sessionWafWatchTimeHistory": []})
+//     console.log("watch reset")
+//     console.log(await chrome.storage.local.get())
+// } 
+
+// resetWatchStats();
 
 window.addEventListener('load', async function(event) {
     await setEscapes();

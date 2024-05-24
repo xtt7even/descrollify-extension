@@ -75,6 +75,15 @@ window.addEventListener('yt-navigate-finish', async function() {
         removeVideoListeners(videoElement);
 
         updateLmwAverage();
+        
+
+        const { mode: currentMode } = await chrome.storage.local.get("mode");
+        console.log(currentMode);
+        await appendSession(
+            currentMode == "LET ME WATCH MODE" ? "sessionLmwWatchTimeHistory" : "sessionWafWatchTimeHistory",
+            currentMode == "LET ME WATCH MODE" ? "sessionLmwWatchTime" : "sessionWafWatchTime"
+        );
+        videoTimer.resetSessionTime();
         await chrome.storage.local.set({"watchedVideosCounter": 0});
         
     }
@@ -329,7 +338,7 @@ class VideoTimer {
     async stopWatchTimer() {
         if (this.isStarted) {    
             this.endTime = Date.parse(new Date());
-            const elapsedTime = (this.endTime - this.startTime) // * 8; // multiplier is only for debugging, to test time formatting
+            const elapsedTime = (this.endTime - this.startTime) * 8; // multiplier is only for debugging, to test time formatting
             
             if (elapsedTime > 0) {
                 await this.saveWatchTime(elapsedTime); 
@@ -431,4 +440,21 @@ class VideoTimer {
             seconds: secondsRemaining ? secondsRemaining : timeToFormat.seconds
         };
     }
+}
+
+// NOTE: Need to be moved to the background as user also calls this function by changing mode from the popup or by pressing on the blocker
+/**
+ * Function which appends a session to the array of all sessions in the storage 
+ * @param {String} storageHistory Storage history array variable, in which we store saved sessions
+ * @param {String} storageSession Current session time variable, which we append into storage history array 
+ */
+async function appendSession(storageHistory, storageSession) {
+    const {[storageHistory]: sessionHistory} = await chrome.storage.local.get(storageHistory);
+    const {[storageSession]: currentSession} = await chrome.storage.local.get(storageSession);
+
+    console.log("currentSession", currentSession)
+    sessionHistory.push(currentSession);
+    console.log(sessionHistory)
+
+    chrome.storage.local.set({[storageHistory]: sessionHistory});
 }
