@@ -84,7 +84,48 @@ async function appendSession(storageHistory, storageSession) {
     const {"watchedVideosCounter": videoCounter} = await chrome.storage.local.get("watchedVideosCounter");
     if (videoCounter > 0) {
         chrome.storage.local.set({[storageHistory]: sessionHistory});
+        calculateTimeAverage();
     }
+}
+
+async function calculateTimeAverage() {
+    const {sessionLmwWatchTimeHistory: lmwSessionHistory} = await chrome.storage.local.get("sessionLmwWatchTimeHistory");
+    const {sessionWafWatchTimeHistory: wafSessionHistory} = await chrome.storage.local.get("sessionWafWatchTimeHistory");
+
+    const lmwAverage = getAverageInSeconds(lmwSessionHistory);
+    const wafAverage = getAverageInSeconds(wafSessionHistory);
+    console.log("Averages (LMW/WAF):", lmwAverage, wafAverage);
+
+    //NOTE: To format time it's better to move some functions from the timer to background.js as a separate class 
+    const savedInSeconds = lmwAverage - wafAverage;
+    const savedTime = secondsToTime(savedInSeconds);
+
+    console.log(savedTime);
+
+    chrome.storage.local.set({"savedTime": savedTime});
+}
+
+function secondsToTime(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    seconds %= 3600;
+    const minutes = Math.floor(seconds / 60);
+    seconds = Math.floor(seconds % 60);
+
+    return { hours: hours, minutes: minutes, seconds: seconds};
+}
+
+function getAverageInSeconds(sessionHistory) {
+    let totalSeconds = 0;
+    for (let i = 0; i < sessionHistory.length; i++) {
+        totalSeconds += timeToSeconds(sessionHistory[i]);
+    }
+    const avgInSeconds = totalSeconds / sessionHistory.length;
+
+    return Math.floor(avgInSeconds);
+}
+
+function timeToSeconds (time) {
+    return time.hours * 3600 + time.minutes * 60 + time.seconds;
 }
 
 /**
