@@ -39,7 +39,6 @@ async function isAllowedToWatch () {
 
 async function addVideoWatch() {
     const storage = await chrome.storage.local.get();
-    console.log(storage);
     await chrome.storage.local.set({"watchedVideosCounter": storage.watchedVideosCounter + 1});
 }
 
@@ -75,17 +74,19 @@ window.addEventListener('yt-navigate-finish', async function() {
         removeVideoListeners(videoElement);
 
         updateLmwAverage();
-        
 
         const { mode: currentMode } = await chrome.storage.local.get("mode");
         console.log(currentMode);
-        await appendSession(
-            currentMode == "LET ME WATCH MODE" ? "sessionLmwWatchTimeHistory" : "sessionWafWatchTimeHistory",
-            currentMode == "LET ME WATCH MODE" ? "sessionLmwWatchTime" : "sessionWafWatchTime"
-        );
-        videoTimer.resetSessionTime();
-        await chrome.storage.local.set({"watchedVideosCounter": 0});
-        
+
+        await chrome.runtime.sendMessage({
+            type: "append_session",
+            storageHistory: "LET ME WATCH MODE" ? "sessionLmwWatchTimeHistory" : "sessionWafWatchTimeHistory",
+            storageSession: "LET ME WATCH MODE" ? "sessionLmwWatchTime" : "sessionWafWatchTime"
+        })
+        .then(() => {
+            videoTimer.resetSessionTime();
+            chrome.storage.local.set({"watchedVideosCounter": 0});
+        });
     }
 
 });
@@ -178,7 +179,7 @@ async function buildBlocker(short) {
 
         blockerLogo.addEventListener('click', () => {
             (async () => {
-                const response = await chrome.runtime.sendMessage({greeting: "escapedscrolling"});
+                const response = await chrome.runtime.sendMessage({type: "escapedscrolling"});
                 window.location.href = ".."
             })(); 
         })
@@ -272,13 +273,12 @@ async function updateLmwAverage() {
 
     const storage = await chrome.storage.local.get();
 
-    // Append lmw counter only if watchedVideosCounter is greater than 2, 
+    // Append lmw counter only if watchedVideosCounter is greater than 1, 
     //      becuase user can accidentally open short page, watch 0 videos, and therefore fill the lmw history with zeros changing average value
     //      watching at least 2 videos usually means that user is scrolling intentionally
-    if (storage.watchedVideosCounter > 2) { 
+    if (storage.watchedVideosCounter > 1) { 
         appendLmwCounter(storage)
     }
-    chrome.storage.local.set({"watchedVideosCounter": 0})
 
     for (let i = 0; i < storage.lmwSessionHistory.length; i++) {
         sessionSum += parseInt(storage.lmwSessionHistory[i]);        
@@ -442,19 +442,3 @@ class VideoTimer {
     }
 }
 
-// NOTE: Need to be moved to the background as user also calls this function by changing mode from the popup or by pressing on the blocker
-/**
- * Function which appends a session to the array of all sessions in the storage 
- * @param {String} storageHistory Storage history array variable, in which we store saved sessions
- * @param {String} storageSession Current session time variable, which we append into storage history array 
- */
-async function appendSession(storageHistory, storageSession) {
-    const {[storageHistory]: sessionHistory} = await chrome.storage.local.get(storageHistory);
-    const {[storageSession]: currentSession} = await chrome.storage.local.get(storageSession);
-
-    console.log("currentSession", currentSession)
-    sessionHistory.push(currentSession);
-    console.log(sessionHistory)
-
-    chrome.storage.local.set({[storageHistory]: sessionHistory});
-}

@@ -69,22 +69,30 @@ async function initializeStorage() {
     }
 }
 
-// Debugging stuff
-// chrome.storage.onChanged.addListener((changes, namespace) => {
-//     for (let [key, { oldValue, newValue }] of Object.entries(changes)) {
-//         console.log(
-//             `Storage key "${key}" in namespace "${namespace}" changed.`,
-//             `Old value was "${oldValue}", new value is "${newValue}".`
-//         );
-//     }
-// });
+/**
+ * Function which appends a session to the array of all sessions in the storage 
+ * @param {String} storageHistory Storage history array variable, in which we store saved sessions
+ * @param {String} storageSession Current session time variable, which we append into storage history array 
+ */
+async function appendSession(storageHistory, storageSession) {
+    const {[storageHistory]: sessionHistory} = await chrome.storage.local.get(storageHistory);
+    const {[storageSession]: currentSession} = await chrome.storage.local.get(storageSession);
+
+    // console.log("currentSession", currentSession)
+    sessionHistory.push(currentSession);
+
+    const {"watchedVideosCounter": videoCounter} = await chrome.storage.local.get("watchedVideosCounter");
+    if (videoCounter > 0) {
+        chrome.storage.local.set({[storageHistory]: sessionHistory});
+    }
+}
 
 /**
  * Listener for a different messages sent from content.js or the popup.js
  */
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
-        if (request.greeting === "escapedscrolling") {
+        if (request.type === "escapedscrolling") {
             chrome.storage.local.get(["numberOfEscapes"])
             .then((result) => {
                 chrome.storage.local.set({ "numberOfEscapes": result.numberOfEscapes + 1});
@@ -93,6 +101,10 @@ chrome.runtime.onMessage.addListener(
         if (request.mode) {
             changeWatchMode(request.mode);
         }
+        if (request.type == "append_session") {
+            appendSession(request.storageHistory, request.storageSession);
+        }
+
     }
 );
 
