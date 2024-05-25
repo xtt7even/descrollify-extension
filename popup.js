@@ -40,18 +40,20 @@ function addPageButtonsListeners() {
     const prevPageButton = document.querySelector("#prev-page");
 
     nextPageButton.addEventListener('click', async () => {
-        if (stats.page < 2) {
+        console.log(stats.page);
+        if (stats.page < 1) {
             stats.page++;
         }
-        else stats.page = 0;
+        else {stats.page = 0;}
         await stats.drawPages()
     })
 
     prevPageButton.addEventListener('click', async () => {
+        console.log(stats.page);
         if (stats.page > 0) {
             stats.page--;
         }
-        else stats.page = 2;
+        else {stats.page = 1;}
         await stats.drawPages()
     })
 }
@@ -59,7 +61,7 @@ function addPageButtonsListeners() {
 
 class Stats {
     constructor () {
-        this.page = 1;
+        this.page = 0;
     }
 
     async drawPages() {
