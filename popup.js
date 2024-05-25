@@ -26,12 +26,35 @@
 // } 
 
 // resetWatchStats();
+let stats;
 
 window.addEventListener('load', async function(event) {
-    const stats = new Stats();
-    await stats.setSavedTime();
+    stats = new Stats();
+    addPageButtonsListeners();
+    await stats.drawPages();
     await setMode();
 });
+
+function addPageButtonsListeners() {
+    const nextPageButton = document.querySelector("#next-page");
+    const prevPageButton = document.querySelector("#prev-page");
+
+    nextPageButton.addEventListener('click', async () => {
+        if (stats.page < 2) {
+            stats.page++;
+        }
+        else stats.page = 0;
+        await stats.drawPages()
+    })
+
+    prevPageButton.addEventListener('click', async () => {
+        if (stats.page > 0) {
+            stats.page--;
+        }
+        else stats.page = 2;
+        await stats.drawPages()
+    })
+}
 
 
 class Stats {
@@ -39,10 +62,17 @@ class Stats {
         this.page = 1;
     }
 
+    async drawPages() {
+        if (this.page == 0) await this.setEscapes();
+        if (this.page == 1) await this.setSavedTime();
+    }
+
     async setEscapes() {
         const storage = await getStorageData();
-        const statsTitle = document.getElementById('infocontainer-stats-title');
-        const counter = document.getElementById('infocontainer-stats-field');
+        const statsTitle = document.querySelector('#infocontainer-stats-firsttitle');
+        const statsSecondTitle = document.querySelector('#infocontainer-stats-secondtitle');
+        const counter = document.querySelector('#infocontainer-stats-field');
+        statsSecondTitle.innerHTML = ' '
         counter.innerHTML = storage.numberOfEscapes + ' TIMES';   
         statsTitle.innerHTML = "YOU'VE ESCAPED SCROLLING"
     }
@@ -50,9 +80,10 @@ class Stats {
     async setSavedTime() {
         const {"savedTime": savedWatchTime} = await chrome.storage.local.get("savedTime");
         console.log(savedWatchTime);
-        const statsFirstTitle = document.getElementById('infocontainer-stats-firsttitle');
-        const statsSecondTitle = document.getElementById('infocontainer-stats-secondtitle');
-        const statsField = document.getElementById('infocontainer-stats-field');
+        const statsFirstTitle = document.querySelector('#infocontainer-stats-firsttitle');
+        const statsSecondTitle = document.querySelector('#infocontainer-stats-secondtitle');
+        const statsField = document.querySelector('#infocontainer-stats-field');
+
 
         statsFirstTitle.innerHTML = 'ON AVERAGE YOU SAVE'
         statsSecondTitle.innerHTML = 'USING "WATCH A FEW MODE"'
