@@ -76,12 +76,11 @@ window.addEventListener('yt-navigate-finish', async function() {
         updateLmwAverage();
 
         const { mode: currentMode } = await chrome.storage.local.get("mode");
-        console.log(currentMode);
-
+        
         await chrome.runtime.sendMessage({
             type: "append_session",
-            storageHistory: "LET ME WATCH MODE" ? "sessionLmwWatchTimeHistory" : "sessionWafWatchTimeHistory",
-            storageSession: "LET ME WATCH MODE" ? "sessionLmwWatchTime" : "sessionWafWatchTime"
+            storageHistory: currentMode == "LET ME WATCH MODE" ? "sessionLmwWatchTimeHistory" : "sessionWafWatchTimeHistory",
+            storageSession: currentMode == "LET ME WATCH MODE" ? "sessionLmwWatchTime" : "sessionWafWatchTime"
         })
         .then(() => {
             videoTimer.resetSessionTime();
@@ -338,7 +337,7 @@ class VideoTimer {
     async stopWatchTimer() {
         if (this.isStarted) {    
             this.endTime = Date.parse(new Date());
-            const elapsedTime = (this.endTime - this.startTime) //* 8; // multiplier is only for debugging, to test time formatting
+            const elapsedTime = (this.endTime - this.startTime) * 8; // multiplier is only for debugging, to test time formatting
             
             if (elapsedTime > 0) {
                 await this.saveWatchTime(elapsedTime); 
