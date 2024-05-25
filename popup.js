@@ -28,14 +28,47 @@
 // resetWatchStats();
 
 window.addEventListener('load', async function(event) {
-    await setEscapes();
+    const stats = new Stats();
+    await stats.setSavedTime();
     await setMode();
 });
 
-async function setEscapes() {
-    const storage = await getStorageData();
-    const counter = document.getElementById('infocontainer-escape-counter');
-    counter.innerHTML = storage.numberOfEscapes + ' TIMES';   
+
+class Stats {
+    constructor () {
+        this.page = 1;
+    }
+
+    async setEscapes() {
+        const storage = await getStorageData();
+        const statsTitle = document.getElementById('infocontainer-stats-title');
+        const counter = document.getElementById('infocontainer-stats-field');
+        counter.innerHTML = storage.numberOfEscapes + ' TIMES';   
+        statsTitle.innerHTML = "YOU'VE ESCAPED SCROLLING"
+    }
+    
+    async setSavedTime() {
+        const {"savedTime": savedWatchTime} = await chrome.storage.local.get("savedTime");
+        console.log(savedWatchTime);
+        const statsFirstTitle = document.getElementById('infocontainer-stats-firsttitle');
+        const statsSecondTitle = document.getElementById('infocontainer-stats-secondtitle');
+        const statsField = document.getElementById('infocontainer-stats-field');
+
+        statsFirstTitle.innerHTML = 'ON AVERAGE YOU SAVE'
+        statsSecondTitle.innerHTML = 'USING "WATCH A FEW MODE"'
+        statsField.innerHTML = this.formatToString(savedWatchTime);   
+    }
+    
+    formatToString(timeObject) {
+        let timeStat;
+        if (timeObject.minutes > 0 || timeObject.hours > 0) {
+            timeStat = Math.round((timeObject.hours * 60) + timeObject.minutes + (timeObject.seconds / 60)) + " MINUTES"
+        }
+        else {
+            timeStat = Math.round(timeObject.seconds) + " SECONDS";
+        }
+        return timeStat;
+    }
 }
 
 async function setMode() {

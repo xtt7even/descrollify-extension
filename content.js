@@ -337,7 +337,7 @@ class VideoTimer {
     async stopWatchTimer() {
         if (this.isStarted) {    
             this.endTime = Date.parse(new Date());
-            const elapsedTime = (this.endTime - this.startTime) * 8; // multiplier is only for debugging, to test time formatting
+            const elapsedTime = (this.endTime - this.startTime) //* 8; // multiplier is only for debugging, to test time formatting
             
             if (elapsedTime > 0) {
                 await this.saveWatchTime(elapsedTime); 
