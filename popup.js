@@ -41,7 +41,7 @@ function addPageButtonsListeners() {
 
     nextPageButton.addEventListener('click', async () => {
         console.log(stats.page);
-        if (stats.page < 1) {
+        if (stats.page < 2) {
             stats.page++;
         }
         else {stats.page = 0;}
@@ -53,7 +53,7 @@ function addPageButtonsListeners() {
         if (stats.page > 0) {
             stats.page--;
         }
-        else {stats.page = 1;}
+        else {stats.page = 2;}
         await stats.drawPages()
     })
 }
@@ -62,40 +62,48 @@ function addPageButtonsListeners() {
 class Stats {
     constructor () {
         this.page = 0;
+
+        this.statsFirstTitle = document.querySelector('#infocontainer-stats-firsttitle');
+        this.statsSecondTitle = document.querySelector('#infocontainer-stats-secondtitle');
+        this.statsField = document.querySelector('#infocontainer-stats-field');
     }
 
     async drawPages() {
         if (this.page == 0) await this.setEscapes();
         if (this.page == 1) await this.setSavedTime();
+        if (this.page == 2) await this.setCountersDifference();
+    }
+
+    async setCountersDifference() {
+        const {"watchSessionsDifference": difference} = await chrome.storage.local.get("watchSessionsDifference");
+         
+        this.statsFirstTitle.innerHTML = 'ON AVERAGE, YOU WATCH'
+        this.statsSecondTitle.innerHTML = 'LESS, IN ¨WATCH A FEW MODE¨'
+        this.statsField.innerHTML = difference == 1 ? difference + " VIDEO" : difference + " VIDEOS";   
     }
 
     async setEscapes() {
-        const storage = await getStorageData();
-        const statsTitle = document.querySelector('#infocontainer-stats-firsttitle');
-        const statsSecondTitle = document.querySelector('#infocontainer-stats-secondtitle');
-        const counter = document.querySelector('#infocontainer-stats-field');
-        statsSecondTitle.innerHTML = ' '
-        counter.innerHTML = storage.numberOfEscapes + ' TIMES';   
-        statsTitle.innerHTML = "YOU'VE ESCAPED SCROLLING"
+        const {"numberOfEscapes": escapes} = await getStorageData("numberOfEscapes");
+
+        this.statsSecondTitle.innerHTML = escapes > 0 ? 'KEEP THAT MOMENTUM!' : "START USING AND BOOST PRODUCTIVITY!" 
+        this.statsField.innerHTML = escapes == 1 ? escapes + ' TIME' : escapes + ' TIMES';   
+        this.statsFirstTitle.innerHTML = "YOU'VE ESCAPED SCROLLING"
     }
     
     async setSavedTime() {
         const {"savedTime": savedWatchTime} = await chrome.storage.local.get("savedTime");
         console.log(savedWatchTime);
-        const statsFirstTitle = document.querySelector('#infocontainer-stats-firsttitle');
-        const statsSecondTitle = document.querySelector('#infocontainer-stats-secondtitle');
-        const statsField = document.querySelector('#infocontainer-stats-field');
 
-
-        statsFirstTitle.innerHTML = 'ON AVERAGE YOU SAVE'
-        statsSecondTitle.innerHTML = 'EACH "WATCH A FEW" SESSION'
-        statsField.innerHTML = this.formatToString(savedWatchTime);   
+        this.statsFirstTitle.innerHTML = 'ON AVERAGE YOU SAVE'
+        this.statsSecondTitle.innerHTML = 'EACH "WATCH A FEW" SESSION'
+        this.statsField.innerHTML = this.formatToString(savedWatchTime);   
     }
     
     formatToString(timeObject) {
         let timeStat;
         if (timeObject.minutes > 0 || timeObject.hours > 0) {
-            timeStat = Math.round((timeObject.hours * 60) + timeObject.minutes + (timeObject.seconds / 60)) + " MINUTES"
+            const time = Math.round((timeObject.hours * 60) + timeObject.minutes + (timeObject.seconds / 60));
+            timeStat = time == 1 ? time + " MINUTE" : time + " MINUTES" 
         }
         else {
             timeStat = Math.round(timeObject.seconds) + " SECONDS";

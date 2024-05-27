@@ -51,9 +51,12 @@ async function initializeStorage() {
     if (!Object.hasOwn(storageData, "totalLmwWatchTime")) {
         chrome.storage.local.set({"totalLmwWatchTime": {hours: 0, minutes: 0, seconds: 0}})
     }
-
     if (!Object.hasOwn(storageData, "savedTime")) {
         chrome.storage.local.set({ "savedTime": {hours: 0, minutes: 0, seconds: 0}})
+    }
+
+    if (!Object.hasOwn(storageData, "watchSessionsDifference")) {
+        chrome.storage.local.set({ "watchSessionsDifference": 0})
     }
 
     if (!Object.hasOwn(storageData, "sessionLmwWatchTime")) {
@@ -108,20 +111,19 @@ class SessionsHandler {
         return Math.floor(avgInSeconds);
     }
 
-    async updateTimeAverage() {
-        console.log("updateTimeAverage");
+    async updateSavedTime() {
         const {sessionLmwWatchTimeHistory: lmwSessionHistory} = await chrome.storage.local.get("sessionLmwWatchTimeHistory");
         const {sessionWafWatchTimeHistory: wafSessionHistory} = await chrome.storage.local.get("sessionWafWatchTimeHistory");
     
         const lmwAverage = this.getAverageInSeconds(lmwSessionHistory);
         const wafAverage = this.getAverageInSeconds(wafSessionHistory);
-        console.log("Averages (LMW/WAF):", lmwAverage, wafAverage);
+        // console.log("Averages (LMW/WAF):", lmwAverage, wafAverage);
     
         //NOTE: To format time it's better to move some functions from the timer to background.js as a separate class 
         const savedInSeconds = lmwAverage - wafAverage;
         const savedTime = secondsToTime(savedInSeconds);
     
-        console.log(savedTime);
+        // console.log(savedTime);
     
         chrome.storage.local.set({"savedTime": savedTime});
     }
@@ -132,34 +134,45 @@ class SessionsHandler {
         sessionHistory.push(currentSession);
     
         const {"watchedVideosCounter": videoCounter} = await chrome.storage.local.get("watchedVideosCounter");
-        console.log(videoCounter);
+        // console.log(videoCounter);
         if (videoCounter > 1) {
             chrome.storage.local.set({[this.sessionHistory]: sessionHistory});
         }
 
         if (this.storageAvg != null) {
-            console.log("updateCounterAverage")
+            // console.log("updateCounterAverage")
             this.updateCounterAverage();
         }
         else {
-            console.log("updateTimeAverage")
-            this.updateTimeAverage();
+            // console.log("updateSavedTime")
+            this.updateSavedTime();
         }
     }
 
     async updateCounterAverage() {
-        console.log("updateCounterAverage");
+        // console.log("updateCounterAverage");
         const {[this.sessionHistory]: sessionHistory} = await chrome.storage.local.get(this.sessionHistory);
         // const {[this.sessionValue]: sessionCounter} = await chrome.storage.local.get(this.sessionValue);
     
         for (let i = 0; i < sessionHistory.length; i++) {
             this.sessionSum += parseInt(sessionHistory[i]);
-            console.log(sessionHistory[i],this.sessionSum);
+            // console.log(sessionHistory[i],this.sessionSum);
         }
 
         const average = this.sessionSum / sessionHistory.length; 
-        console.log("Session average", average)
+        // console.log("Session average", average)
         chrome.storage.local.set({[this.storageAvg]: Math.round(average)});
+
+        this.updateVideoSessionsDiff();
+    }
+
+    async updateVideoSessionsDiff() {
+        const {"lmwAverage": lmwAverage} = await chrome.storage.local.get("lmwAverage");
+        const {"wafAverage": wafAverage} = await chrome.storage.local.get("wafAverage");
+
+        const difference = Math.max(0, lmwAverage - wafAverage);
+        
+        chrome.storage.local.set({"watchSessionsDifference": difference})
     }
 }
 
