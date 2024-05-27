@@ -88,7 +88,7 @@ class Stats {
 
 
         statsFirstTitle.innerHTML = 'ON AVERAGE YOU SAVE'
-        statsSecondTitle.innerHTML = 'USING "WATCH A FEW MODE"'
+        statsSecondTitle.innerHTML = 'EACH "WATCH A FEW" SESSION'
         statsField.innerHTML = this.formatToString(savedWatchTime);   
     }
     

@@ -36,6 +36,10 @@ async function initializeStorage() {
         chrome.storage.local.set({"lmwSessionHistory": []})
     }
 
+    if (!Object.hasOwn(storageData, "wafSessionHistory")) {
+        chrome.storage.local.set({"wafSessionHistory": []})
+    }
+
     if (!Object.hasOwn(storageData, "lmwAverage")) {
         chrome.storage.local.set({"lmwAverage": 0})
     }
@@ -74,36 +78,91 @@ async function initializeStorage() {
  * @param {String} storageHistory Storage history array variable, in which we store saved sessions
  * @param {String} storageSession Current session time variable, which we append into storage history array 
  */
-async function appendSession(storageHistory, storageSession) {
-    const {[storageHistory]: sessionHistory} = await chrome.storage.local.get(storageHistory);
-    const {[storageSession]: currentSession} = await chrome.storage.local.get(storageSession);
 
-    // console.log("currentSession", currentSession)
-    sessionHistory.push(currentSession);
 
-    const {"watchedVideosCounter": videoCounter} = await chrome.storage.local.get("watchedVideosCounter");
-    if (videoCounter > 0) {
-        chrome.storage.local.set({[storageHistory]: sessionHistory});
-        calculateTimeAverage();
+//NOTE: What even is this function?
+// async function statsUpdater() {
+//     const storage = await chrome.storage.local.get();
+//     console.log(storage)
+//     if (storage.mode === "LET ME WATCH MODE") {
+//         lmwAvgUpdater(storage);
+//     }
+// }
+
+class SessionsHandler {
+    constructor (history, session, average) {
+        this.sessionSum = 0;
+
+        this.sessionHistory = history;
+        this.sessionValue = session;
+        this.storageAvg = average;
+    }
+
+    getAverageInSeconds(sessionHistory) {
+        let totalSeconds = 0;
+        for (let i = 0; i < sessionHistory.length; i++) {
+            totalSeconds += timeToSeconds(sessionHistory[i]);
+        }
+        const avgInSeconds = totalSeconds / sessionHistory.length;
+    
+        return Math.floor(avgInSeconds);
+    }
+
+    async updateTimeAverage() {
+        console.log("updateTimeAverage");
+        const {sessionLmwWatchTimeHistory: lmwSessionHistory} = await chrome.storage.local.get("sessionLmwWatchTimeHistory");
+        const {sessionWafWatchTimeHistory: wafSessionHistory} = await chrome.storage.local.get("sessionWafWatchTimeHistory");
+    
+        const lmwAverage = this.getAverageInSeconds(lmwSessionHistory);
+        const wafAverage = this.getAverageInSeconds(wafSessionHistory);
+        console.log("Averages (LMW/WAF):", lmwAverage, wafAverage);
+    
+        //NOTE: To format time it's better to move some functions from the timer to background.js as a separate class 
+        const savedInSeconds = lmwAverage - wafAverage;
+        const savedTime = secondsToTime(savedInSeconds);
+    
+        console.log(savedTime);
+    
+        chrome.storage.local.set({"savedTime": savedTime});
+    }
+
+    async appendSession() {
+        const {[this.sessionHistory]: sessionHistory} = await chrome.storage.local.get(this.sessionHistory);
+        const {[this.sessionValue]: currentSession} = await chrome.storage.local.get(this.sessionValue);
+        sessionHistory.push(currentSession);
+    
+        const {"watchedVideosCounter": videoCounter} = await chrome.storage.local.get("watchedVideosCounter");
+        console.log(videoCounter);
+        if (videoCounter > 1) {
+            chrome.storage.local.set({[this.sessionHistory]: sessionHistory});
+        }
+
+        if (this.storageAvg != null) {
+            console.log("updateCounterAverage")
+            this.updateCounterAverage();
+        }
+        else {
+            console.log("updateTimeAverage")
+            this.updateTimeAverage();
+        }
+    }
+
+    async updateCounterAverage() {
+        console.log("updateCounterAverage");
+        const {[this.sessionHistory]: sessionHistory} = await chrome.storage.local.get(this.sessionHistory);
+        // const {[this.sessionValue]: sessionCounter} = await chrome.storage.local.get(this.sessionValue);
+    
+        for (let i = 0; i < sessionHistory.length; i++) {
+            this.sessionSum += parseInt(sessionHistory[i]);
+            console.log(sessionHistory[i],this.sessionSum);
+        }
+
+        const average = this.sessionSum / sessionHistory.length; 
+        console.log("Session average", average)
+        chrome.storage.local.set({[this.storageAvg]: Math.round(average)});
     }
 }
 
-async function calculateTimeAverage() {
-    const {sessionLmwWatchTimeHistory: lmwSessionHistory} = await chrome.storage.local.get("sessionLmwWatchTimeHistory");
-    const {sessionWafWatchTimeHistory: wafSessionHistory} = await chrome.storage.local.get("sessionWafWatchTimeHistory");
-
-    const lmwAverage = getAverageInSeconds(lmwSessionHistory);
-    const wafAverage = getAverageInSeconds(wafSessionHistory);
-    console.log("Averages (LMW/WAF):", lmwAverage, wafAverage);
-
-    //NOTE: To format time it's better to move some functions from the timer to background.js as a separate class 
-    const savedInSeconds = lmwAverage - wafAverage;
-    const savedTime = secondsToTime(savedInSeconds);
-
-    console.log(savedTime);
-
-    chrome.storage.local.set({"savedTime": savedTime});
-}
 
 function secondsToTime(seconds) {
     const hours = Math.floor(seconds / 3600);
@@ -114,15 +173,6 @@ function secondsToTime(seconds) {
     return { hours: hours, minutes: minutes, seconds: seconds};
 }
 
-function getAverageInSeconds(sessionHistory) {
-    let totalSeconds = 0;
-    for (let i = 0; i < sessionHistory.length; i++) {
-        totalSeconds += timeToSeconds(sessionHistory[i]);
-    }
-    const avgInSeconds = totalSeconds / sessionHistory.length;
-
-    return Math.floor(avgInSeconds);
-}
 
 function timeToSeconds (time) {
     return time.hours * 3600 + time.minutes * 60 + time.seconds;
@@ -132,7 +182,7 @@ function timeToSeconds (time) {
  * Listener for a different messages sent from content.js or the popup.js
  */
 chrome.runtime.onMessage.addListener(
-    function(request, sender, sendResponse) {
+    async function(request, sender, sendResponse) {
         if (request.type === "escapedscrolling") {
             chrome.storage.local.get(["numberOfEscapes"])
             .then((result) => {
@@ -143,7 +193,13 @@ chrome.runtime.onMessage.addListener(
             changeWatchMode(request.mode);
         }
         if (request.type == "append_session") {
-            appendSession(request.storageHistory, request.storageSession);
+            let sessionHandler = new SessionsHandler(
+                request.storageHistory,
+                request.storageSession,
+                request.storageAvg
+            );
+            await sessionHandler.appendSession();
+            sessionHandler = null;
         }
 
     }

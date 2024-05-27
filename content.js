@@ -73,15 +73,22 @@ window.addEventListener('yt-navigate-finish', async function() {
 
         removeVideoListeners(videoElement);
 
-        updateLmwAverage();
-
         const { mode: currentMode } = await chrome.storage.local.get("mode");
         
         await chrome.runtime.sendMessage({
             type: "append_session",
             storageHistory: currentMode == "LET ME WATCH MODE" ? "sessionLmwWatchTimeHistory" : "sessionWafWatchTimeHistory",
-            storageSession: currentMode == "LET ME WATCH MODE" ? "sessionLmwWatchTime" : "sessionWafWatchTime"
+            storageSession: currentMode == "LET ME WATCH MODE" ? "sessionLmwWatchTime" : "sessionWafWatchTime",
+            storageAvg: null
         })
+        
+        await chrome.runtime.sendMessage({
+            type: "append_session",
+            storageHistory: currentMode == "LET ME WATCH MODE" ? "lmwSessionHistory" : "wafSessionHistory",
+            storageSession: "watchedVideosCounter",
+            storageAvg: currentMode == "LET ME WATCH MODE" ? "lmwAverage" : "wafAverage"
+        })
+        
         .then(() => {
             videoTimer.resetSessionTime();
             chrome.storage.local.set({"watchedVideosCounter": 0});
@@ -231,13 +238,7 @@ function buildBlockerLogo() {
 
 //Stats retriever functions
 
-async function statsUpdater() {
-    const storage = await chrome.storage.local.get();
-    console.log(storage)
-    if (storage.mode === "LET ME WATCH MODE") {
-        lmwAvgUpdater(storage);
-    }
-}
+
 
 function addVideoListeners (videoElement) {
 
@@ -267,33 +268,7 @@ async function handleVideoPlay() {
 }
 
 //TODO: Fix video counter stats calculation, it doesn't work anymore
-async function updateLmwAverage() {
-    let sessionSum = 0;
 
-    const storage = await chrome.storage.local.get();
-
-    // Append lmw counter only if watchedVideosCounter is greater than 1, 
-    //      becuase user can accidentally open short page, watch 0 videos, and therefore fill the lmw history with zeros changing average value
-    //      watching at least 2 videos usually means that user is scrolling intentionally
-    if (storage.watchedVideosCounter > 1) { 
-        appendLmwCounter(storage)
-    }
-
-    for (let i = 0; i < storage.lmwSessionHistory.length; i++) {
-        sessionSum += parseInt(storage.lmwSessionHistory[i]);        
-        console.log(sessionSum);
-    }
-
-    const average = sessionSum / storage.lmwSessionHistory.length; 
-    console.log(average)
-    chrome.storage.local.set({"lmwAverage": average});
-}
-
-async function appendLmwCounter(storage) {
-    let sessionArray = storage["lmwSessionHistory"];
-    sessionArray.push(storage.watchedVideosCounter);
-    chrome.storage.local.set({"lmwSessionHistory": sessionArray})
-}
 
 
 // Quick comment: function returns watched duration of the video by user, fires on yt-navigation event, neccessary to calculate average watchtime
@@ -328,7 +303,7 @@ class VideoTimer {
             this.isStarted = true;
         }
 
-        console.log("started watchtimer")
+        // console.log("started watchtimer")
     }
 
     /**
@@ -341,8 +316,7 @@ class VideoTimer {
             
             if (elapsedTime > 0) {
                 await this.saveWatchTime(elapsedTime); 
-                // await calculateSavedTime(); 
-            } 
+            }  
 
             this.isStarted = false;
             console.log("[Short Blocker] Video paused, elapsed time: ", elapsedTime);
