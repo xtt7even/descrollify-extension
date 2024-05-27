@@ -92,6 +92,15 @@ async function initializeStorage() {
 //     }
 // }
 
+chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
+    console.log(`Tab with ID: ${tabId} was closed.`);
+});
+  
+  // Listen for window removal
+chrome.windows.onRemoved.addListener((windowId) => {
+    console.log(`Window with ID: ${windowId} was closed.`);
+});
+
 class SessionsHandler {
     constructor (history, session, average) {
         this.sessionSum = 0;
@@ -129,6 +138,7 @@ class SessionsHandler {
     }
 
     async appendSession() {
+        console.log("Appending session")
         const {[this.sessionHistory]: sessionHistory} = await chrome.storage.local.get(this.sessionHistory);
         const {[this.sessionValue]: currentSession} = await chrome.storage.local.get(this.sessionValue);
         sessionHistory.push(currentSession);

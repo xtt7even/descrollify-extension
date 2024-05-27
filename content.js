@@ -70,32 +70,34 @@ window.addEventListener('yt-navigate-finish', async function() {
     //if the page doesn't include "short" but isOnShortPage WAS true before, that means the user closed or exited short page, so we need to update LMW mode averages
     else if (pagePosition.isOnShortPage) {
         chrome.storage.local.set({"isOnShortPage": false})
-
         removeVideoListeners(videoElement);
-
-        const { mode: currentMode } = await chrome.storage.local.get("mode");
-        
-        await chrome.runtime.sendMessage({
-            type: "append_session",
-            storageHistory: currentMode == "LET ME WATCH MODE" ? "sessionLmwWatchTimeHistory" : "sessionWafWatchTimeHistory",
-            storageSession: currentMode == "LET ME WATCH MODE" ? "sessionLmwWatchTime" : "sessionWafWatchTime",
-            storageAvg: null
-        })
-        
-        await chrome.runtime.sendMessage({
-            type: "append_session",
-            storageHistory: currentMode == "LET ME WATCH MODE" ? "lmwSessionHistory" : "wafSessionHistory",
-            storageSession: "watchedVideosCounter",
-            storageAvg: currentMode == "LET ME WATCH MODE" ? "lmwAverage" : "wafAverage"
-        })
-        
-        .then(() => {
-            videoTimer.resetSessionTime();
-            chrome.storage.local.set({"watchedVideosCounter": 0});
-        });
+        await saveSessions();
     }
 
 });
+
+async function saveSessions() {
+    const { mode: currentMode } = await chrome.storage.local.get("mode");
+        
+    await chrome.runtime.sendMessage({
+        type: "append_session",
+        storageHistory: currentMode == "LET ME WATCH MODE" ? "sessionLmwWatchTimeHistory" : "sessionWafWatchTimeHistory",
+        storageSession: currentMode == "LET ME WATCH MODE" ? "sessionLmwWatchTime" : "sessionWafWatchTime",
+        storageAvg: null
+    })
+    
+    await chrome.runtime.sendMessage({
+        type: "append_session",
+        storageHistory: currentMode == "LET ME WATCH MODE" ? "lmwSessionHistory" : "wafSessionHistory",
+        storageSession: "watchedVideosCounter",
+        storageAvg: currentMode == "LET ME WATCH MODE" ? "lmwAverage" : "wafAverage"
+    })
+    
+    .then(() => {
+        videoTimer.resetSessionTime();
+        chrome.storage.local.set({"watchedVideosCounter": 0});
+    });
+}
 
 function removeBlocker() {
     if (document.getElementById("blocker-container")) {
@@ -186,6 +188,7 @@ async function buildBlocker(short) {
         blockerLogo.addEventListener('click', () => {
             (async () => {
                 const response = await chrome.runtime.sendMessage({type: "escapedscrolling"});
+                saveSessions();
                 window.location.href = ".."
             })(); 
         })
