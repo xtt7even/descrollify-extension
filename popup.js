@@ -1,6 +1,37 @@
 'use strict'
+
+//ONLY FOR DEBUG!!!!
+// async function resetWatchStats() {
+//     chrome.storage.local.set({"lmwAverage": 0})
+
+//     chrome.storage.local.set({"lmwSessionHistory": []})
+
+//     chrome.storage.local.set({"totalLmwWatchTime": {hours: 0, minutes: 0, seconds: 0}})
+
+//     chrome.storage.local.set({"totalWafWatchTime": {hours: 0, minutes: 0, seconds: 0}})
+
+//     chrome.storage.local.set({"averageWatchTime": {hours: 0, minutes: 0, seconds: 0}})
+
+//     chrome.storage.local.set({ "savedTime": {hours: 0, minutes: 0, seconds: 0}})
+
+//     chrome.storage.local.set({ "sessionLmwWatchTime": {hours: 0, minutes: 0, seconds: 0}})
+
+//     chrome.storage.local.set({ "sessionWafWatchTime": {hours: 0, minutes: 0, seconds: 0}})
+
+//     chrome.storage.local.set({ "sessionLmwWatchTimeHistory": []})
+
+//     chrome.storage.local.set({ "sessionWafWatchTimeHistory": []})
+
+//     console.log(await chrome.storage.local.get())
+// } 
+
+// resetWatchStats();
+let stats;
+
 window.addEventListener('load', async function(event) {
-    await setEscapes();
+    stats = new Stats();
+    addPageButtonsListeners();
+    await stats.drawPages();
     await setMode();
     setListeners();
 });
@@ -37,11 +68,82 @@ function createSettingsOverlay() {
 
     document.body.prepend(iframe);
 }
+ 
+function addPageButtonsListeners() {
+    const nextPageButton = document.querySelector("#next-page");
+    const prevPageButton = document.querySelector("#prev-page");
 
-async function setEscapes() {
-    const storage = await getStorageData();
-    const counter = document.getElementById('infocontainer-escape-counter');
-    counter.innerHTML = storage.numberOfEscapes + ' TIMES';   
+    nextPageButton.addEventListener('click', async () => {
+        console.log(stats.page);
+        if (stats.page < 2) {
+            stats.page++;
+        }
+        else {stats.page = 0;}
+        await stats.drawPages()
+    })
+
+    prevPageButton.addEventListener('click', async () => {
+        console.log(stats.page);
+        if (stats.page > 0) {
+            stats.page--;
+        }
+        else {stats.page = 2;}
+        await stats.drawPages()
+    })
+}
+
+
+class Stats {
+    constructor () {
+        this.page = 0;
+
+        this.statsFirstTitle = document.querySelector('#infocontainer-stats-firsttitle');
+        this.statsSecondTitle = document.querySelector('#infocontainer-stats-secondtitle');
+        this.statsField = document.querySelector('#infocontainer-stats-field');
+    }
+
+    async drawPages() {
+        if (this.page == 0) await this.setEscapes();
+        if (this.page == 1) await this.setSavedTime();
+        if (this.page == 2) await this.setCountersDifference();
+    }
+
+    async setCountersDifference() {
+        const {"watchSessionsDifference": difference} = await chrome.storage.local.get("watchSessionsDifference");
+         
+        this.statsFirstTitle.innerHTML = 'ON AVERAGE, YOU WATCH'
+        this.statsSecondTitle.innerHTML = 'LESS, IN ¨WATCH A FEW MODE¨'
+        this.statsField.innerHTML = difference == 1 ? difference + " VIDEO" : difference + " VIDEOS";   
+    }
+
+    async setEscapes() {
+        const {"numberOfEscapes": escapes} = await getStorageData("numberOfEscapes");
+
+        this.statsSecondTitle.innerHTML = escapes > 0 ? 'KEEP THAT MOMENTUM!' : "START USING AND BOOST PRODUCTIVITY!" 
+        this.statsField.innerHTML = escapes == 1 ? escapes + ' TIME' : escapes + ' TIMES';   
+        this.statsFirstTitle.innerHTML = "YOU'VE ESCAPED SCROLLING"
+    }
+    
+    async setSavedTime() {
+        const {"savedTime": savedWatchTime} = await chrome.storage.local.get("savedTime");
+        console.log(savedWatchTime);
+
+        this.statsFirstTitle.innerHTML = 'ON AVERAGE YOU SAVE'
+        this.statsSecondTitle.innerHTML = 'EACH "WATCH A FEW" SESSION'
+        this.statsField.innerHTML = this.formatToString(savedWatchTime);   
+    }
+    
+    formatToString(timeObject) {
+        let timeStat;
+        if (timeObject.minutes > 0 || timeObject.hours > 0) {
+            const time = Math.round((timeObject.hours * 60) + timeObject.minutes + (timeObject.seconds / 60));
+            timeStat = time == 1 ? time + " MINUTE" : time + " MINUTES" 
+        }
+        else {
+            timeStat = Math.round(timeObject.seconds) + " SECONDS";
+        }
+        return timeStat;
+    }
 }
 
 async function setMode() {
