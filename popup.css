@@ -118,6 +118,16 @@ h1 {
     font-size: 19px;
 }
 
+#stats-field-container{
+    display: flex;
+    align-items: center;
+}
+
+#stats-info-img {
+    width: 18px;
+
+}
+
 .mode-selector {
     margin: 0;
     float:left;
