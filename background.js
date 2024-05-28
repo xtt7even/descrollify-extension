@@ -7,6 +7,8 @@ chrome.runtime.onInstalled.addListener((details) => {
         console.log("First initialization!")
         initializeStorage();
     }
+
+    const tabHandler = new TabHandler();
 });
 
 /**
@@ -92,14 +94,105 @@ async function initializeStorage() {
 //     }
 // }
 
-chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
-    console.log(`Tab with ID: ${tabId} was closed.`);
-});
-  
-  // Listen for window removal
-chrome.windows.onRemoved.addListener((windowId) => {
-    console.log(`Window with ID: ${windowId} was closed.`);
-});
+class TabHandler {
+    constructor () {
+        this.openedTabs = [];
+
+        this.changedTabUrl = null;
+        this.isChangedUrlLogged = false;
+        
+        chrome.tabs.query({}, (tabs) => {
+            tabs.forEach((tab) => {
+              this.openedTabs.push({
+                "id": tab.id, 
+                "url": tab.url
+              });
+            });
+        });
+
+        //TODO: DO SOMTHING WITH THIS GIGA-IF-TREE
+        chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
+            for (let i = 0; i < this.openedTabs.length; i++) {
+                if (this.openedTabs[i].id == tabId) {
+                    const closedTabUrl = this.openedTabs[i].url;
+                    this.openedTabs.splice(i, 1);
+                    if (closedTabUrl.includes("youtube") && closedTabUrl.includes("short")) {
+                        this.sendCloseMessage()
+                    }
+                }
+            }
+        });
+        
+        chrome.tabs.onCreated.addListener((tab) => {
+            this.openedTabs.push(
+                {
+                    "id": tab.id, 
+                    "url": tab.url
+                }
+            );
+
+            console.log(tab.url);
+        });
+
+        chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+            // console.log("-------------------------Change Detected!----------------------")
+            // console.log("--------------------Status: ", changeInfo.status, "-----------------------")
+            if (changeInfo.status === 'loading' && !this.isChangedUrlLogged && changeInfo.url){
+                this.changedTabUrl = this.openedTabs.find(obj => {
+                    return obj.id === tabId;
+                });
+
+                //Example: If previous page was youtube.com/shorts and current page is not the short page (to prevent session saving each new short video watch) 
+                if ((this.changedTabUrl.url.includes("youtube") && this.changedTabUrl.url.includes("short")) && !changeInfo.url.includes("short")) {
+                    await this.sendCloseMessage();      
+                }
+
+                this.isChangedUrlLogged = true;
+            }
+
+            if (!changeInfo.status){
+                this.changedTabUrl = null;
+                this.isChangedUrlLogged = false;
+                // console.log("Reseted previous url")
+            }
+
+            // console.log("tabChanged", tabChanged);
+            if (changeInfo.url) {
+
+                // console.log("changeInfo.url", changeInfo, changeInfo.url);
+
+                await chrome.tabs.query({}, (tabs) => {
+                    tabs.forEach((tab, i) => {
+                        this.openedTabs[i].url = tab.url;
+                    });
+                });
+                // console.log("Changed url of the tab: " + tabId, this.openedTabs);
+            }
+        });
+
+        
+    }
+
+    async sendCloseMessage() {
+        let timeoutCounter = 0;
+        const waitForActiveTab = setInterval(async () => {
+            await chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+                console.log("Waiting for active tab");
+                if (timeoutCounter > 1000) {
+                    console.log("No active tab timeout")
+                    clearInterval(waitForActiveTab);
+                }
+                if (tabs.length > 0) {
+                  const activeTab = tabs[0];
+                  const response = await chrome.tabs.sendMessage(activeTab.id, {message: "videoplayer closed"});
+                  console.log("Found active tab")
+                  clearInterval(waitForActiveTab);
+                }
+                timeoutCounter++;
+            });
+        }, 500);
+    }
+}
 
 class SessionsHandler {
     constructor (history, session, average) {
@@ -138,9 +231,10 @@ class SessionsHandler {
     }
 
     async appendSession() {
-        console.log("Appending session")
+        
         const {[this.sessionHistory]: sessionHistory} = await chrome.storage.local.get(this.sessionHistory);
         const {[this.sessionValue]: currentSession} = await chrome.storage.local.get(this.sessionValue);
+        // console.log("Appending session: ", "Current session:", currentSession);
         sessionHistory.push(currentSession);
     
         const {"watchedVideosCounter": videoCounter} = await chrome.storage.local.get("watchedVideosCounter");

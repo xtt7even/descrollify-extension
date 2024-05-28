@@ -24,7 +24,7 @@
     "content_scripts": [
       {
         "matches": [
-          "https://*.youtube.com/*"
+          "<all_urls>"
         ],
         "js": ["content.js"],
         "css": ["blocker.css"]

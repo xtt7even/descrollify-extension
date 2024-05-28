@@ -42,9 +42,15 @@ async function addVideoWatch() {
     await chrome.storage.local.set({"watchedVideosCounter": storage.watchedVideosCounter + 1});
 }
 
-window.onload = () => {
+
+window.addEventListener('load', () => {
     videoTimer = new VideoTimer();
-};
+
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        saveSessions();
+    });
+});
+
 // Event listener for page change
 window.addEventListener('yt-navigate-finish', async function() {
     removeBlocker()
@@ -71,12 +77,13 @@ window.addEventListener('yt-navigate-finish', async function() {
     else if (pagePosition.isOnShortPage) {
         chrome.storage.local.set({"isOnShortPage": false})
         removeVideoListeners(videoElement);
-        await saveSessions();
+        // await saveSessions();
     }
 
 });
 
 async function saveSessions() {
+    console.log("[Descrollify]: Saving sessions");
     const { mode: currentMode } = await chrome.storage.local.get("mode");
         
     await chrome.runtime.sendMessage({
