@@ -31,7 +31,9 @@
       }
     ],
     "permissions": [
-      "storage"
+      "tabs",
+      "storage",
+      "activeTab"
     ],
     "options_page": "options.html"
   }
