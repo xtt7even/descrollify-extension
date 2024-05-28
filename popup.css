@@ -14,6 +14,7 @@ body {
 }
 
 #iframe-settings {
+    z-index: 100;
     width: 340px;
     height: 100%;
     margin: 0;
@@ -123,7 +124,7 @@ h1 {
 #popup-modeselector-container {
     position: fixed;
     bottom: 20px; 
-    z-index: 1000; 
+    z-index: 10; 
     
     width: 100%;
     display: flex;

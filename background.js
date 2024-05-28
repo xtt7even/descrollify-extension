@@ -105,6 +105,7 @@ class TabHandler {
          * On tab removed event listener. Activates everytime user closes tabs
          */
         chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
+            console.log("Tab removed");
             for (let i = 0; i < this.openedTabs.length; i++) {
                 if (this.openedTabs[i].id == tabId) {
                     const closedTabUrl = this.openedTabs[i].url;
@@ -136,6 +137,7 @@ class TabHandler {
          * (if, for example youtube page has been closed => that means that user has stopped watching short videos)
         */
         chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+            console.log("Tab updated");
             if (changeInfo.status === 'loading' && !this.isChangedUrlLogged && changeInfo.url){
                 this.changedTabUrl = this.openedTabs.find(obj => {
                     return obj.id === tabId;
