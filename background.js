@@ -85,15 +85,6 @@ async function initializeStorage() {
  */
 
 
-//NOTE: What even is this function?
-// async function statsUpdater() {
-//     const storage = await chrome.storage.local.get();
-//     console.log(storage)
-//     if (storage.mode === "LET ME WATCH MODE") {
-//         lmwAvgUpdater(storage);
-//     }
-// }
-
 class TabHandler {
     constructor () {
         this.openedTabs = [];
@@ -110,19 +101,24 @@ class TabHandler {
             });
         });
 
-        //TODO: DO SOMTHING WITH THIS GIGA-IF-TREE
+        /**
+         * On tab removed event listener. Activates everytime user closes tabs
+         */
         chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
             for (let i = 0; i < this.openedTabs.length; i++) {
                 if (this.openedTabs[i].id == tabId) {
                     const closedTabUrl = this.openedTabs[i].url;
                     this.openedTabs.splice(i, 1);
                     if (closedTabUrl.includes("youtube") && closedTabUrl.includes("short")) {
-                        this.sendCloseMessage()
+                        this.sendSaveRequest()
                     }
                 }
             }
         });
         
+        /**
+         * On tab created event listener. Activates everytime user creates a tab, necessary for keeping track of active tab for saving sessions
+        */
         chrome.tabs.onCreated.addListener((tab) => {
             this.openedTabs.push(
                 {
@@ -134,9 +130,12 @@ class TabHandler {
             console.log(tab.url);
         });
 
+        /**
+         * On tab updated event listener. Activates everytime there is a change in the tab props (for example url change), 
+         * We use it to detect url changes to save sessions 
+         * (if, for example youtube page has been closed => that means that user has stopped watching short videos)
+        */
         chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-            // console.log("-------------------------Change Detected!----------------------")
-            // console.log("--------------------Status: ", changeInfo.status, "-----------------------")
             if (changeInfo.status === 'loading' && !this.isChangedUrlLogged && changeInfo.url){
                 this.changedTabUrl = this.openedTabs.find(obj => {
                     return obj.id === tabId;
@@ -144,7 +143,7 @@ class TabHandler {
 
                 //Example: If previous page was youtube.com/shorts and current page is not the short page (to prevent session saving each new short video watch) 
                 if ((this.changedTabUrl.url.includes("youtube") && this.changedTabUrl.url.includes("short")) && !changeInfo.url.includes("short")) {
-                    await this.sendCloseMessage();      
+                    await this.sendSaveRequest();      
                 }
 
                 this.isChangedUrlLogged = true;
@@ -153,14 +152,8 @@ class TabHandler {
             if (!changeInfo.status){
                 this.changedTabUrl = null;
                 this.isChangedUrlLogged = false;
-                // console.log("Reseted previous url")
             }
-
-            // console.log("tabChanged", tabChanged);
             if (changeInfo.url) {
-
-                // console.log("changeInfo.url", changeInfo, changeInfo.url);
-
                 await chrome.tabs.query({}, (tabs) => {
                     tabs.forEach((tab, i) => {
                         this.openedTabs[i].url = tab.url;
@@ -173,7 +166,18 @@ class TabHandler {
         
     }
 
-    async sendCloseMessage() {
+    /**
+     * Sends a session save request to the content of the first tab, activated after Youtube short page has been closed/url changed
+     * Content script then sends a saveSession request back to the background.js with all the props
+     *
+     * 
+     *                                  --------------IMPORTANT NOTE--------------
+     *      I think almost everything in the content.js, related to session saving, can be done here
+     *          with no need to send message requests to the content.js
+     *      If I have something that triggers the session save from the content.js (pressing the blocker logo for example), I could just send 
+     *          the message to background.js and do the saving here.
+     */
+    async sendSaveRequest() {
         let timeoutCounter = 0;
         const waitForActiveTab = setInterval(async () => {
             await chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
@@ -194,6 +198,7 @@ class TabHandler {
     }
 }
 
+// TODO: Make some description for the SessionsHandler class
 class SessionsHandler {
     constructor (history, session, average) {
         this.sessionSum = 0;
@@ -234,37 +239,29 @@ class SessionsHandler {
         
         const {[this.sessionHistory]: sessionHistory} = await chrome.storage.local.get(this.sessionHistory);
         const {[this.sessionValue]: currentSession} = await chrome.storage.local.get(this.sessionValue);
-        // console.log("Appending session: ", "Current session:", currentSession);
         sessionHistory.push(currentSession);
     
         const {"watchedVideosCounter": videoCounter} = await chrome.storage.local.get("watchedVideosCounter");
-        // console.log(videoCounter);
         if (videoCounter > 1) {
             chrome.storage.local.set({[this.sessionHistory]: sessionHistory});
         }
 
         if (this.storageAvg != null) {
-            // console.log("updateCounterAverage")
             this.updateCounterAverage();
         }
         else {
-            // console.log("updateSavedTime")
             this.updateSavedTime();
         }
     }
 
     async updateCounterAverage() {
-        // console.log("updateCounterAverage");
         const {[this.sessionHistory]: sessionHistory} = await chrome.storage.local.get(this.sessionHistory);
-        // const {[this.sessionValue]: sessionCounter} = await chrome.storage.local.get(this.sessionValue);
     
         for (let i = 0; i < sessionHistory.length; i++) {
             this.sessionSum += parseInt(sessionHistory[i]);
-            // console.log(sessionHistory[i],this.sessionSum);
         }
 
         const average = this.sessionSum / sessionHistory.length; 
-        // console.log("Session average", average)
         chrome.storage.local.set({[this.storageAvg]: Math.round(average)});
 
         this.updateVideoSessionsDiff();
