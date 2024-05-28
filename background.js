@@ -236,7 +236,7 @@ class SessionsHandler {
     }
 
     async appendSession() {
-        
+        console.log("Append session")
         const {[this.sessionHistory]: sessionHistory} = await chrome.storage.local.get(this.sessionHistory);
         const {[this.sessionValue]: currentSession} = await chrome.storage.local.get(this.sessionValue);
         sessionHistory.push(currentSession);
