@@ -32,7 +32,6 @@ const countClicks = (function () {
 
 function isResetConfirmed(resetButton) {
     if (countClicks() % 2 == 0) {
-        console.log("Clicked twice")
         resetButton.firstChild.parentElement.innerHTML = "<p>RESET STATISTICS<p>";
         return true;
     } 
@@ -40,7 +39,6 @@ function isResetConfirmed(resetButton) {
         console.log(resetButton.firstChild, resetButton.firstChild.innerText);
         resetButton.firstChild.parentElement.innerHTML = "<p>PRESS TO CONFIRM<p>";
     }
-    console.log("Not clicked twice")
     return false;
 }
 
@@ -49,4 +47,29 @@ window.addEventListener("load", function() {
     resetButton.addEventListener('click', () => {
         resetStats(resetButton);
     });
+
+    const hideThumbnailsBtn = document.getElementById("hideThumbnails");
+    hideThumbnailsBtn.addEventListener('click', async () => {
+        const hideThumbnailsRadioButton = hideThumbnailsBtn.querySelector("input[type='radio']");
+        setToggleOption('hideThumbnails', hideThumbnailsRadioButton);
+    });
+
+    const autoRedirectBtn = document.getElementById("autoRedirect");
+    autoRedirect.addEventListener('click', async () => {
+        const autoRedirectRadioButton = autoRedirectBtn.querySelector("input[type='radio']");
+        setToggleOption('autoRedirect', autoRedirectRadioButton);
+    });
+
 });
+
+async function setToggleOption(option, radio) {
+    await chrome.storage.local.get('options', function(result) {
+        let options = result.options || {};
+
+        options[option] = !options[option];
+
+        radio.checked = options[option];
+
+        chrome.storage.local.set({ options: options });
+    });
+}
