@@ -18,6 +18,18 @@ async function initializeStorage() {
     const storageData = await chrome.storage.local.get();
     console.log(storageData)
 
+    if (!Object.hasOwn(storageData, "options")){
+        chrome.storage.local.set({
+            "options": {
+                "hideThumbnails": false,
+                "autoRedirect": false,
+                "maxVideosAllowed": 15,
+                "removeBlockerTimer": {hours: 0, minutes: 15, seconds: 0},
+                "remindAboutLmwMode": false
+            }
+        });
+    }
+
     if (!Object.hasOwn(storageData, "mode")) {
         chrome.storage.local.set({"mode": "WATCH A FEW MODE"});
     }
