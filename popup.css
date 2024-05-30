@@ -121,6 +121,51 @@ h1 {
     width: 15px;
 }
 
+.onedigit-number {
+    /* -moz-appearance: none;
+    -webkit-appearance: none; */
+    width: 60px;
+    height: 20px;
+    border-radius: 3px;
+    text-align: center;
+
+    background-color: #74accc;
+    border: none;
+}
+
+.time-selector {
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    width: 30px;
+    height: 20px;
+    border-radius: 3px;
+    text-align: center;
+
+    background-color: #74accc;
+    border: none;
+}
+
+option {
+    background-color: white;
+}
+
+.time-input-container {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.time-selector::-webkit-scrollbar {
+    width: 5px;
+    background-color: #cdcdcd;
+}
+
+select::-webkit-scrollbar-thumb {
+    background-color: #74accc;
+    width: 2px;
+    border-radius: 2px;
+}
+
 #popup-modeselector-container {
     position: fixed;
     bottom: 20px; 

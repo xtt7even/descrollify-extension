@@ -60,7 +60,37 @@ window.addEventListener("load", function() {
         setToggleOption('autoRedirect', autoRedirectRadioButton);
     });
 
+    const hourSelector = document.querySelector('#hours-select');
+    fillTimeSelectList(hourSelector, 0, 24);
+
+    const minuteSelector = document.querySelector('#minutes-select');
+    fillTimeSelectList(minuteSelector, 0, 60);
+
+    const secondSelector = document.querySelector('#seconds-select');
+    fillTimeSelectList(secondSelector, 0, 60);
+
+    const digitSelector = document.querySelector(".onedigit-number");
+
+    digitSelector.addEventListener('change', async () => {    
+        validateInput(digitSelector)
+    });
+
+    digitSelector.addEventListener('mouseout', async () => {    
+        validateInput(digitSelector)
+    });
+
+    digitSelector.addEventListener('blur', async () => {    
+        validateInput(digitSelector)
+    });
+
 });
+
+function validateInput (digitSelector) {
+    let regex = /^\d+$/;
+    if (digitSelector.value > 30) digitSelector.value = 30;
+    if (digitSelector.value < 1) digitSelector.value = 1;
+    if (!regex.test(digitSelector.value)) digitSelector.value = 0;
+}
 
 async function setToggleOption(option, radio) {
     await chrome.storage.local.get('options', function(result) {
@@ -72,4 +102,19 @@ async function setToggleOption(option, radio) {
 
         chrome.storage.local.set({ options: options });
     });
+}
+
+function fillTimeSelectList(list, min, max) {
+    // const list = document.querySelector('#'+listid);
+     
+    for (let i = min; i < max; i++) {
+        let option = document.createElement('option');
+        option.value = i;
+        option.text = i // if 1 => minute, if not => minuteS (minute + 's')
+
+        list.add(option);
+        
+    }
+
+
 }

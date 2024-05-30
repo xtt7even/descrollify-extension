@@ -39,11 +39,21 @@
                 <h4>Watch A Few Mode</h4>
                 <button class="options-btn" id="setMaxVideosAllowed">
                     <p>Max number of videos allowed to watch before blocking</p>
-                    <input type="radio" name="set-maxnumber" class="mode-selector" disabled>
+                    <input type="number" name="set-maxnumber" class="onedigit-number" min="1" max="30">
                 </button>
                 <button class="options-btn" id="removeBlockerTime">
                     <p>Remove blocker after</p>
-                    <input type="" name="blocker-remove-timeout" class="mode-selector" disabled>
+                    <div class="time-input-container">
+                        <select name="hours" class='time-selector' id="hours-select">
+                        </select>
+                        <p>H</p>
+                        <select name="minutes" class='time-selector' id="minutes-select">
+                        </select>
+                        <p>M</p>
+                        <select name="seconds" class='time-selector' id="seconds-select">
+                        </select>
+                        <p>S</p>
+                    </div>
                 </button>
             </div>
             <div class="options-section">
