@@ -18,6 +18,7 @@ async function initializeStorage() {
     const storageData = await chrome.storage.local.get();
     console.log(storageData)
 
+
     if (!Object.hasOwn(storageData, "options")){
         chrome.storage.local.set({
             "options": {
@@ -348,7 +349,7 @@ async function changeWatchMode(newMode) {
  * @param {string} mode - Mode based on which we set our watch limit
  * @returns void
  */
-function setWatchLimit (mode) {
+async function setWatchLimit (mode) {
     
     if (mode === "TOTAL FOCUS MODE") {
         chrome.storage.local.set({"watchedVideosLimit": 0});
@@ -356,7 +357,8 @@ function setWatchLimit (mode) {
     }
 
     if (mode === "WATCH A FEW MODE") {
-        chrome.storage.local.set({"watchedVideosLimit": 3});
+        const {options: wafLimit} = await chrome.storage.local.get('options');
+        chrome.storage.local.set({"watchedVideosLimit": wafLimit.maxVideosAllowed});
         return;
     }
 

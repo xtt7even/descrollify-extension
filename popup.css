@@ -125,9 +125,12 @@ h1 {
     /* -moz-appearance: none;
     -webkit-appearance: none; */
     width: 60px;
-    height: 20px;
+    height: 30px;
     border-radius: 3px;
     text-align: center;
+
+    font-size: large;
+    text-transform: capitalize;
 
     background-color: #74accc;
     border: none;

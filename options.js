@@ -42,7 +42,7 @@ function isResetConfirmed(resetButton) {
     return false;
 }
 
-window.addEventListener("load", function() {
+window.addEventListener("load", async function() {
     const resetButton = document.getElementById("reset-btn");
     resetButton.addEventListener('click', () => {
         resetStats(resetButton);
@@ -70,17 +70,23 @@ window.addEventListener("load", function() {
     fillTimeSelectList(secondSelector, 0, 60);
 
     const digitSelector = document.querySelector(".onedigit-number");
+    const {options: fetchedOptions} = await chrome.storage.local.get('options');
+    console.log(fetchedOptions);
+    digitSelector.value = fetchedOptions.maxVideosAllowed;
 
     digitSelector.addEventListener('change', async () => {    
         validateInput(digitSelector)
+        await setAllowedVideos(digitSelector.value);
     });
 
     digitSelector.addEventListener('mouseout', async () => {    
         validateInput(digitSelector)
+        await setAllowedVideos(digitSelector.value);
     });
 
     digitSelector.addEventListener('blur', async () => {    
         validateInput(digitSelector)
+        await setAllowedVideos(digitSelector.value);
     });
 
 });
@@ -90,6 +96,17 @@ function validateInput (digitSelector) {
     if (digitSelector.value > 30) digitSelector.value = 30;
     if (digitSelector.value < 1) digitSelector.value = 1;
     if (!regex.test(digitSelector.value)) digitSelector.value = 0;
+}
+
+async function setAllowedVideos(digitSelectorValue) {
+    await chrome.storage.local.get('options', function(result) {
+        let options = result.options || {};
+
+        options['maxVideosAllowed'] = parseInt(digitSelectorValue);
+
+        console.log(options); 
+        chrome.storage.local.set({ options: options });
+    });
 }
 
 async function setToggleOption(option, radio) {
