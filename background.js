@@ -186,7 +186,7 @@ class TabHandler {
                 // console.log("!changeInfo.status")
                 const {options: options} = await chrome.storage.local.get("options");
                 if (tab.url.includes("youtube") && options.hideThumbnails) {
-                    await this.sendRequest("remove_shortcontainer");     
+                    await this.sendRequest("remove_shortcontainer"); 
                     console.log("Sent")
                 }
             }

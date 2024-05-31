@@ -56,6 +56,16 @@ window.addEventListener("load", async function() {
     hideThumbnailsBtn.addEventListener('click', async () => {
         const hideThumbnailsRadioButton = hideThumbnailsBtn.querySelector("input[type='radio']");
         setToggleOption('hideThumbnails', hideThumbnailsRadioButton, true);
+
+        const button = document.querySelector("#hideThumbnails");
+        const paragraph = button.querySelector("p");
+    
+        paragraph.innerText = "PAGE REFRESH REQUIRED";
+    
+        setTimeout(() => {
+           
+            paragraph.innerText = "Also hide short videos thumbnails and previews";
+        }, 3000);
     });
 
     const autoRedirectBtn = document.getElementById("autoRedirect");
