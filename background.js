@@ -18,6 +18,9 @@ async function initializeStorage() {
     const storageData = await chrome.storage.local.get();
     console.log(storageData)
 
+    if (!Object.hasOwn(storageData, "isBlocked")) {
+        chrome.storage.local.set({"isBlocked": false});
+    }
 
     if (!Object.hasOwn(storageData, "options")){
         chrome.storage.local.set({
@@ -124,7 +127,7 @@ class TabHandler {
                     const closedTabUrl = this.openedTabs[i].url;
                     this.openedTabs.splice(i, 1);
                     if (closedTabUrl.includes("youtube") && closedTabUrl.includes("short")) {
-                        this.sendSaveRequest()
+                        this.sendRequest()
                     }
                 }
             }
@@ -133,15 +136,13 @@ class TabHandler {
         /**
          * On tab created event listener. Activates everytime user creates a tab, necessary for keeping track of active tab for saving sessions
         */
-        chrome.tabs.onCreated.addListener((tab) => {
+        chrome.tabs.onCreated.addListener(async (tab) => {
             this.openedTabs.push(
                 {
                     "id": tab.id, 
-                    "url": tab.url
+                    "url": tab.pendingUrl
                 }
             );
-
-            console.log(tab.url);
         });
 
         /**
@@ -150,31 +151,44 @@ class TabHandler {
          * (if, for example youtube page has been closed => that means that user has stopped watching short videos)
         */
         chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-            console.log("Tab updated");
-            if (changeInfo.status === 'loading' && !this.isChangedUrlLogged && changeInfo.url){
-                this.changedTabUrl = this.openedTabs.find(obj => {
+            
+            if (!this.isChangedUrlLogged && changeInfo.url){
+                console.log("Tab updated");
+                this.changedTabUrl = await this.openedTabs.find(obj => {
+                    // console.log(obj.id === tabId)
                     return obj.id === tabId;
                 });
 
                 //Example: If previous page was youtube.com/shorts and current page is not the short page (to prevent session saving each new short video watch) 
                 if ((this.changedTabUrl.url.includes("youtube") && this.changedTabUrl.url.includes("short")) && !changeInfo.url.includes("short")) {
-                    await this.sendSaveRequest();      
+                    await this.sendRequest("videoplayer closed");      
                 }
+
 
                 this.isChangedUrlLogged = true;
             }
 
-            if (!changeInfo.status){
-                this.changedTabUrl = null;
-                this.isChangedUrlLogged = false;
-            }
+            
+
             if (changeInfo.url) {
                 await chrome.tabs.query({}, (tabs) => {
                     tabs.forEach((tab, i) => {
                         this.openedTabs[i].url = tab.url;
                     });
                 });
+                this.changedTabUrl = null;
+                this.isChangedUrlLogged = false;
                 // console.log("Changed url of the tab: " + tabId, this.openedTabs);
+            }
+
+            //After the page update status becomes undefined
+            if (!changeInfo.status){
+                // console.log("!changeInfo.status")
+                const {options: options} = await chrome.storage.local.get("options");
+                if (tab.url.includes("youtube") && options.hideThumbnails) {
+                    await this.sendRequest("remove_shortcontainer");     
+                    console.log("Sent")
+                }
             }
         });
 
@@ -192,7 +206,7 @@ class TabHandler {
      *      If I have something that triggers the session save from the content.js (pressing the blocker logo for example), I could just send 
      *          the message to background.js and do the saving here.
      */
-    async sendSaveRequest() {
+    async sendRequest(message) {
         let timeoutCounter = 0;
         const waitForActiveTab = setInterval(async () => {
             await chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
@@ -203,7 +217,7 @@ class TabHandler {
                 }
                 if (tabs.length > 0) {
                   const activeTab = tabs[0];
-                  const response = await chrome.tabs.sendMessage(activeTab.id, {message: "videoplayer closed"});
+                  const response = await chrome.tabs.sendMessage(activeTab.id, {message: message});
                   console.log("Found active tab")
                   clearInterval(waitForActiveTab);
                 }

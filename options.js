@@ -49,15 +49,23 @@ window.addEventListener("load", async function() {
     });
 
     const hideThumbnailsBtn = document.getElementById("hideThumbnails");
+
+    const hideThumbnailsRadioButton = hideThumbnailsBtn.querySelector("input[type='radio']");
+    setToggleOption('hideThumbnails', hideThumbnailsRadioButton, false);
+
     hideThumbnailsBtn.addEventListener('click', async () => {
         const hideThumbnailsRadioButton = hideThumbnailsBtn.querySelector("input[type='radio']");
-        setToggleOption('hideThumbnails', hideThumbnailsRadioButton);
+        setToggleOption('hideThumbnails', hideThumbnailsRadioButton, true);
     });
 
     const autoRedirectBtn = document.getElementById("autoRedirect");
+
+    const autoRedirectRadioButton = autoRedirectBtn.querySelector("input[type='radio']");
+    setToggleOption('autoRedirect', autoRedirectRadioButton, false);
+
     autoRedirect.addEventListener('click', async () => {
         const autoRedirectRadioButton = autoRedirectBtn.querySelector("input[type='radio']");
-        setToggleOption('autoRedirect', autoRedirectRadioButton);
+        setToggleOption('autoRedirect', autoRedirectRadioButton, true);
     });
 
     const hourSelector = document.querySelector('#hours-select');
@@ -109,15 +117,20 @@ async function setAllowedVideos(digitSelectorValue) {
     });
 }
 
-async function setToggleOption(option, radio) {
+async function setToggleOption(option, radio, isToSwitch) {
     await chrome.storage.local.get('options', function(result) {
         let options = result.options || {};
 
-        options[option] = !options[option];
+        //If function being called onclick we toggle the option value, instead we just set radio button to on/off
+        if (isToSwitch) {
+            options[option] = !options[option];
+            chrome.storage.local.set({ options: options });
+        }
+
 
         radio.checked = options[option];
 
-        chrome.storage.local.set({ options: options });
+
     });
 }
 

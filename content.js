@@ -37,6 +37,14 @@ async function isAllowedToWatch () {
     return false;
 }
 
+async function blockShortThumbnails() {
+    const shortThumbnails = await document.querySelectorAll('ytd-rich-shelf-renderer');
+    console.log(shortThumbnails);
+    shortThumbnails.forEach((thumbnail) => {
+        thumbnail.hidden = true;
+    })
+}
+
 async function addVideoWatch() {
     const storage = await chrome.storage.local.get();
     await chrome.storage.local.set({"watchedVideosCounter": storage.watchedVideosCounter + 1});
@@ -47,7 +55,13 @@ window.addEventListener('load', () => {
     videoTimer = new VideoTimer();
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-        saveSessions();
+        console.log(message)
+        // console.log(message == 'videoplayer closed', message == 'remove_shortcontainer')
+        if (message.message == 'videoplayer closed') saveSessions();
+        if (message.message == 'remove_shortcontainer') {
+            blockShortThumbnails();
+            console.log("Sent");
+        }
     });
 });
 
