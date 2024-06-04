@@ -30,6 +30,7 @@ const countClicks = (function () {
     }
 })();
 
+
 function isResetConfirmed(resetButton) {
     if (countClicks() % 2 == 0) {
         resetButton.firstChild.parentElement.innerHTML = "<p>RESET STATISTICS<p>";
@@ -42,19 +43,50 @@ function isResetConfirmed(resetButton) {
     return false;
 }
 
+async function remindAboutLmwMode() {
+    const {options: options} = await chrome.storage.local.get('options');
+    if (options.reminder_timestamp) {
+        const timerFinish = new Date.now()
+        if (timerFinish - options.reminder_timestamp > 30000) {
+            alert("REMINDING YOU ABOUT LMW!!!!")
+            options.reminder_timestamp = null;
+            chrome.storage.local.set({options: options});
+        }
+    }
+    else {
+        options.reminder_timestamp = new Date.now();
+        chrome.storage.local.set({options: options});
+    }
+} 
+
+let reminderInterval;
+let reminderIntervalCounter = 0;
+
 window.addEventListener("load", async function() {
     const resetButton = document.getElementById("reset-btn");
     resetButton.addEventListener('click', () => {
         resetStats(resetButton);
     });
 
+
+    const remindAboutLmwBtn = document.getElementById("remindAboutLmwMode");
+
+    const remindAboutLmwRadioButton  = remindAboutLmwBtn.querySelector("input[type='radio']");
+    setToggleOption('remindAboutLmwMode', remindAboutLmwRadioButton, false);
+
+    remindAboutLmwBtn.addEventListener('click', async () => {
+        setToggleOption('remindAboutLmwMode', remindAboutLmwRadioButton, true);
+        chrome.runtime.sendMessage({message: "toggle_mode_reminder"});
+    });
+
+    //--------------------------------------
+    // Hide thumbnail button
     const hideThumbnailsBtn = document.getElementById("hideThumbnails");
 
     const hideThumbnailsRadioButton = hideThumbnailsBtn.querySelector("input[type='radio']");
     setToggleOption('hideThumbnails', hideThumbnailsRadioButton, false);
 
     hideThumbnailsBtn.addEventListener('click', async () => {
-        const hideThumbnailsRadioButton = hideThumbnailsBtn.querySelector("input[type='radio']");
         setToggleOption('hideThumbnails', hideThumbnailsRadioButton, true);
 
         const button = document.querySelector("#hideThumbnails");
@@ -63,21 +95,26 @@ window.addEventListener("load", async function() {
         paragraph.innerText = "PAGE REFRESH REQUIRED";
     
         setTimeout(() => {
-           
             paragraph.innerText = "Also hide short videos thumbnails and previews";
         }, 3000);
     });
 
+    //--------------------------------------
+    // Automatically redirect back on short video open button
     const autoRedirectBtn = document.getElementById("autoRedirect");
 
     const autoRedirectRadioButton = autoRedirectBtn.querySelector("input[type='radio']");
     setToggleOption('autoRedirect', autoRedirectRadioButton, false);
 
     autoRedirect.addEventListener('click', async () => {
-        const autoRedirectRadioButton = autoRedirectBtn.querySelector("input[type='radio']");
         setToggleOption('autoRedirect', autoRedirectRadioButton, true);
+
+        const button = document.querySelector("#autoRedirect");
+        const paragraph = button.querySelector("p");
     });
 
+    //--------------------------------------
+    // "Remove blocker after" timer
     const hourSelector = document.querySelector('#hours-select');
     fillTimeSelectList(hourSelector, 0, 24);
 
@@ -87,6 +124,9 @@ window.addEventListener("load", async function() {
     const secondSelector = document.querySelector('#seconds-select');
     fillTimeSelectList(secondSelector, 0, 60);
 
+
+    //--------------------------------------
+    // Max videos allowed to watch
     const digitSelector = document.querySelector(".onedigit-number");
     const {options: fetchedOptions} = await chrome.storage.local.get('options');
     console.log(fetchedOptions);
@@ -107,6 +147,8 @@ window.addEventListener("load", async function() {
         await setAllowedVideos(digitSelector.value);
     });
 
+
+    //--------------------------------------
 });
 
 function validateInput (digitSelector) {

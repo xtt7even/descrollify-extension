@@ -1,15 +1,19 @@
 /**
  * Calls initializeStorage() if user just installed the extension
  */
+let reminder;
+let tabHandler;
 chrome.runtime.onInstalled.addListener((details) => {
     //details.reason === "update" is ONLY FOR DEBUGGING!!!
     if (details.reason === "install" || details.reason === "update") { 
         console.log("First initialization!")
         initializeStorage();
     }
-
-    const tabHandler = new TabHandler();
+    reminder = new Reminder();
+    tabHandler = new TabHandler();
 });
+
+
 
 /**
  * Initializes the storage if there is no necessary params in it
@@ -137,12 +141,17 @@ class TabHandler {
          * On tab created event listener. Activates everytime user creates a tab, necessary for keeping track of active tab for saving sessions
         */
         chrome.tabs.onCreated.addListener(async (tab) => {
+            console.log("Tab created", tab);
+            setTimeout(() => {
+                this.redirectBack(tab);
+            }, 2000)
             this.openedTabs.push(
                 {
                     "id": tab.id, 
                     "url": tab.pendingUrl
                 }
             );
+
         });
 
         /**
@@ -151,11 +160,10 @@ class TabHandler {
          * (if, for example youtube page has been closed => that means that user has stopped watching short videos)
         */
         chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-            
             if (!this.isChangedUrlLogged && changeInfo.url){
                 console.log("Tab updated");
+
                 this.changedTabUrl = await this.openedTabs.find(obj => {
-                    // console.log(obj.id === tabId)
                     return obj.id === tabId;
                 });
 
@@ -183,20 +191,30 @@ class TabHandler {
 
             //After the page update status becomes undefined
             if (!changeInfo.status){
-                // console.log("!changeInfo.status")
                 const {options: options} = await chrome.storage.local.get("options");
-                if (tab.url.includes("youtube") && options.hideThumbnails) {
+                if (tab.url.includes("youtube") && options.hideThumbnails && !tab.url.includes("short")) {
                     await this.sendRequest("remove_shortcontainer"); 
-                    console.log("Sent")
                 }
+
+                this.redirectBack(tab);
             }
         });
 
         
     }
 
+    async redirectBack(tab) {
+        const {options: options} = await chrome.storage.local.get("options");
+        console.log(options.autoRedirect, tab.url.includes("short"))
+        console.log(tab);
+        if (options.autoRedirect && tab.url.includes("short")) {
+            console.log("Redirecting back");
+            await this.sendRequest("redirect_back");
+        }
+    }
+
     /**
-     * Sends a session save request to the content of the first tab, activated after Youtube short page has been closed/url changed
+     * Sends a session save request to the content of the first active tab found
      * Content script then sends a saveSession request back to the background.js with all the props
      *
      * 
@@ -207,23 +225,30 @@ class TabHandler {
      *          the message to background.js and do the saving here.
      */
     async sendRequest(message) {
-        let timeoutCounter = 0;
-        const waitForActiveTab = setInterval(async () => {
-            await chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
-                console.log("Waiting for active tab");
-                if (timeoutCounter > 1000) {
-                    console.log("No active tab timeout")
-                    clearInterval(waitForActiveTab);
-                }
-                if (tabs.length > 0) {
-                  const activeTab = tabs[0];
-                  const response = await chrome.tabs.sendMessage(activeTab.id, {message: message});
-                  console.log("Found active tab")
-                  clearInterval(waitForActiveTab);
-                }
-                timeoutCounter++;
-            });
-        }, 500);
+        let activeTab = await this.getActiveTab();  
+        const response = await chrome.tabs.sendMessage(activeTab.id, {message: message});
+    }
+
+    async getActiveTab() { 
+        return new Promise((resolve, reject) => {
+            let timeoutCounter = 0;
+            const waitingForActiveTab = setInterval(async () => {
+                await chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+                    console.log("Waiting for active tab");
+                    if (timeoutCounter >= 30) {
+                        reject("No active tab timeout")
+                        clearInterval(waitingForActiveTab);
+                    }
+                    if (tabs.length > 0) {
+                        console.log("Found active tab")
+                        console.log(tabs[0]);
+                        clearInterval(waitingForActiveTab);
+                        resolve(tabs[0]);
+                    }
+                    timeoutCounter++;
+                });
+            }, 500);
+        });
     }
 }
 
@@ -306,6 +331,34 @@ class SessionsHandler {
     }
 }
 
+class Reminder {
+    constructor () {
+        this.reminderInterval = null;
+        this.waitingForAlert = false;
+    }
+
+    toggleReminderInterval() {
+        if (this.reminderInterval == null && !this.waitingForAlert) {
+            console.log("Reminder thing")
+            this.reminderInterval = setInterval(async () => {
+                const activeTab = await tabHandler.getActiveTab().catch(() => {
+                    console.log("[Descrollify]: No active tab timeout")
+                });
+                this.waitingForAlert = true
+                if (activeTab && activeTab.url.includes("youtube")) {
+                    tabHandler.sendRequest("mode_reminder")
+                }
+                this.waitingForAlert = false;
+            }, 600000)
+        }
+        else {
+            clearInterval(this.reminderInterval);
+            this.reminderInterval = null;
+        }
+    }
+}
+
+
 
 function secondsToTime(seconds) {
     const hours = Math.floor(seconds / 3600);
@@ -345,6 +398,10 @@ chrome.runtime.onMessage.addListener(
             sessionHandler = null;
         }
 
+        if (request.message == "toggle_mode_reminder") {
+            console.log("toggling")
+            reminder.toggleReminderInterval();
+        }
     }
 );
 
