@@ -159,13 +159,13 @@ function validateInput (digitSelector) {
 }
 
 async function setAllowedVideos(digitSelectorValue) {
-    await chrome.storage.local.get('options', function(result) {
+    await chrome.storage.local.get('options', async function(result) {
         let options = result.options || {};
 
         options['maxVideosAllowed'] = parseInt(digitSelectorValue);
-
-        console.log(options); 
-        chrome.storage.local.set({ options: options });
+        console.log(options);
+        await chrome.storage.local.set({ options: options });
+        await chrome.runtime.sendMessage({message: "set_watch_limit"});
     });
 }
 

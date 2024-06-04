@@ -3,6 +3,7 @@
  */
 let reminder;
 let tabHandler;
+let videoTimer;
 chrome.runtime.onInstalled.addListener((details) => {
     //details.reason === "update" is ONLY FOR DEBUGGING!!!
     if (details.reason === "install" || details.reason === "update") { 
@@ -11,6 +12,7 @@ chrome.runtime.onInstalled.addListener((details) => {
     }
     reminder = new Reminder();
     tabHandler = new TabHandler();
+    videoTimer = new VideoTimer();
 });
 
 
@@ -109,7 +111,7 @@ class TabHandler {
     constructor () {
         this.openedTabs = [];
 
-        this.changedTabUrl = null;
+        this.previousUrl = null;
         this.isChangedUrlLogged = false;
         
         chrome.tabs.query({}, (tabs) => {
@@ -163,15 +165,14 @@ class TabHandler {
             if (!this.isChangedUrlLogged && changeInfo.url){
                 console.log("Tab updated");
 
-                this.changedTabUrl = await this.openedTabs.find(obj => {
+                this.previousUrl = await this.openedTabs.find(obj => {
                     return obj.id === tabId;
                 });
 
                 //Example: If previous page was youtube.com/shorts and current page is not the short page (to prevent session saving each new short video watch) 
-                if ((this.changedTabUrl.url.includes("youtube") && this.changedTabUrl.url.includes("short")) && !changeInfo.url.includes("short")) {
+                if ((this.previousUrl.url.includes("youtube") && this.previousUrl.url.includes("short")) && !changeInfo.url.includes("short")) {
                     await this.sendRequest("videoplayer closed");      
                 }
-
 
                 this.isChangedUrlLogged = true;
             }
@@ -184,18 +185,17 @@ class TabHandler {
                         this.openedTabs[i].url = tab.url;
                     });
                 });
-                this.changedTabUrl = null;
+                this.previousUrl = null;
                 this.isChangedUrlLogged = false;
-                // console.log("Changed url of the tab: " + tabId, this.openedTabs);
             }
 
             //After the page update status becomes undefined
             if (!changeInfo.status){
                 const {options: options} = await chrome.storage.local.get("options");
+                console.log(options);
                 if (tab.url.includes("youtube") && options.hideThumbnails && !tab.url.includes("short")) {
                     await this.sendRequest("remove_shortcontainer"); 
                 }
-
                 this.redirectBack(tab);
             }
         });
@@ -252,15 +252,193 @@ class TabHandler {
     }
 }
 
+class VideoTimer {
+    constructor() {
+        this.watchInterval = null;
+
+        this.isStarted = false;
+
+        this.startTime = null;
+        this.endTime = null;
+
+    }
+
+    /**
+     * Converts elapsed time in ms to an object {hours: , minutes: , seconds:}
+     * @param {Number} elapsedTime Elapsed time in ms
+     * @returns 
+     */
+    formatElapsedTime(elapsedTime) {
+        const convertedToSeconds = Math.floor(elapsedTime / 1000);
+
+        const result = this.formatSeconds(convertedToSeconds);
+        return result;
+    }
+
+    startWatchTimer() {
+        if (!this.isStarted) {
+            this.startTime = Date.parse(new Date());
+            this.isStarted = true;
+        }
+
+        console.log("started watchtimer")
+    }
+
+    /**
+     *  Stops the watch timer, calculates elapsed time in ms and saves watch time if necessary.
+     */
+    async stopWatchTimer() {
+        if (this.isStarted) {    
+            this.endTime = Date.parse(new Date());
+            const elapsedTime = (this.endTime - this.startTime) //* 8; // multiplier is only for debugging, to test time formatting
+            
+            if (elapsedTime > 0) {
+                await this.saveWatchTime(elapsedTime); 
+            }  
+
+            this.isStarted = false;
+            console.log("[Short Blocker] Video paused, elapsed time: ", elapsedTime);
+        }
+        const storage = await chrome.storage.local.get();
+        console.log(storage); 
+    }
+
+    /**
+     * Saves watch times based on current mode
+     * @param {Number} elapsedTime Elapsed time in ms
+     */
+    async saveWatchTime(elapsedTime) {
+        const { mode: currentMode } = await chrome.storage.local.get("mode");
+        if (currentMode == "WATCH A FEW MODE") {
+            this.saveTime(elapsedTime, "totalWafWatchTime");
+            this.saveTime(elapsedTime, "sessionWafWatchTime");
+        }
+        else if (currentMode == "LET ME WATCH MODE") {
+            this.saveTime(elapsedTime, "totalLmwWatchTime");
+            this.saveTime(elapsedTime, "sessionLmwWatchTime");
+        }
+        console.log("saving watchtime")
+    }
+
+    /**
+     * Saves elapsed time to a provided storage value
+     * @param {Number} elapsedTime Elapsed time in ms 
+     * @param {String} timeMode Time value in the storage to save to, for example "sessionLmwWatchTime" or "totalWafWatchTime"
+     */
+    async saveTime(elapsedTime, timeMode){
+        const { [timeMode]: totalWatchTime } = await chrome.storage.local.get(timeMode);
+        const convertedElapsedTime = this.formatElapsedTime(elapsedTime);
+
+        let updatedTime = this.formatTotalTime({
+            hours: totalWatchTime.hours + convertedElapsedTime.hours,
+            minutes: totalWatchTime.minutes + convertedElapsedTime.minutes, 
+            seconds: totalWatchTime.seconds + convertedElapsedTime.seconds
+        });
+
+        chrome.storage.local.set({[timeMode]: updatedTime});
+    }
+
+    /**
+     * Formats seconds value into an object {hours, minutes, seconds}
+     * @param {Number} seconds Seconds value to turn format into an object
+     * @returns 
+     */
+    formatSeconds(seconds) {
+        const formatedHours = Math.floor(seconds / 3600);
+        const formatedMinutes = Math.floor(seconds / 60);
+        const secondsRemaining = seconds % 60; 
+
+        return {hours: formatedHours, minutes: formatedMinutes, seconds: secondsRemaining};
+    }
+
+    /**
+     * Formats provided object {hours, minutes, seconds} into an usual clock type format (60 seconds, 60 minutes)
+     * @param {Object} timeToFormat Object {hours, minutes, seconds} to format 
+     * @returns 
+     */
+    formatTotalTime(timeToFormat) {
+        let formatedHours;
+        let formatedMinutes;
+        let secondsRemaining;
+        let minutesRemaining;
+
+        if (timeToFormat.minutes >= 60) {
+            formatedHours = timeToFormat.hours + Math.floor(timeToFormat.minutes / 60);
+            minutesRemaining = timeToFormat.minutes % 60;
+        }
+        else {
+            formatedHours = timeToFormat.hours + Math.floor(timeToFormat.seconds / 3600);
+        }
+
+        if (timeToFormat.seconds >= 60) {
+            formatedMinutes = timeToFormat.minutes + Math.floor(timeToFormat.seconds / 60);
+            secondsRemaining = timeToFormat.seconds % 60; 
+        }
+        //TODO: figure out if it's neccessary as there time calculations became wrong for some reason 
+        else {
+            formatedMinutes = timeToFormat.minutes + Math.floor(timeToFormat.seconds / 60);
+        }
+
+
+        return {
+            hours: formatedHours, 
+            minutes: minutesRemaining ? minutesRemaining : formatedMinutes, 
+            seconds: secondsRemaining ? secondsRemaining : timeToFormat.seconds
+        };
+    }
+}
+
+
+
 // TODO: Make some description for the SessionsHandler class
 class SessionsHandler {
-    constructor (history, session, average) {
+    constructor () {
         this.sessionSum = 0;
 
-        this.sessionHistory = history;
-        this.sessionValue = session;
-        this.storageAvg = average;
+        this.sessionHistory = null;
+        this.sessionValue = null;
+        this.storageAvg = null;
     }
+
+    async isAllowedToWatch () {
+        const storage = await chrome.storage.local.get();
+        console.log(storage.watchedVideosCounter, storage.watchedVideosLimit);
+        if (!(storage.watchedVideosCounter > storage.watchedVideosLimit)) {
+            return true;
+        }
+        return false;
+    }
+
+    async addVideoWatch() {
+        const storage = await chrome.storage.local.get();
+        await chrome.storage.local.set({"watchedVideosCounter": storage.watchedVideosCounter + 1});
+    }
+
+    async saveSessions() {
+        console.log("[Descrollify]: Saving sessions");
+        const { mode: currentMode } = await chrome.storage.local.get("mode");
+            
+
+    
+        this.sessionHistory = currentMode == "LET ME WATCH MODE" ? "sessionLmwWatchTimeHistory" : "sessionWafWatchTimeHistory";
+        this.sessionValue = currentMode == "LET ME WATCH MODE" ? "sessionLmwWatchTime" : "sessionWafWatchTime";
+        this.storageAvg = null;
+        await this.appendSession();
+
+        this.sessionHistory = currentMode == "LET ME WATCH MODE" ? "lmwSessionHistory" : "wafSessionHistory";
+        this.sessionValue = "watchedVideosCounter";
+        this.storageAvg = currentMode == "LET ME WATCH MODE" ? "lmwAverage" : "wafAverage";
+        await this.appendSession();
+        
+        this.resetSessionTime();
+        chrome.storage.local.set({"watchedVideosCounter": 0});
+    }
+
+    async resetSessionTime() {
+        chrome.storage.local.set({"sessionLmwWatchTime": {hours: 0, minutes: 0, seconds: 0}});
+        chrome.storage.local.set({"sessionWafWatchTime": {hours: 0, minutes: 0, seconds: 0}});
+    }
+    
 
     getAverageInSeconds(sessionHistory) {
         let totalSeconds = 0;
@@ -402,6 +580,38 @@ chrome.runtime.onMessage.addListener(
             console.log("toggling")
             reminder.toggleReminderInterval();
         }
+
+        if (request.message == "blocker_appended") {
+            chrome.storage.local.set({"isBlocked": true});
+            console.log("blocked")
+            const {options} = await chrome.storage.local.get("options");
+            const removeBlockerTimeout = setTimeout(() => {
+                chrome.storage.local.set({"isBlocked": false});
+                console.log("unblocked");
+            }, 5000);
+            //options.removeBlockerTimer.hours * 3600000 + options.removeBlockerTimer.minutes * 60000 + options.removeBlockerTimer.seconds * 1000
+        }
+
+        if (request.message == "save_sessions") {
+            const sessionHandler = new SessionsHandler();
+            sessionHandler.saveSessions();
+        }
+
+        if (request.message == "set_watch_limit") {
+            const {mode: currentMode} = await chrome.storage.local.get("mode");
+            console.log(currentMode)
+            setWatchLimit(currentMode);
+        }
+
+        if (request.message == "handle_video_play") {
+            console.log("Handling video play in the background")
+            videoTimer.startWatchTimer();
+        }
+
+        if (request.message == "handle_video_pause") {
+            console.log("Handling video pause in the background")
+            await videoTimer.stopWatchTimer();
+        }
     }
 );
 
@@ -428,8 +638,9 @@ async function setWatchLimit (mode) {
     }
 
     if (mode === "WATCH A FEW MODE") {
-        const {options: wafLimit} = await chrome.storage.local.get('options');
-        chrome.storage.local.set({"watchedVideosLimit": wafLimit.maxVideosAllowed});
+        const {options: options} = await chrome.storage.local.get('options');
+        console.log(options);
+        chrome.storage.local.set({"watchedVideosLimit": options.maxVideosAllowed});
         return;
     }
 

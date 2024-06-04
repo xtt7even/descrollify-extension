@@ -1,6 +1,5 @@
 'use strict';
 
-let videoTimer;
 
 function locateShort() {
     // Returns a promise to asynchronously locate an element by its ID
@@ -29,13 +28,6 @@ function locateShort() {
  * Function that checks if user is allowed to watch a video
  * @returns True - allowed to watch, false - not allowed to watch
  */
-async function isAllowedToWatch () {
-    const storage = await chrome.storage.local.get();
-    if (!(storage.watchedVideosCounter > storage.watchedVideosLimit)) {
-        return true;
-    }
-    return false;
-}
 
 async function blockShortThumbnails() {
     const shortThumbnails = await document.querySelectorAll('ytd-rich-shelf-renderer');
@@ -45,19 +37,16 @@ async function blockShortThumbnails() {
     })
 }
 
-async function addVideoWatch() {
-    const storage = await chrome.storage.local.get();
-    await chrome.storage.local.set({"watchedVideosCounter": storage.watchedVideosCounter + 1});
-}
 
 
 window.addEventListener('load', () => {
-    videoTimer = new VideoTimer();
 
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         console.log(message)
         // console.log(message == 'videoplayer closed', message == 'remove_shortcontainer')
-        if (message.message == 'videoplayer closed') saveSessions();
+        if (message.message == 'videoplayer closed') {
+            await chrome.runtime.sendMessage({message: "save_sessions"});
+        }
         if (message.message == 'remove_shortcontainer') {
             blockShortThumbnails();
             console.log("Sent");
@@ -75,10 +64,8 @@ window.addEventListener('load', () => {
 // Event listener for page change
 window.addEventListener('yt-navigate-finish', async function() {
     removeBlocker()
-    
-    const videoElement = document.querySelector('video');
-    videoTimer.stopWatchTimer();
 
+    const videoElement = document.querySelector('video');
 
     //for debugging only!!!!!!
         const storage = await chrome.storage.local.get();
@@ -91,41 +78,19 @@ window.addEventListener('yt-navigate-finish', async function() {
         // If URL includes "shorts" set isOnShortPage to true (session based storage)
         addVideoListeners(videoElement);
         scanForShort();
-        videoTimer.startWatchTimer();
+        if (pagePosition.isOnShortPage) await chrome.runtime.sendMessage({message: "handle_video_pause"});
+        await chrome.runtime.sendMessage({message: "handle_video_play"});
         chrome.storage.local.set({"isOnShortPage": true})
     }
     //if the page doesn't include "short" but isOnShortPage WAS true before, that means the user closed or exited short page, so we need to update LMW mode averages
     else if (pagePosition.isOnShortPage) {
+        await chrome.runtime.sendMessage({message: "handle_video_pause"});
         chrome.storage.local.set({"isOnShortPage": false})
         removeVideoListeners(videoElement);
-        // await saveSessions();
     }
 
 });
 
-async function saveSessions() {
-    console.log("[Descrollify]: Saving sessions");
-    const { mode: currentMode } = await chrome.storage.local.get("mode");
-        
-    await chrome.runtime.sendMessage({
-        type: "append_session",
-        storageHistory: currentMode == "LET ME WATCH MODE" ? "sessionLmwWatchTimeHistory" : "sessionWafWatchTimeHistory",
-        storageSession: currentMode == "LET ME WATCH MODE" ? "sessionLmwWatchTime" : "sessionWafWatchTime",
-        storageAvg: null
-    })
-    
-    await chrome.runtime.sendMessage({
-        type: "append_session",
-        storageHistory: currentMode == "LET ME WATCH MODE" ? "lmwSessionHistory" : "wafSessionHistory",
-        storageSession: "watchedVideosCounter",
-        storageAvg: currentMode == "LET ME WATCH MODE" ? "lmwAverage" : "wafAverage"
-    })
-    
-    .then(() => {
-        videoTimer.resetSessionTime();
-        chrome.storage.local.set({"watchedVideosCounter": 0});
-    });
-}
 
 function removeBlocker() {
     if (document.getElementById("blocker-container")) {
@@ -138,6 +103,8 @@ function removeBlocker() {
 
 // Function to scan for short video element
 async function scanForShort () {
+    const {isBlocked} = await chrome.storage.local.get("isBlocked")
+    console.log(isBlocked);
     if (await isAllowedToWatch()) {
         addVideoWatch()
         console.log("Allowed to watch because of the mode");
@@ -148,12 +115,19 @@ async function scanForShort () {
     console.log(short)
     if (!short) {
         console.error("No short located on this page"); 
+        //TODO: REMOVE THESE throw 0s
         throw 0;
     }
-    const blocker = await buildBlocker(short);
-    short.prepend(blocker);
-    pauseVideo();
-    removeUnecessaryElements();
+
+    if (isBlocked) {
+        pauseVideo();
+        const blocker = await buildBlocker(short);
+        short.prepend(blocker);
+        removeUnecessaryElements();
+        await chrome.runtime.sendMessage({message: "blocker_appended"});
+    }
+
+
 }
 
 function pickASetOfLines() {
@@ -216,7 +190,7 @@ async function buildBlocker(short) {
         blockerLogo.addEventListener('click', () => {
             (async () => {
                 const response = await chrome.runtime.sendMessage({type: "escapedscrolling"});
-                saveSessions();
+                await chrome.runtime.sendMessage({message: "save_sessions"});
                 window.location.href = ".."
             })(); 
         })
@@ -290,12 +264,12 @@ function removeVideoListeners (videoElement) {
 
 async function handleVideoPause() {
     console.log("Video Pause");
-    videoTimer.stopWatchTimer();
+    await chrome.runtime.sendMessage({message: "handle_video_pause"});
 }
 
 async function handleVideoPlay() {
     console.log("Video Play")
-    videoTimer.startWatchTimer();
+    await chrome.runtime.sendMessage({message: "handle_video_play"});
 }
 
 //TODO: Fix video counter stats calculation, it doesn't work anymore
@@ -304,145 +278,3 @@ async function handleVideoPlay() {
 
 // Quick comment: function returns watched duration of the video by user, fires on yt-navigation event, neccessary to calculate average watchtime
 // TODO: Finish getWatchedTime()!!!
-
-class VideoTimer {
-    constructor() {
-        this.watchInterval = null;
-
-        this.isStarted = false;
-
-        this.startTime = null;
-        this.endTime = null;
-
-    }
-
-    /**
-     * Converts elapsed time in ms to an object {hours: , minutes: , seconds:}
-     * @param {Number} elapsedTime Elapsed time in ms
-     * @returns 
-     */
-    formatElapsedTime(elapsedTime) {
-        const convertedToSeconds = Math.floor(elapsedTime / 1000);
-
-        const result = this.formatSeconds(convertedToSeconds);
-        return result;
-    }
-
-    startWatchTimer() {
-        if (!this.isStarted) {
-            this.startTime = Date.parse(new Date());
-            this.isStarted = true;
-        }
-
-        // console.log("started watchtimer")
-    }
-
-    /**
-     *  Stops the watch timer, calculates elapsed time in ms and saves watch time if necessary.
-     */
-    async stopWatchTimer() {
-        if (this.isStarted) {    
-            this.endTime = Date.parse(new Date());
-            const elapsedTime = (this.endTime - this.startTime) //* 8; // multiplier is only for debugging, to test time formatting
-            
-            if (elapsedTime > 0) {
-                await this.saveWatchTime(elapsedTime); 
-            }  
-
-            this.isStarted = false;
-            console.log("[Short Blocker] Video paused, elapsed time: ", elapsedTime);
-        }
-    }
-
-    /**
-     * Saves watch times based on current mode
-     * @param {Number} elapsedTime Elapsed time in ms
-     */
-    async saveWatchTime(elapsedTime) {
-        const { mode: currentMode } = await chrome.storage.local.get("mode");
-        if (currentMode == "WATCH A FEW MODE") {
-            this.saveTime(elapsedTime, "totalWafWatchTime");
-            this.saveTime(elapsedTime, "sessionWafWatchTime");
-        }
-        else if (currentMode == "LET ME WATCH MODE") {
-            this.saveTime(elapsedTime, "totalLmwWatchTime");
-            this.saveTime(elapsedTime, "sessionLmwWatchTime");
-        }
-    }
-
-    /**
-     * Resets session time (both LMW and WAF modes)
-     */
-    async resetSessionTime() {
-        chrome.storage.local.set({"sessionLmwWatchTime": {hours: 0, minutes: 0, seconds: 0}});
-        chrome.storage.local.set({"sessionWafWatchTime": {hours: 0, minutes: 0, seconds: 0}});
-    }
-
-    /**
-     * Saves elapsed time to a provided storage value
-     * @param {Number} elapsedTime Elapsed time in ms 
-     * @param {String} timeMode Time value in the storage to save to, for example "sessionLmwWatchTime" or "totalWafWatchTime"
-     */
-    async saveTime(elapsedTime, timeMode){
-        const { [timeMode]: totalWatchTime } = await chrome.storage.local.get(timeMode);
-        const convertedElapsedTime = this.formatElapsedTime(elapsedTime);
-
-        let updatedTime = this.formatTotalTime({
-            hours: totalWatchTime.hours + convertedElapsedTime.hours,
-            minutes: totalWatchTime.minutes + convertedElapsedTime.minutes, 
-            seconds: totalWatchTime.seconds + convertedElapsedTime.seconds
-        });
-
-        chrome.storage.local.set({[timeMode]: updatedTime});
-    }
-
-    /**
-     * Formats seconds value into an object {hours, minutes, seconds}
-     * @param {Number} seconds Seconds value to turn format into an object
-     * @returns 
-     */
-    formatSeconds(seconds) {
-        const formatedHours = Math.floor(seconds / 3600);
-        const formatedMinutes = Math.floor(seconds / 60);
-        const secondsRemaining = seconds % 60; 
-
-        return {hours: formatedHours, minutes: formatedMinutes, seconds: secondsRemaining};
-    }
-
-    /**
-     * Formats provided object {hours, minutes, seconds} into an usual clock type format (60 seconds, 60 minutes)
-     * @param {Object} timeToFormat Object {hours, minutes, seconds} to format 
-     * @returns 
-     */
-    formatTotalTime(timeToFormat) {
-        let formatedHours;
-        let formatedMinutes;
-        let secondsRemaining;
-        let minutesRemaining;
-
-        if (timeToFormat.minutes >= 60) {
-            formatedHours = timeToFormat.hours + Math.floor(timeToFormat.minutes / 60);
-            minutesRemaining = timeToFormat.minutes % 60;
-        }
-        else {
-            formatedHours = timeToFormat.hours + Math.floor(timeToFormat.seconds / 3600);
-        }
-
-        if (timeToFormat.seconds >= 60) {
-            formatedMinutes = timeToFormat.minutes + Math.floor(timeToFormat.seconds / 60);
-            secondsRemaining = timeToFormat.seconds % 60; 
-        }
-        //TODO: figure out if it's neccessary as there time calculations became wrong for some reason 
-        else {
-            formatedMinutes = timeToFormat.minutes + Math.floor(timeToFormat.seconds / 60);
-        }
-
-
-        return {
-            hours: formatedHours, 
-            minutes: minutesRemaining ? minutesRemaining : formatedMinutes, 
-            seconds: secondsRemaining ? secondsRemaining : timeToFormat.seconds
-        };
-    }
-}
-
