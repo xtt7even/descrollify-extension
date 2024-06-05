@@ -62,12 +62,21 @@ async function remindAboutLmwMode() {
 let reminderInterval;
 let reminderIntervalCounter = 0;
 
+async function setTimeSelectors(hours, minutes, seconds) {
+    const {options} = await chrome.storage.local.get("options");
+    hours.value = options.removeBlockerTimer.hours;
+    minutes.value = options.removeBlockerTimer.minutes;
+    seconds.value = options.removeBlockerTimer.seconds;
+}
+
 window.addEventListener("load", async function() {
     const resetButton = document.getElementById("reset-btn");
     resetButton.addEventListener('click', () => {
         resetStats(resetButton);
     });
 
+
+    setTimeSelectors();
 
     const remindAboutLmwBtn = document.getElementById("remindAboutLmwMode");
 
@@ -123,6 +132,32 @@ window.addEventListener("load", async function() {
 
     const secondSelector = document.querySelector('#seconds-select');
     fillTimeSelectList(secondSelector, 0, 60);
+
+    setTimeSelectors(hourSelector, minuteSelector, secondSelector)
+
+    hourSelector.addEventListener("blur", async () => {
+        const {options} = await chrome.storage.local.get("options") 
+        const selectedValue = parseInt(hourSelector.value);
+        options.removeBlockerTimer.hours = selectedValue;
+        chrome.storage.local.set({options: options})
+    })
+
+    minuteSelector.addEventListener("blur", async () => {
+        const {options} = await chrome.storage.local.get("options") 
+        const selectedValue = parseInt(minuteSelector.value);
+        console.log(selectedValue, minuteSelector.value);
+        options.removeBlockerTimer.minutes = selectedValue;
+        chrome.storage.local.set({options: options})
+    })
+
+    secondSelector.addEventListener("blur", async () => {
+        const {options} = await chrome.storage.local.get("options") 
+        const selectedValue = parseInt(secondSelector.value);
+        console.log(selectedValue, secondSelector.value);
+        options.removeBlockerTimer.seconds = selectedValue;
+        chrome.storage.local.set({options: options})
+    })
+
 
 
     //--------------------------------------

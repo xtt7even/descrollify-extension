@@ -633,11 +633,12 @@ async function handleAppendSession(request) {
 async function handleBlockerAppended() {
     try {
         await chrome.storage.local.set({ "isBlocked": true });
+        const {options} = await chrome.storage.local.get("options");
         console.log("blocked");
         setTimeout(async () => {
             await chrome.storage.local.set({ "isBlocked": false });
             console.log("unblocked");
-        }, 5000);
+        }, options.removeBlockerTimer.hours * 3600000 + options.removeBlockerTimer.minutes * 60000 + options.removeBlockerTimer.seconds * 1000);
     } catch (error) {
         console.error("Error in handleBlockerAppended:", error);
     }

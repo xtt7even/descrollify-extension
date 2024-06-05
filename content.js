@@ -65,6 +65,7 @@ window.addEventListener('load', () => {
 window.addEventListener('yt-navigate-finish', async function() {
     removeBlocker()
 
+    const {isBlocked} = await chrome.storage.local.get("isBlocked");
     const videoElement = document.querySelector('video');
 
     //for debugging only!!!!!!
@@ -83,12 +84,12 @@ window.addEventListener('yt-navigate-finish', async function() {
         if (pagePosition.isOnShortPage) await chrome.runtime.sendMessage({message: "handle_video_pause"});
         await chrome.runtime.sendMessage({message: "handle_video_play"});
         await chrome.runtime.sendMessage({message: "add_video_watch"}, async function(response) {
-            if (response) {
+            if (response.response == "block_video" || isBlocked) {
                 await injectBlocker(short)
                 console.log("Injected blocker");
+                chrome.storage.local.set({"watchedVideosCounter": 0});
             }
         });
-        // console.log(response)
 
         chrome.storage.local.set({"isOnShortPage": true})
     }
