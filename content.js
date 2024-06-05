@@ -52,7 +52,7 @@ window.addEventListener('load', () => {
             console.log("Sent");
         }
         if(message.message == 'mode_reminder') {
-            alert("LMW mode reminder!")
+            alert('[DESCROLLIFY REMINDER]\nYOU CURRENTLY WATCHING SHORT VIDEOS IN "LET ME WATCH" MODE! CONSIDER SWITCHING TO THE "WATCH A FEW MODE" TO AVOID ENDLESS SCROLLING')
         }
         if(message.message == 'redirect_back') {
             window.location.href = ".."  ;
@@ -86,7 +86,6 @@ window.addEventListener('yt-navigate-finish', async function() {
             if (response.response == "block_video" || isBlocked) {
                 await injectBlocker(short)
                 console.log("Injected blocker");
-                chrome.storage.local.set({"watchedVideosCounter": 0});
             }
         });
 
@@ -233,13 +232,9 @@ function buildBlockerLogo() {
     const blockerLogo = document.createElement("img");
     blockerLogo.src = chrome.runtime.getURL("./images/logo_transparent_white.png");
     blockerLogo.alt = "logo";
-    // blockerLogo.setAttribute('onclick', "window.location.href = 'https://www.youtube.com'");
     blockerLogo.setAttribute('id', 'blocker-logo');
     return blockerLogo;
 }
-
-//Stats retriever functions
-
 
 
 function addVideoListeners (videoElement) {

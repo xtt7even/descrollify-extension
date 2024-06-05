@@ -530,7 +530,7 @@ class Reminder {
                     console.log("[Descrollify]: No active tab timeout")
                 });
                 this.waitingForAlert = true
-                if (activeTab && activeTab.url.includes("youtube")) {
+                if (activeTab && activeTab.url.includes("youtube") && activeTab.url.includes("short")) {
                     tabHandler.sendRequest("mode_reminder")
                 }
                 this.waitingForAlert = false;
