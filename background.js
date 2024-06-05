@@ -131,9 +131,11 @@ class TabHandler {
             for (let i = 0; i < this.openedTabs.length; i++) {
                 if (this.openedTabs[i].id == tabId) {
                     const closedTabUrl = this.openedTabs[i].url;
+                    console.log(closedTabUrl);
                     this.openedTabs.splice(i, 1);
                     if (closedTabUrl.includes("youtube") && closedTabUrl.includes("short")) {
-                        this.sendRequest()
+                        const sessionHandler = new SessionsHandler();
+                        sessionHandler.saveSessions();
                     }
                 }
             }
@@ -185,17 +187,22 @@ class TabHandler {
                         this.openedTabs[i].url = tab.url;
                     });
                 });
-                this.previousUrl = null;
-                this.isChangedUrlLogged = false;
+
+
             }
 
+            console.log(tab)
             //After the page update status becomes undefined
             if (!changeInfo.status){
+                
                 const {options: options} = await chrome.storage.local.get("options");
                 console.log(options);
                 if (tab.url.includes("youtube") && options.hideThumbnails && !tab.url.includes("short")) {
                     await this.sendRequest("remove_shortcontainer"); 
                 }
+
+                this.previousUrl = null;
+                this.isChangedUrlLogged = false;
                 this.redirectBack(tab);
             }
         });
@@ -205,9 +212,9 @@ class TabHandler {
 
     async redirectBack(tab) {
         const {options: options} = await chrome.storage.local.get("options");
-        console.log(options.autoRedirect, tab.url.includes("short"))
-        console.log(tab);
-        if (options.autoRedirect && tab.url.includes("short")) {
+        const {mode} = await chrome.storage.local.get("mode"); 
+        console.log(mode);
+        if (options.autoRedirect && mode == "TOTAL FOCUS MODE" && tab.url.includes("short")) {
             console.log("Redirecting back");
             await this.sendRequest("redirect_back");
         }
@@ -432,7 +439,6 @@ class SessionsHandler {
         
         this.resetSessionTime();
         chrome.storage.local.set({"watchedVideosCounter": 0});
-        console.log(chrome.storage.local.get("watchedVideosCounter"));
     }
 
     async resetSessionTime() {
@@ -651,7 +657,6 @@ async function handleVideoPause() {
 
 
 const handleAddVideo = async (sendResponse) => {
-    console.log("Trying to add")
     //TODO: Create session when session initialized, not every video watch
     const sessionHandler = new SessionsHandler();
     if (await sessionHandler.isAllowedToWatch()) {

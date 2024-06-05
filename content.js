@@ -56,7 +56,6 @@ window.addEventListener('load', () => {
         }
         if(message.message == 'redirect_back') {
             window.location.href = ".."  ;
-            alert('Descrollify saved you from watching short videos.\nTo watch short videos, select either "WATCH A FEW MODE" or "LET ME WATCH MODE"\nYou can also turn off the auto-redirect in Descrollify settings')
         }
     });
 });
