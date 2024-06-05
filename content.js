@@ -115,9 +115,6 @@ function removeBlocker() {
         document.getElementById("blocker-container").remove();
     }
 }
-// !!!
-// ___IMPORTANT TODO___: Refactor all the mess inside scanForShort, locateShort and functions related to the blocker building!
-// !!!
 
 // Function to scan for short video element
 async function scanForShort () {
@@ -271,10 +268,3 @@ async function handleVideoPlay() {
     console.log("Video Play")
     await chrome.runtime.sendMessage({message: "handle_video_play"});
 }
-
-//TODO: Fix video counter stats calculation, it doesn't work anymore
-
-
-
-// Quick comment: function returns watched duration of the video by user, fires on yt-navigation event, neccessary to calculate average watchtime
-// TODO: Finish getWatchedTime()!!!
