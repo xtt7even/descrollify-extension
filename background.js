@@ -402,7 +402,7 @@ class SessionsHandler {
 
     async isAllowedToWatch () {
         const storage = await chrome.storage.local.get();
-        console.log(storage.watchedVideosCounter, storage.watchedVideosLimit);
+        console.log(storage.watchedVideosCounter, storage.watchedVideosLimit, !(storage.watchedVideosCounter > storage.watchedVideosLimit));
         if (!(storage.watchedVideosCounter > storage.watchedVideosLimit)) {
             return true;
         }
@@ -432,6 +432,7 @@ class SessionsHandler {
         
         this.resetSessionTime();
         chrome.storage.local.set({"watchedVideosCounter": 0});
+        console.log(chrome.storage.local.get("watchedVideosCounter"));
     }
 
     async resetSessionTime() {
@@ -555,65 +556,113 @@ function timeToSeconds (time) {
 /**
  * Listener for a different messages sent from content.js or the popup.js
  */
-chrome.runtime.onMessage.addListener(
-    async function(request, sender, sendResponse) {
-        if (request.type === "escapedscrolling") {
-            chrome.storage.local.get(["numberOfEscapes"])
+
+
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+    if (request.type === "escapedscrolling") {
+        chrome.storage.local.get(["numberOfEscapes"])
             .then((result) => {
-                chrome.storage.local.set({ "numberOfEscapes": result.numberOfEscapes + 1});
+                chrome.storage.local.set({ "numberOfEscapes": result.numberOfEscapes + 1 });
             })
-        }
-        if (request.mode) {
-            changeWatchMode(request.mode);
-        }
-        if (request.type == "append_session") {
-            let sessionHandler = new SessionsHandler(
-                request.storageHistory,
-                request.storageSession,
-                request.storageAvg
-            );
-            await sessionHandler.appendSession();
-            sessionHandler = null;
-        }
-
-        if (request.message == "toggle_mode_reminder") {
-            console.log("toggling")
-            reminder.toggleReminderInterval();
-        }
-
-        if (request.message == "blocker_appended") {
-            chrome.storage.local.set({"isBlocked": true});
-            console.log("blocked")
-            const {options} = await chrome.storage.local.get("options");
-            const removeBlockerTimeout = setTimeout(() => {
-                chrome.storage.local.set({"isBlocked": false});
-                console.log("unblocked");
-            }, 5000);
-            //options.removeBlockerTimer.hours * 3600000 + options.removeBlockerTimer.minutes * 60000 + options.removeBlockerTimer.seconds * 1000
-        }
-
-        if (request.message == "save_sessions") {
-            const sessionHandler = new SessionsHandler();
-            sessionHandler.saveSessions();
-        }
-
-        if (request.message == "set_watch_limit") {
-            const {mode: currentMode} = await chrome.storage.local.get("mode");
-            console.log(currentMode)
-            setWatchLimit(currentMode);
-        }
-
-        if (request.message == "handle_video_play") {
-            console.log("Handling video play in the background")
-            videoTimer.startWatchTimer();
-        }
-
-        if (request.message == "handle_video_pause") {
-            console.log("Handling video pause in the background")
-            await videoTimer.stopWatchTimer();
-        }
+            .catch((error) => {
+                console.error("Error updating numberOfEscapes:", error);
+            });
     }
-);
+
+    if (request.mode) {
+        changeWatchMode(request.mode);
+    }
+
+    if (request.type === "append_session") {
+        handleAppendSession(request);
+    }
+
+    if (request.message === "toggle_mode_reminder") {
+        console.log("toggling");
+        reminder.toggleReminderInterval();
+    }
+
+    if (request.message === "blocker_appended") {
+        handleBlockerAppended();
+    }
+
+    if (request.message === "save_sessions") {
+        const sessionHandler = new SessionsHandler();
+        sessionHandler.saveSessions();
+    }
+
+    if (request.message === "set_watch_limit") {
+        chrome.storage.local.get("mode")
+            .then((result) => {
+                const currentMode = result.mode;
+                console.log(currentMode);
+                setWatchLimit(currentMode);
+            })
+            .catch((error) => {
+                console.error("Error setting watch limit:", error);
+            });
+    }
+
+    if (request.message === "handle_video_play") {
+        console.log("Handling video play in the background");
+        videoTimer.startWatchTimer();
+    }
+
+    if (request.message === "handle_video_pause") {
+        handleVideoPause();
+    }
+
+    if (request.message === "add_video_watch") {
+        handleAddVideo(sendResponse);
+        return true;
+    }
+
+    return false; 
+});
+
+async function handleAppendSession(request) {
+    let sessionHandler = new SessionsHandler(
+        request.storageHistory,
+        request.storageSession,
+        request.storageAvg
+    );
+    await sessionHandler.appendSession();
+    sessionHandler = null;
+}
+
+async function handleBlockerAppended() {
+    try {
+        await chrome.storage.local.set({ "isBlocked": true });
+        console.log("blocked");
+        setTimeout(async () => {
+            await chrome.storage.local.set({ "isBlocked": false });
+            console.log("unblocked");
+        }, 5000);
+    } catch (error) {
+        console.error("Error in handleBlockerAppended:", error);
+    }
+}
+
+async function handleVideoPause() {
+    console.log("Handling video pause in the background");
+    await videoTimer.stopWatchTimer();
+}
+
+
+const handleAddVideo = async (sendResponse) => {
+    console.log("Trying to add")
+    //TODO: Create session when session initialized, not every video watch
+    const sessionHandler = new SessionsHandler();
+    if (await sessionHandler.isAllowedToWatch()) {
+        console.log("adding video watch");
+        await sessionHandler.addVideoWatch();
+        sendResponse({response: "allow_video"});
+    }
+    else {
+        console.log("Not allowed to watch");
+        sendResponse({response: "block_video"});
+    }
+}
 
 /**
  * Function that changes the watch mode in the storage

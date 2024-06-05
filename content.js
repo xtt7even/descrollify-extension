@@ -77,9 +77,19 @@ window.addEventListener('yt-navigate-finish', async function() {
     if (url.href.includes('shorts')) {
         // If URL includes "shorts" set isOnShortPage to true (session based storage)
         addVideoListeners(videoElement);
-        scanForShort();
+       
+        const short = await scanForShort();
+        //if previous location was short page, before starting the timer we stoping it and saving the timer.
         if (pagePosition.isOnShortPage) await chrome.runtime.sendMessage({message: "handle_video_pause"});
         await chrome.runtime.sendMessage({message: "handle_video_play"});
+        await chrome.runtime.sendMessage({message: "add_video_watch"}, async function(response) {
+            if (response) {
+                await injectBlocker(short)
+                console.log("Injected blocker");
+            }
+        });
+        // console.log(response)
+
         chrome.storage.local.set({"isOnShortPage": true})
     }
     //if the page doesn't include "short" but isOnShortPage WAS true before, that means the user closed or exited short page, so we need to update LMW mode averages
@@ -91,6 +101,14 @@ window.addEventListener('yt-navigate-finish', async function() {
 
 });
 
+async function injectBlocker(short) {
+    console.log(short);
+    pauseVideo();
+    const blocker = await buildBlocker(short);
+    removeUnecessaryElements();
+    short.parentNode.prepend(blocker);
+    await chrome.runtime.sendMessage({message: "blocker_appended"});
+}
 
 function removeBlocker() {
     if (document.getElementById("blocker-container")) {
@@ -103,31 +121,12 @@ function removeBlocker() {
 
 // Function to scan for short video element
 async function scanForShort () {
-    const {isBlocked} = await chrome.storage.local.get("isBlocked")
-    console.log(isBlocked);
-    if (await isAllowedToWatch()) {
-        addVideoWatch()
-        console.log("Allowed to watch because of the mode");
-        throw 0;
-    }
-
     let short = await locateShort();
-    console.log(short)
     if (!short) {
         console.error("No short located on this page"); 
-        //TODO: REMOVE THESE throw 0s
-        throw 0;
+        return;
     }
-
-    if (isBlocked) {
-        pauseVideo();
-        const blocker = await buildBlocker(short);
-        short.prepend(blocker);
-        removeUnecessaryElements();
-        await chrome.runtime.sendMessage({message: "blocker_appended"});
-    }
-
-
+    return short;
 }
 
 function pickASetOfLines() {
@@ -161,6 +160,7 @@ function removeUnecessaryElements() {
         sequenceElements[i].remove();
         console.log("Blocker: removed video sequence and overlay");
     }
+    sequenceElements[0].style.opacity = 0;
 
     //Deleting overlay elements
     const overlayElements = document.getElementsByClassName('action-container style-scope ytd-reel-player-overlay-renderer');
