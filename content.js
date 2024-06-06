@@ -106,7 +106,6 @@ async function injectBlocker(short) {
     removeUnecessaryElements();
     short.parentNode.prepend(blocker);
     await chrome.runtime.sendMessage({message: "blocker_appended"});
-    await chrome.storage.local.set({"watchedVideosCounter": 0});
 }
 
 function removeBlocker() {

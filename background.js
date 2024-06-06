@@ -495,11 +495,14 @@ class SessionsHandler {
 
     async appendSession() {
         console.log("Append session")
-        const {[this.sessionHistory]: sessionHistory} = await chrome.storage.local.get(this.sessionHistory);
-        const {[this.sessionValue]: currentSession} = await chrome.storage.local.get(this.sessionValue);
+        let {[this.sessionHistory]: sessionHistory} = await chrome.storage.local.get(this.sessionHistory);
+        let {[this.sessionValue]: currentSession} = await chrome.storage.local.get(this.sessionValue);
+        if (this.sessionValue == "watchedVideosCounter") currentSession -= 1;
         sessionHistory.push(currentSession);
+        console.log(sessionHistory, this.sessionHistory)
     
         const {"watchedVideosCounter": videoCounter} = await chrome.storage.local.get("watchedVideosCounter");
+        console.log(videoCounter);
         if (videoCounter > 1) {
             chrome.storage.local.set({[this.sessionHistory]: sessionHistory});
         }
@@ -694,7 +697,6 @@ const handleAddVideo = async (sendResponse) => {
     }
     else {
         console.log("Not allowed to watch");
-        await chrome.storage.local.set({"watchedVideosCounter": 0});
         sendResponse({response: "block_video"});
     }
 }
