@@ -13,9 +13,27 @@ chrome.runtime.onInstalled.addListener((details) => {
     reminder = new Reminder();
     tabHandler = new TabHandler();
     videoTimer = new VideoTimer();
+
+    startBlockerInterval();
+
 });
 
-
+async function startBlockerInterval () {
+    const {options} = await chrome.storage.local.get('options');
+    if (options.blocker_remove_timestamp != null) {
+        console.log("Starting interval")
+        const blockerInterval = setInterval(async () => {
+            const timerEnd = await checkTimerEnd(options.blocker_remove_timestamp, options.removeBlockerTimer);
+            if (timerEnd) {
+                chrome.storage.local.set({isBlocked: false});
+                options.blocker_remove_timestamp = null
+                chrome.storage.local.set({options: options});
+                console.log("Unblocked");
+                clearInterval(blockerInterval);
+            }
+        }, 1000)
+    }
+}
 
 /**
  * Initializes the storage if there is no necessary params in it
@@ -35,7 +53,8 @@ async function initializeStorage() {
                 "autoRedirect": false,
                 "maxVideosAllowed": 15,
                 "removeBlockerTimer": {hours: 0, minutes: 15, seconds: 0},
-                "remindAboutLmwMode": false
+                "remindAboutLmwMode": false,
+                "blocker_remove_timestamp": null
             }
         });
     }
@@ -191,7 +210,7 @@ class TabHandler {
 
             }
 
-            console.log(tab)
+            // console.log(tab)
             //After the page update status becomes undefined
             if (!changeInfo.status){
                 
@@ -636,17 +655,26 @@ async function handleAppendSession(request) {
     sessionHandler = null;
 }
 
-async function handleBlockerAppended() {
-    try {
-        await chrome.storage.local.set({ "isBlocked": true });
-        const {options} = await chrome.storage.local.get("options");
+async function checkTimerEnd(blocker_timestamp, timer) { 
+    const timerInMs = timer.hours * 3600000 + timer.minutes * 60000 + timer.seconds * 1000
+    if (Date.now()- blocker_timestamp > timerInMs) {
+        console.log("Date.now() - blocker_timestamp > timerInMs", Date.now()- blocker_timestamp > timerInMs)
+        return true;
+    }
+    return false;
+}
 
-        //TODO: Log time on browser exit so blocker timer is based on the elapsed system time, not ms timeout, while browser window exists
-        setTimeout(async () => {
-            await chrome.storage.local.set({ "isBlocked": false });
-        }, options.removeBlockerTimer.hours * 3600000 + options.removeBlockerTimer.minutes * 60000 + options.removeBlockerTimer.seconds * 1000);
-    } catch (error) {
-        console.error("Error in handleBlockerAppended:", error);
+async function handleBlockerAppended() {
+    chrome.storage.local.set({isBlocked: true});
+    const {options} = await chrome.storage.local.get('options');
+    if (options.blocker_remove_timestamp == null) {
+        const dateNow = Date.now();
+        options.blocker_remove_timestamp = dateNow;
+        console.log("Created timer timestamp: ", dateNow);
+        chrome.storage.local.set({options: options});
+        const sessionHandler = new SessionsHandler();
+        await sessionHandler.saveSessions();
+        startBlockerInterval();
     }
 }
 
@@ -666,6 +694,7 @@ const handleAddVideo = async (sendResponse) => {
     }
     else {
         console.log("Not allowed to watch");
+        await chrome.storage.local.set({"watchedVideosCounter": 0});
         sendResponse({response: "block_video"});
     }
 }

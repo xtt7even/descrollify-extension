@@ -84,7 +84,7 @@ window.addEventListener('yt-navigate-finish', async function() {
         await chrome.runtime.sendMessage({message: "handle_video_play"});
         await chrome.runtime.sendMessage({message: "add_video_watch"}, async function(response) {
             if (response.response == "block_video" || isBlocked) {
-                await injectBlocker(short)
+                await injectBlocker(short);
                 console.log("Injected blocker");
             }
         });
@@ -98,15 +98,15 @@ window.addEventListener('yt-navigate-finish', async function() {
         removeVideoListeners(videoElement);
     }
 
-});
+}); 
 
 async function injectBlocker(short) {
-    console.log(short);
     pauseVideo();
     const blocker = await buildBlocker(short);
     removeUnecessaryElements();
     short.parentNode.prepend(blocker);
     await chrome.runtime.sendMessage({message: "blocker_appended"});
+    await chrome.storage.local.set({"watchedVideosCounter": 0});
 }
 
 function removeBlocker() {
