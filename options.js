@@ -43,27 +43,13 @@ function isResetConfirmed(resetButton) {
     return false;
 }
 
-async function remindAboutLmwMode() {
-    const {options: options} = await chrome.storage.local.get('options');
-    if (options.reminder_timestamp) {
-        const timerFinish = new Date.now()
-        if (timerFinish - options.reminder_timestamp > 30000) {
-            alert("REMINDING YOU ABOUT LMW!!!!")
-            options.reminder_timestamp = null;
-            chrome.storage.local.set({options: options});
-        }
-    }
-    else {
-        options.reminder_timestamp = new Date.now();
-        chrome.storage.local.set({options: options});
-    }
-} 
 
 let reminderInterval;
 let reminderIntervalCounter = 0;
 
 async function setTimeSelectors(hours, minutes, seconds) {
     const {options} = await chrome.storage.local.get("options");
+    console.log(hours.value, minutes, seconds);   
     hours.value = options.removeBlockerTimer.hours;
     minutes.value = options.removeBlockerTimer.minutes;
     seconds.value = options.removeBlockerTimer.seconds;
@@ -76,7 +62,6 @@ window.addEventListener("load", async function() {
     });
 
 
-    setTimeSelectors();
 
     const remindAboutLmwBtn = document.getElementById("remindAboutLmwMode");
 
@@ -84,7 +69,7 @@ window.addEventListener("load", async function() {
     setToggleOption('remindAboutLmwMode', remindAboutLmwRadioButton, false);
 
     remindAboutLmwBtn.addEventListener('click', async () => {
-        setToggleOption('remindAboutLmwMode', remindAboutLmwRadioButton, true);
+        await setToggleOption('remindAboutLmwMode', remindAboutLmwRadioButton, true);
         chrome.runtime.sendMessage({message: "toggle_mode_reminder"});
     });
 
@@ -210,14 +195,11 @@ async function setToggleOption(option, radio, isToSwitch) {
 
         //If function being called onclick we toggle the option value, instead we just set radio button to on/off
         if (isToSwitch) {
+            console.log("options",options);
             options[option] = !options[option];
             chrome.storage.local.set({ options: options });
         }
-
-
         radio.checked = options[option];
-
-
     });
 }
 

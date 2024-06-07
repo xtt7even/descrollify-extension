@@ -16,6 +16,8 @@ chrome.runtime.onInstalled.addListener((details) => {
 
     startBlockerInterval();
 
+    reminder.toggleReminderInterval();
+
 });
 
 async function startBlockerInterval () {
@@ -544,23 +546,29 @@ class Reminder {
         this.waitingForAlert = false;
     }
 
-    toggleReminderInterval() {
-        if (this.reminderInterval == null && !this.waitingForAlert) {
-            console.log("Reminder thing")
-            this.reminderInterval = setInterval(async () => {
-                const activeTab = await tabHandler.getActiveTab().catch(() => {
-                    console.log("[Descrollify]: No active tab timeout")
-                });
-                this.waitingForAlert = true
-                if (activeTab && activeTab.url.includes("youtube") && activeTab.url.includes("short")) {
-                    tabHandler.sendRequest("mode_reminder")
-                }
-                this.waitingForAlert = false;
-            }, 600000)
-        }
-        else {
+    async toggleReminderInterval() {
+        console.log("toggleReminderInterval");
+        const {options} = await chrome.storage.local.get('options');
+        const {mode} = await chrome.storage.local.get('mode');
+
+        // Clear the existing interval if it exists
+        if (this.reminderInterval !== null) {
             clearInterval(this.reminderInterval);
             this.reminderInterval = null;
+        }
+
+        // Check if we need to set a new interval
+        if (options.remindAboutLmwMode && mode === "LET ME WATCH MODE" && !this.waitingForAlert) {
+            this.reminderInterval = setInterval(async () => {
+                const activeTab = await tabHandler.getActiveTab().catch(() => {
+                    console.log("[Descrollify]: No active tab timeout");
+                });
+                this.waitingForAlert = true;
+                if (activeTab && activeTab.url.includes("youtube") && activeTab.url.includes("short")) {
+                    tabHandler.sendRequest("mode_reminder");
+                }
+                this.waitingForAlert = false;
+            }, 600000);
         }
     }
 }
@@ -648,6 +656,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     return false; 
 });
 
+async function handleReminderToggle() {
+    reminder.toggleReminderInterval();
+}
+
 async function handleAppendSession(request) {
     let sessionHandler = new SessionsHandler(
         request.storageHistory,
@@ -709,6 +721,7 @@ async function changeWatchMode(newMode) {
     await chrome.storage.local.set({"mode": newMode});
     await chrome.storage.local.set({"watchedVideosCounter": 0});
     setWatchLimit(newMode);
+    reminder.toggleReminderInterval();
 }
 
 /**
