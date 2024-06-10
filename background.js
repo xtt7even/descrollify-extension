@@ -10,14 +10,20 @@ chrome.runtime.onInstalled.addListener((details) => {
         console.log("First initialization!")
         initializeStorage();
     }
+
+    startBlockerInterval();
+    reminder.toggleReminderInterval();
+});
+
+chrome.runtime.onStartup.addListener(function() {
+    console.log("Chrome has started.");
+
     reminder = new Reminder();
     tabHandler = new TabHandler();
     videoTimer = new VideoTimer();
 
     startBlockerInterval();
-
     reminder.toggleReminderInterval();
-
 });
 
 async function startBlockerInterval () {
