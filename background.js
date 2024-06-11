@@ -11,6 +11,11 @@ chrome.runtime.onInstalled.addListener((details) => {
         initializeStorage();
     }
 
+    reminder = new Reminder();
+    tabHandler = new TabHandler();
+    videoTimer = new VideoTimer();
+
+
     startBlockerInterval();
     reminder.toggleReminderInterval();
 });
@@ -140,6 +145,9 @@ class TabHandler {
 
         this.previousUrl = null;
         this.isChangedUrlLogged = false;
+
+        this.hideContainerTimerId = null;
+        this.isContainerHidden = false;
         
         chrome.tabs.query({}, (tabs) => {
             tabs.forEach((tab) => {
@@ -193,6 +201,7 @@ class TabHandler {
         chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             if (!this.isChangedUrlLogged && changeInfo.url){
                 console.log("Tab updated");
+                this.isContainerHidden = false;
 
                 this.previousUrl = await this.openedTabs.find(obj => {
                     return obj.id === tabId;
@@ -214,23 +223,31 @@ class TabHandler {
                         this.openedTabs[i].url = tab.url;
                     });
                 });
-
-
             }
 
-            // console.log(tab)
-            //After the page update status becomes undefined
-            if (!changeInfo.status){
-                
-                const {options: options} = await chrome.storage.local.get("options");
-                console.log(options);
-                if (tab.url.includes("youtube") && options.hideThumbnails && !tab.url.includes("short")) {
-                    await this.sendRequest("remove_shortcontainer"); 
-                }
 
-                this.previousUrl = null;
-                this.isChangedUrlLogged = false;
-                this.redirectBack(tab);
+            if (changeInfo.status === 'complete' && !this.isContainerHidden) {
+                // Clear the previous timer if it exists
+                if (this.hideContainerTimerId) {
+                    clearTimeout(this.hideContainerTimerId);
+                }
+                this.hideContainerTimerId = setTimeout(async () => {
+                    const { options } = await chrome.storage.local.get("options");
+                    console.log(options);
+        
+                    if (tab.url.includes("youtube") && options.hideThumbnails && !tab.url.includes("short")) {
+                        await this.sendRequest("remove_shortcontainer")
+                        this.isContainerHidden = true;
+                        console.log("hidden");
+                    }
+
+                    if (tab.url.includes("short")) {
+                        this.redirectBack(tab);
+                    }
+        
+                    this.previousUrl = null;
+                    this.isChangedUrlLogged = false;
+                }, 1000); // Adjust the debounce delay as needed (1000ms = 1 second)
             }
         });
 
