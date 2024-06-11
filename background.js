@@ -241,13 +241,14 @@ class TabHandler {
                         console.log("hidden");
                     }
 
-                    if (tab.url.includes("short")) {
-                        this.redirectBack(tab);
-                    }
+
         
                     this.previousUrl = null;
                     this.isChangedUrlLogged = false;
-                }, 1000); // Adjust the debounce delay as needed (1000ms = 1 second)
+                }, 1000);
+                if (tab.url.includes("short")) {
+                    this.redirectBack(tab);
+                }
             }
         });
 
