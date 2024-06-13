@@ -1,6 +1,57 @@
 'use strict';
 
 
+//Following 2 functions are only for using during development to stop myself from distracting while testing/debugging extension.
+function SaveDeveloperFromScrolling() {
+    const existingBlockers = document.querySelectorAll('.developer-saver-debug-descrollify');
+    existingBlockers.forEach(blocker => blocker.remove());
+
+    injectDebugBlocker();
+}
+
+function injectDebugBlocker() {
+    const sequenceElements = document.getElementsByClassName('reel-video-in-sequence style-scope ytd-shorts');
+
+    for (let i = sequenceElements.length - 1; i >= 0; i--) {
+        const sequenceElement = sequenceElements[i];
+
+        const existingBlocker = sequenceElement.querySelector('.developer-saver-debug-descrollify');
+        if (!existingBlocker) {
+            const overlay = document.createElement('div');
+            overlay.className = 'developer-saver-debug-descrollify';
+
+            const textElement = document.createElement('div');
+            textElement.id = 'debugging-blocker-text';
+            textElement.innerText = 'THIS IS THE DEBUGGING BLOCKER!';
+            textElement.style.background = 'rgba(0, 0, 0, 0.7)';
+            textElement.style.padding = '10px 20px';
+            textElement.style.borderRadius = '10px';
+
+            overlay.appendChild(textElement);
+
+            overlay.style.position = 'absolute';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100%';
+            overlay.style.height = '100%';
+            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+            overlay.style.backdropFilter = 'blur(15px)';
+            overlay.style.zIndex = '9999';
+            overlay.style.display = 'flex';
+            overlay.style.alignItems = 'center';
+            overlay.style.justifyContent = 'center';
+            overlay.style.color = 'white';
+            overlay.style.fontSize = '24px';
+            overlay.style.fontWeight = 'bold';
+            overlay.style.textAlign = 'center';
+
+            sequenceElement.style.position = 'relative';
+            sequenceElement.prepend(overlay);
+        }
+    }
+}
+
+
 function locateShort() {
     // Returns a promise to asynchronously locate an element by its ID
     return new Promise((resolve, reject) => {
@@ -63,6 +114,7 @@ window.addEventListener('load', () => {
 // Event listener for page change
 window.addEventListener('yt-navigate-finish', async function() {
     removeBlocker()
+    SaveDeveloperFromScrolling();
 
     const {isBlocked} = await chrome.storage.local.get("isBlocked");
     const videoElement = document.querySelector('video');
