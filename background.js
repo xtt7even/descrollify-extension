@@ -4,32 +4,39 @@
 let reminder;
 let tabHandler;
 let videoTimer;
+
 chrome.runtime.onInstalled.addListener((details) => {
-    //details.reason === "update" is ONLY FOR DEBUGGING!!!
     if (details.reason === "install" || details.reason === "update") { 
-        console.log("First initialization!")
+        console.log("First initialization!");
         initializeStorage();
     }
 
-    reminder = new Reminder();
-    tabHandler = new TabHandler();
-    videoTimer = new VideoTimer();
-
+    initializeInstances();
 
     startBlockerInterval();
     reminder.toggleReminderInterval();
 });
 
-chrome.runtime.onStartup.addListener(function() {
+chrome.runtime.onStartup.addListener(() => {
     console.log("Chrome has started.");
 
-    reminder = new Reminder();
-    tabHandler = new TabHandler();
-    videoTimer = new VideoTimer();
+    initializeInstances();
 
     startBlockerInterval();
     reminder.toggleReminderInterval();
 });
+
+function initializeInstances() {
+    reminder = new Reminder();
+    tabHandler = new TabHandler();
+    videoTimer = new VideoTimer();
+
+    console.log("Instances initialized:", {
+        reminder,
+        tabHandler,
+        videoTimer
+    });
+}
 
 async function startBlockerInterval () {
     const {options} = await chrome.storage.local.get('options');
@@ -41,7 +48,7 @@ async function startBlockerInterval () {
                 chrome.storage.local.set({isBlocked: false});
                 options.blocker_remove_timestamp = null
                 chrome.storage.local.set({options: options});
-                console.log("Unblocked");
+                // console.log("Unblocked");
                 clearInterval(blockerInterval);
             }
         }, 1000)
@@ -162,7 +169,7 @@ class TabHandler {
          * On tab removed event listener. Activates everytime user closes tabs
          */
         chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
-            console.log("Tab removed");
+            // console.log("Tab removed");
             for (let i = 0; i < this.openedTabs.length; i++) {
                 if (this.openedTabs[i].id == tabId) {
                     const closedTabUrl = this.openedTabs[i].url;
@@ -180,7 +187,7 @@ class TabHandler {
          * On tab created event listener. Activates everytime user creates a tab, necessary for keeping track of active tab for saving sessions
         */
         chrome.tabs.onCreated.addListener(async (tab) => {
-            console.log("Tab created", tab);
+            // console.log("Tab created", tab);
             setTimeout(() => {
                 this.redirectBack(tab);
             }, 2000)
@@ -200,7 +207,7 @@ class TabHandler {
         */
         chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             if (!this.isChangedUrlLogged && changeInfo.url){
-                console.log("Tab updated");
+                // console.log("Tab updated");
                 this.isContainerHidden = false;
 
                 this.previousUrl = await this.openedTabs.find(obj => {
@@ -238,7 +245,6 @@ class TabHandler {
                     if (tab.url.includes("youtube") && options.hideThumbnails && !tab.url.includes("short")) {
                         await this.sendRequest("remove_shortcontainer")
                         this.isContainerHidden = true;
-                        console.log("hidden");
                     }
 
 
@@ -742,10 +748,13 @@ const handleAddVideo = async (sendResponse) => {
  * @param {string} newMode - New mode selected by an user 
  */
 async function changeWatchMode(newMode) {
+    const sessionHandler = new SessionsHandler();
+    
     await chrome.storage.local.set({"mode": newMode});
     await chrome.storage.local.set({"watchedVideosCounter": 0});
     setWatchLimit(newMode);
     reminder.toggleReminderInterval();
+    await sessionHandler.saveSessions();
 }
 
 /**
