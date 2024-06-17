@@ -2,17 +2,17 @@
 
 function resetStats(resetButton) {
     if (isResetConfirmed(resetButton)) {
-        // chrome.storage.local.set({"lmwSessionHistory": []});
-        // chrome.storage.local.set({"wafSessionHistory": []});
-        // chrome.storage.local.set({"lmwAverage": 0});
-        // chrome.storage.local.set({"wafAverage": 0});
-        // chrome.storage.local.set({ "totalLmwWatchTime": {hours: 0, minutes: 0, seconds: 0}})
-        // chrome.storage.local.set({ "totalWafWatchTime": {hours: 0, minutes: 0, seconds: 0}})
-        // chrome.storage.local.set({ "savedTime": {hours: 0, minutes: 0, seconds: 0}})
-        // chrome.storage.local.set({ "watchSessionsDifference": 0})
-        // chrome.storage.local.set({ "sessionLmwWatchTimeHistory": []})
-        // chrome.storage.local.set({ "sessionWafWatchTimeHistory": []})
-        // chrome.storage.local.set({ "numberOfEscapes": 0})
+        chrome.storage.local.set({"lmwSessionHistory": []});
+        chrome.storage.local.set({"wafSessionHistory": []});
+        chrome.storage.local.set({"lmwAverage": 0});
+        chrome.storage.local.set({"wafAverage": 0});
+        chrome.storage.local.set({ "totalLmwWatchTime": {hours: 0, minutes: 0, seconds: 0}})
+        chrome.storage.local.set({ "totalWafWatchTime": {hours: 0, minutes: 0, seconds: 0}})
+        chrome.storage.local.set({ "savedTime": {hours: 0, minutes: 0, seconds: 0}})
+        chrome.storage.local.set({ "watchSessionsDifference": 0})
+        chrome.storage.local.set({ "sessionLmwWatchTimeHistory": []})
+        chrome.storage.local.set({ "sessionWafWatchTimeHistory": []})
+        chrome.storage.local.set({ "numberOfEscapes": 0})
 
         console.log("Reset")
         resetButton.firstChild.parentElement.innerHTML = "<p>RESET SUCCESSFULLY<p>"

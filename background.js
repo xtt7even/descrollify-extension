@@ -481,10 +481,8 @@ class SessionsHandler {
         const {watchedVideosCounter} = await chrome.storage.local.get("watchedVideosCounter");
         chrome.storage.local.get(["numberOfEscapes"])
         .then((result) => {
-            console.log(watchedVideosCounter)
             if (watchedVideosCounter > 1) {
                 chrome.storage.local.set({ "numberOfEscapes": result.numberOfEscapes + 1 });
-                console.log("escaped")
             }
         })
         .catch((error) => {
@@ -517,13 +515,15 @@ class SessionsHandler {
     
         const lmwAverage = this.getAverageInSeconds(lmwSessionHistory);
         const wafAverage = this.getAverageInSeconds(wafSessionHistory);
-        // console.log("Averages (LMW/WAF):", lmwAverage, wafAverage);
+        console.log("Averages (LMW/WAF):", lmwAverage, wafAverage);
     
+        if (Number.isNaN(lmwAverage) || Number.isNaN(wafAverage)) {
+            return;
+        }
+
         //NOTE: To format time it's better to move some functions from the timer to background.js as a separate class 
         const savedInSeconds = lmwAverage - wafAverage;
         const savedTime = secondsToTime(savedInSeconds);
-    
-        // console.log(savedTime);
     
         chrome.storage.local.set({"savedTime": savedTime});
     }
@@ -537,14 +537,6 @@ class SessionsHandler {
         const {"watchedVideosCounter": videoCounter} = await chrome.storage.local.get("watchedVideosCounter");
         if (videoCounter > 1) {
             chrome.storage.local.set({[this.sessionHistory]: sessionHistory});
-            chrome.storage.local.get(["numberOfEscapes"])
-            .then((result) => {
-                chrome.storage.local.set({ "numberOfEscapes": result.numberOfEscapes + 1 });
-            })
-            .catch((error) => {
-                console.error("Error updating numberOfEscapes:", error);
-            });
-
         }
 
         if (this.storageAvg != null) {
@@ -632,15 +624,6 @@ function timeToSeconds (time) {
 
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    if (request.type === "escapedscrolling") {
-        chrome.storage.local.get(["numberOfEscapes"])
-        .then((result) => {
-            chrome.storage.local.set({ "numberOfEscapes": result.numberOfEscapes + 1 });
-        })
-        .catch((error) => {
-            console.error("Error updating numberOfEscapes:", error);
-        });
-    }
 
     if (request.mode) {
         changeWatchMode(request.mode);
