@@ -10,11 +10,10 @@
 <body>
     <div id="settings-popup">
         <nav id="popup-navbar">
-            <button class="popup-navbar-btn" id="info-btn"><img class='helping-icons' src="images/question-mark-round-icon.png" alt="help"></button>
+            <button class="popup-navbar-btn" id="info-btn"><img class='helping-icons' src="images/question-mark-round-icon.png" alt="help" style="opacity: 0%;"></button>
             <img id='logo' src="images/logo_transparent_white.png" alt="logo">
             <button  id='close-btn'><img id='close-btn-image' src="images/close-line-icon.png" alt="logo"></button>
         </nav>  
-
         <div id="options-container">
             <div id="options-header"><h2>SETTINGS</h2></div>
             <div class="options-subheader"><h3>GENERAL</h3></div>
@@ -27,31 +26,28 @@
             <div class="options-section">
                 <h4>Total Focus Mode</h4>
                 <button class="options-btn" id="hideThumbnails">
-                    <p>Also hide short videos thumbnails and previews</p>
+                    <p>Hide short videos thumbnails</p>
                     <input type="radio" name="hide-thumbnails" class="mode-selector">
                 </button>
                 <button class="options-btn" id="autoRedirect">
-                    <p>Automatically redirect back instead of blocking</p>
+                    <p>Auto redirect back instead of blocking</p>
                     <input type="radio" name="auto-redirect" class="mode-selector">
                 </button>
             </div>
             <div class="options-section">
                 <h4>Watch A Few Mode</h4>
                 <button class="options-btn" id="setMaxVideosAllowed">
-                    <p>Max number of videos allowed to watch before blocking</p>
+                    <p>Max videos allowed to watch before blocking</p>
                     <input type="number" name="set-maxnumber" class="onedigit-number" value="15" min="1" max="30">
                 </button>
                 <button class="options-btn" id="removeBlockerTime">
                     <p>Remove blocker after</p>
                     <div class="time-input-container">
-                        <select name="hours" class='time-selector' id="hours-select">
-                        </select>
+                        <select name="hours" class="time-selector" id="hours-select"></select>
                         <p>H</p>
-                        <select name="minutes" class='time-selector' id="minutes-select">
-                        </select>
+                        <select name="minutes" class="time-selector" id="minutes-select"></select>
                         <p>M</p>
-                        <select name="seconds" class='time-selector' id="seconds-select">
-                        </select>
+                        <select name="seconds" class="time-selector" id="seconds-select"></select>
                         <p>S</p>
                     </div>
                 </button>
@@ -59,10 +55,11 @@
             <div class="options-section">
                 <h4>Let Me Watch Mode</h4>
                 <button class="options-btn" id="remindAboutLmwMode">
-                    <p>Remind me about this mode being activated</p>
+                    <p>Remind about active "Let Me Watch Mode"</p>
                     <input type="radio" name="remind-about-lmw" id="remind-about-lmw" class="mode-selector">
                 </button>
             </div>
+        </div>
         
         </div>
     </div>
