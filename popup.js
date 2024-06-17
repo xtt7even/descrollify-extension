@@ -126,7 +126,6 @@ class Stats {
     
     async setSavedTime() {
         const {"savedTime": savedWatchTime} = await chrome.storage.local.get("savedTime");
-        console.log(savedWatchTime);
 
         this.statsFirstTitle.innerHTML = 'ON AVERAGE YOU SAVE'
         this.statsSecondTitle.innerHTML = 'EACH "WATCH A FEW" SESSION'
@@ -134,6 +133,8 @@ class Stats {
     }
     
     formatToString(timeObject) {
+        if (!timeObject) return "0 SECONDS";
+        
         let timeStat;
         if (timeObject.minutes > 0 || timeObject.hours > 0) {
             const time = Math.round((timeObject.hours * 60) + timeObject.minutes + (timeObject.seconds / 60));
