@@ -216,7 +216,8 @@ class TabHandler {
 
                 //Example: If previous page was youtube.com/shorts and current page is not the short page (to prevent session saving each new short video watch) 
                 if ((this.previousUrl.url.includes("youtube") && this.previousUrl.url.includes("short")) && !changeInfo.url.includes("short")) {
-                    await this.sendRequest("videoplayer closed");      
+                    const sessionHandler = new SessionsHandler();
+                    sessionHandler.saveSessions();
                 }
 
                 this.isChangedUrlLogged = true;
@@ -241,7 +242,7 @@ class TabHandler {
                 this.hideContainerTimerId = setTimeout(async () => {
                     const { options } = await chrome.storage.local.get("options");
                     console.log(options);
-        
+                    
                     if (tab.url.includes("youtube") && options.hideThumbnails && !tab.url.includes("short")) {
                         await this.sendRequest("remove_shortcontainer")
                         this.isContainerHidden = true;
@@ -284,7 +285,10 @@ class TabHandler {
      */
     async sendRequest(message) {
         let activeTab = await this.getActiveTab();  
-        const response = await chrome.tabs.sendMessage(activeTab.id, {message: message});
+        if (activeTab.url.includes("youtube")) {
+            const response = await chrome.tabs.sendMessage(activeTab.id, {message: message});
+        }
+        
     }
 
     async getActiveTab() { 
@@ -652,10 +656,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         handleBlockerAppended();
     }
 
-    if (request.message === "save_sessions") {
-        const sessionHandler = new SessionsHandler();
-        sessionHandler.saveSessions();
-    }
 
     if (request.message === "set_watch_limit") {
         chrome.storage.local.get("mode")
