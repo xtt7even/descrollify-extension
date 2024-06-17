@@ -10,32 +10,20 @@ chrome.runtime.onInstalled.addListener((details) => {
         console.log("First initialization!");
         initializeStorage();
     }
-
     initializeInstances();
-
-    startBlockerInterval();
-    reminder.toggleReminderInterval();
 });
 
 chrome.runtime.onStartup.addListener(() => {
     console.log("Browser has started");
-
-    initializeInstances();
-
     startBlockerInterval();
     reminder.toggleReminderInterval();
 });
 
 function initializeInstances() {
-    reminder = new Reminder();
-    tabHandler = new TabHandler();
-    videoTimer = new VideoTimer();
-
-    // console.log("Instances initialized:", {
-    //     reminder,
-    //     tabHandler,
-    //     videoTimer
-    // });
+    reminder = reminder ? reminder : new Reminder();
+    tabHandler = tabHandler ? tabHandler : new TabHandler();
+    videoTimer = videoTimer ? videoTimer : new VideoTimer();
+    console.log("Initialized instances");
 }
 
 async function startBlockerInterval () {
@@ -190,6 +178,8 @@ class TabHandler {
             setTimeout(() => {
                 this.redirectBack(tab);
             }, 2000)
+
+
             this.openedTabs.push(
                 {
                     "id": tab.id, 
@@ -206,7 +196,6 @@ class TabHandler {
         */
         chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             if (!this.isChangedUrlLogged && changeInfo.url){
-                // console.log("Tab updated");
                 this.isContainerHidden = false;
 
                 this.previousUrl = await this.openedTabs.find(obj => {
@@ -222,14 +211,14 @@ class TabHandler {
                 this.isChangedUrlLogged = true;
             }
 
-            
-
             if (changeInfo.url) {
                 await chrome.tabs.query({}, (tabs) => {
                     tabs.forEach((tab, i) => {
                         this.openedTabs[i].url = tab.url;
                     });
                 });
+
+
             }
 
 
@@ -771,3 +760,5 @@ async function setWatchLimit (mode) {
         return;
     }
 }
+
+initializeInstances();
