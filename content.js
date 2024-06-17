@@ -236,8 +236,6 @@ async function buildBlocker(short) {
 
         blockerLogo.addEventListener('click', () => {
             (async () => {
-                const response = await chrome.runtime.sendMessage({type: "escapedscrolling"});
-                await chrome.runtime.sendMessage({message: "save_sessions"});
                 window.location.href = ".."
             })(); 
         })

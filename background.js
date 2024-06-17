@@ -477,11 +477,24 @@ class SessionsHandler {
         this.sessionValue = "watchedVideosCounter";
         this.storageAvg = currentMode == "LET ME WATCH MODE" ? "lmwAverage" : "wafAverage";
         await this.appendSession();
+
+        const {watchedVideosCounter} = await chrome.storage.local.get("watchedVideosCounter");
+        chrome.storage.local.get(["numberOfEscapes"])
+        .then((result) => {
+            console.log(watchedVideosCounter)
+            if (watchedVideosCounter > 1) {
+                chrome.storage.local.set({ "numberOfEscapes": result.numberOfEscapes + 1 });
+                console.log("escaped")
+            }
+        })
+        .catch((error) => {
+            console.error("Error updating numberOfEscapes:", error);
+        });
         
         this.resetSessionTime();
         chrome.storage.local.set({"watchedVideosCounter": 0});
     }
-
+    
     async resetSessionTime() {
         chrome.storage.local.set({"sessionLmwWatchTime": {hours: 0, minutes: 0, seconds: 0}});
         chrome.storage.local.set({"sessionWafWatchTime": {hours: 0, minutes: 0, seconds: 0}});
@@ -524,6 +537,14 @@ class SessionsHandler {
         const {"watchedVideosCounter": videoCounter} = await chrome.storage.local.get("watchedVideosCounter");
         if (videoCounter > 1) {
             chrome.storage.local.set({[this.sessionHistory]: sessionHistory});
+            chrome.storage.local.get(["numberOfEscapes"])
+            .then((result) => {
+                chrome.storage.local.set({ "numberOfEscapes": result.numberOfEscapes + 1 });
+            })
+            .catch((error) => {
+                console.error("Error updating numberOfEscapes:", error);
+            });
+
         }
 
         if (this.storageAvg != null) {
@@ -613,12 +634,12 @@ function timeToSeconds (time) {
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.type === "escapedscrolling") {
         chrome.storage.local.get(["numberOfEscapes"])
-            .then((result) => {
-                chrome.storage.local.set({ "numberOfEscapes": result.numberOfEscapes + 1 });
-            })
-            .catch((error) => {
-                console.error("Error updating numberOfEscapes:", error);
-            });
+        .then((result) => {
+            chrome.storage.local.set({ "numberOfEscapes": result.numberOfEscapes + 1 });
+        })
+        .catch((error) => {
+            console.error("Error updating numberOfEscapes:", error);
+        });
     }
 
     if (request.mode) {
