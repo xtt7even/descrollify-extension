@@ -18,7 +18,7 @@ chrome.runtime.onInstalled.addListener((details) => {
 });
 
 chrome.runtime.onStartup.addListener(() => {
-    console.log("Chrome has started.");
+    console.log("Browser has started");
 
     initializeInstances();
 
@@ -31,17 +31,16 @@ function initializeInstances() {
     tabHandler = new TabHandler();
     videoTimer = new VideoTimer();
 
-    console.log("Instances initialized:", {
-        reminder,
-        tabHandler,
-        videoTimer
-    });
+    // console.log("Instances initialized:", {
+    //     reminder,
+    //     tabHandler,
+    //     videoTimer
+    // });
 }
 
 async function startBlockerInterval () {
     const {options} = await chrome.storage.local.get('options');
     if (options.blocker_remove_timestamp != null) {
-        console.log("Starting interval")
         const blockerInterval = setInterval(async () => {
             const timerEnd = await checkTimerEnd(options.blocker_remove_timestamp, options.removeBlockerTimer);
             if (timerEnd) {
@@ -60,7 +59,7 @@ async function startBlockerInterval () {
  */
 async function initializeStorage() {
     const storageData = await chrome.storage.local.get();
-    console.log(storageData)
+    // console.log(storageData)
 
     if (!Object.hasOwn(storageData, "isBlocked")) {
         chrome.storage.local.set({"isBlocked": false});
@@ -241,7 +240,7 @@ class TabHandler {
                 }
                 this.hideContainerTimerId = setTimeout(async () => {
                     const { options } = await chrome.storage.local.get("options");
-                    console.log(options);
+                    // console.log(options);
                     
                     if (tab.url.includes("youtube") && options.hideThumbnails && !tab.url.includes("short")) {
                         await this.sendRequest("remove_shortcontainer")
@@ -265,9 +264,9 @@ class TabHandler {
     async redirectBack(tab) {
         const {options: options} = await chrome.storage.local.get("options");
         const {mode} = await chrome.storage.local.get("mode"); 
-        console.log(mode);
+        // console.log(mode);
         if (options.autoRedirect && mode == "TOTAL FOCUS MODE" && tab.url.includes("short")) {
-            console.log("Redirecting back");
+            // console.log("Redirecting back");
             await this.sendRequest("redirect_back");
         }
     }
@@ -296,14 +295,13 @@ class TabHandler {
             let timeoutCounter = 0;
             const waitingForActiveTab = setInterval(async () => {
                 await chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
-                    console.log("Waiting for active tab");
+                    // console.log("Waiting for active tab");
                     if (timeoutCounter >= 30) {
                         reject("No active tab timeout")
                         clearInterval(waitingForActiveTab);
                     }
                     if (tabs.length > 0) {
-                        console.log("Found active tab")
-                        console.log(tabs[0]);
+                        // console.log("Found active tab")
                         clearInterval(waitingForActiveTab);
                         resolve(tabs[0]);
                     }
@@ -343,7 +341,7 @@ class VideoTimer {
             this.isStarted = true;
         }
 
-        console.log("started watchtimer")
+        // console.log("started watchtimer")
     }
 
     /**
@@ -359,10 +357,10 @@ class VideoTimer {
             }  
 
             this.isStarted = false;
-            console.log("[Short Blocker] Video paused, elapsed time: ", elapsedTime);
+            // console.log("[Short Blocker] Video paused, elapsed time: ", elapsedTime);
         }
         const storage = await chrome.storage.local.get();
-        console.log(storage); 
+        // console.log(storage); 
     }
 
     /**
@@ -379,7 +377,6 @@ class VideoTimer {
             this.saveTime(elapsedTime, "totalLmwWatchTime");
             this.saveTime(elapsedTime, "sessionLmwWatchTime");
         }
-        console.log("saving watchtime")
     }
 
     /**
@@ -464,7 +461,7 @@ class SessionsHandler {
 
     async isAllowedToWatch () {
         const storage = await chrome.storage.local.get();
-        console.log(storage.watchedVideosCounter, storage.watchedVideosLimit, !(storage.watchedVideosCounter > storage.watchedVideosLimit));
+        // console.log(storage.watchedVideosCounter, storage.watchedVideosLimit, !(storage.watchedVideosCounter > storage.watchedVideosLimit));
         if (!(storage.watchedVideosCounter > storage.watchedVideosLimit)) {
             return true;
         }
@@ -530,15 +527,12 @@ class SessionsHandler {
     }
 
     async appendSession() {
-        console.log("Append session")
         let {[this.sessionHistory]: sessionHistory} = await chrome.storage.local.get(this.sessionHistory);
         let {[this.sessionValue]: currentSession} = await chrome.storage.local.get(this.sessionValue);
         if (this.sessionValue == "watchedVideosCounter") currentSession -= 1;
         sessionHistory.push(currentSession);
-        console.log(sessionHistory, this.sessionHistory)
     
         const {"watchedVideosCounter": videoCounter} = await chrome.storage.local.get("watchedVideosCounter");
-        console.log(videoCounter);
         if (videoCounter > 1) {
             chrome.storage.local.set({[this.sessionHistory]: sessionHistory});
         }
@@ -575,13 +569,12 @@ class SessionsHandler {
 }
 
 class Reminder {
-    constructor () {
+    constructor() {
         this.reminderInterval = null;
         this.waitingForAlert = false;
     }
 
     async toggleReminderInterval() {
-        console.log("toggleReminderInterval");
         const {options} = await chrome.storage.local.get('options');
         const {mode} = await chrome.storage.local.get('mode');
 
@@ -648,7 +641,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     }
 
     if (request.message === "toggle_mode_reminder") {
-        console.log("toggling");
         reminder.toggleReminderInterval();
     }
 
@@ -661,7 +653,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         chrome.storage.local.get("mode")
             .then((result) => {
                 const currentMode = result.mode;
-                console.log(currentMode);
                 setWatchLimit(currentMode);
             })
             .catch((error) => {
@@ -670,7 +661,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     }
 
     if (request.message === "handle_video_play") {
-        console.log("Handling video play in the background");
+        // console.log("Handling video play in the background");
         videoTimer.startWatchTimer();
     }
 
@@ -703,7 +694,6 @@ async function handleAppendSession(request) {
 async function checkTimerEnd(blocker_timestamp, timer) { 
     const timerInMs = timer.hours * 3600000 + timer.minutes * 60000 + timer.seconds * 1000
     if (Date.now()- blocker_timestamp > timerInMs) {
-        console.log("Date.now() - blocker_timestamp > timerInMs", Date.now()- blocker_timestamp > timerInMs)
         return true;
     }
     return false;
@@ -724,7 +714,7 @@ async function handleBlockerAppended() {
 }
 
 async function handleVideoPause() {
-    console.log("Handling video pause in the background");
+    // console.log("Handling video pause in the background");
     await videoTimer.stopWatchTimer();
 }
 
@@ -733,12 +723,12 @@ const handleAddVideo = async (sendResponse) => {
     //TODO: Create session when session initialized, not every video watch
     const sessionHandler = new SessionsHandler();
     if (await sessionHandler.isAllowedToWatch()) {
-        console.log("adding video watch");
+        // console.log("adding video watch");
         await sessionHandler.addVideoWatch();
         sendResponse({response: "allow_video"});
     }
     else {
-        console.log("Not allowed to watch");
+        // console.log("Not allowed to watch");
         sendResponse({response: "block_video"});
     }
 }
@@ -771,7 +761,7 @@ async function setWatchLimit (mode) {
 
     if (mode === "WATCH A FEW MODE") {
         const {options: options} = await chrome.storage.local.get('options');
-        console.log(options);
+        // console.log(options);
         chrome.storage.local.set({"watchedVideosLimit": options.maxVideosAllowed});
         return;
     }
