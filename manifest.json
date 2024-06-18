@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "Descrollify",
+    "name": "Descrollify — video scrolling limiter",
     "version": "0.1",
-    "description": "An extension that prevents endless scrolling through short videos, helping you stay focused and save time.",
+    "description": "An extension that prevents and limits endless scrolling through short videos, helping you stay focused and save time.",
     "icons": {
       "48": "icon48.png",
       "96": "icon96.png"
