@@ -1,3 +1,8 @@
+@font-face {
+    font-family: 'Roboto Condensed';
+    src: url('fonts/static/RobotoCondensed-Black.ttf') format('truetype');
+}
+
 #blocker-container {
     background-color: rgba(107, 201, 255, 0.4);
     border-radius: 30px;
@@ -8,8 +13,7 @@
     flex-direction: column;
     align-items: center;
     align-content: center;
-    justify-content: center; /* Center horizontally */
-
+    justify-content: center; 
 
     flex-wrap: wrap;
     margin-top: 1%;
@@ -28,7 +32,6 @@
     color: white;
     font-size: 20px;
     text-align: center;
-    font-family: 'Roboto Condensed';
     font-weight: 400;
 
     text-shadow: -1px 2px 3px rgba(0,0,0,0.6);
