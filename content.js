@@ -108,6 +108,7 @@ window.addEventListener('load', () => {
         if(message.message == 'redirect_back') {
             window.location.href = ".."  ;
         }
+        return true
     });
 });
 
@@ -304,11 +305,14 @@ function removeVideoListeners (videoElement) {
 }
 
 async function handleVideoPause() {
-    console.log("Video Pause");
-    await chrome.runtime.sendMessage({message: "handle_video_pause"});
+    // console.log("Video Pause");
+    const commentSection = document.querySelector('ytd-engagement-panel-section-list-renderer[visibility="ENGAGEMENT_PANEL_VISIBILITY_EXPANDED"]');
+    if (commentSection == null) {
+        await chrome.runtime.sendMessage({message: "handle_video_pause"});
+    }
 }
 
 async function handleVideoPlay() {
-    console.log("Video Play")
+    // console.log("Video Play")
     await chrome.runtime.sendMessage({message: "handle_video_play"});
 }

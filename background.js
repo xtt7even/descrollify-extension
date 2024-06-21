@@ -275,8 +275,8 @@ class TabHandler {
         let activeTab = await this.getActiveTab();  
         if (activeTab.url.includes("youtube")) {
             const response = await chrome.tabs.sendMessage(activeTab.id, {message: message});
+            return response;
         }
-        
     }
 
     async getActiveTab() { 
@@ -303,13 +303,13 @@ class TabHandler {
 
 class VideoTimer {
     constructor() {
-        this.watchInterval = null;
 
         this.isStarted = false;
 
         this.startTime = null;
         this.endTime = null;
 
+        this.inCommentsInterval = null;
     }
 
     /**
@@ -329,10 +329,8 @@ class VideoTimer {
             this.startTime = Date.parse(new Date());
             this.isStarted = true;
         }
-
-        // console.log("started watchtimer")
     }
-
+    
     /**
      *  Stops the watch timer, calculates elapsed time in ms and saves watch time if necessary.
      */
@@ -346,10 +344,10 @@ class VideoTimer {
             }  
 
             this.isStarted = false;
-            // console.log("[Short Blocker] Video paused, elapsed time: ", elapsedTime);
+            console.log("[Short Blocker] Video paused, elapsed time: ", elapsedTime);
         }
         const storage = await chrome.storage.local.get();
-        // console.log(storage); 
+        console.log(storage); 
     }
 
     /**
@@ -658,6 +656,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         videoTimer.startWatchTimer();
     }
 
+    if (request.message === "handle_pause_in_comments") {
+        videoTimer.handleInCommentsPause();
+    }
+
     if (request.message === "handle_video_pause") {
         handleVideoPause();
     }
@@ -669,6 +671,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
     return false; 
 });
+
+async function handleCommentsPause() {
+
+}
 
 async function handleReminderToggle() {
     reminder.toggleReminderInterval();
