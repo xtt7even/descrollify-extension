@@ -42,11 +42,9 @@ function setListeners() {
 
     infoBtn.addEventListener("click", () => {
         chrome.tabs.create({url: "extension://llbeomiepdfkkldghiinkibjkdkanknl/info.html"});
-        console.log("infobtn fired")
     });
 
     settingsBtn.addEventListener("click", async () => {
-        console.log("hello");
         createSettingsOverlay();
         const iframe = document.getElementById('iframe-settings');
         iframe.onload = () => {
@@ -74,7 +72,6 @@ function addPageButtonsListeners() {
     const prevPageButton = document.querySelector("#prev-page");
 
     nextPageButton.addEventListener('click', async () => {
-        console.log(stats.page);
         if (stats.page < 2) {
             stats.page++;
         }
@@ -83,7 +80,6 @@ function addPageButtonsListeners() {
     })
 
     prevPageButton.addEventListener('click', async () => {
-        console.log(stats.page);
         if (stats.page > 0) {
             stats.page--;
         }
