@@ -275,8 +275,8 @@ class TabHandler {
         let activeTab = await this.getActiveTab();  
         if (activeTab.url.includes("youtube")) {
             const response = await chrome.tabs.sendMessage(activeTab.id, {message: message});
+            return response;
         }
-        
     }
 
     async getActiveTab() { 
@@ -303,13 +303,13 @@ class TabHandler {
 
 class VideoTimer {
     constructor() {
-        this.watchInterval = null;
 
         this.isStarted = false;
 
         this.startTime = null;
         this.endTime = null;
 
+        this.inCommentsInterval = null;
     }
 
     /**
@@ -328,11 +328,10 @@ class VideoTimer {
         if (!this.isStarted) {
             this.startTime = Date.parse(new Date());
             this.isStarted = true;
+            console.log("[Short Blocker] Started Timer");
         }
-
-        // console.log("started watchtimer")
     }
-
+    
     /**
      *  Stops the watch timer, calculates elapsed time in ms and saves watch time if necessary.
      */
@@ -346,10 +345,10 @@ class VideoTimer {
             }  
 
             this.isStarted = false;
-            // console.log("[Short Blocker] Video paused, elapsed time: ", elapsedTime);
+            console.log("[Short Blocker] Video paused, elapsed time: ", elapsedTime);
         }
         const storage = await chrome.storage.local.get();
-        // console.log(storage); 
+        console.log(storage); 
     }
 
     /**
@@ -656,10 +655,22 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.message === "handle_video_play") {
         // console.log("Handling video play in the background");
         videoTimer.startWatchTimer();
+        console.log("handle_video_play")
+    }
+
+    if (request.message === "handle_comments_open") {
+        videoTimer.startWatchTimer();
+        console.log("handle_comments_open")
+    }
+    
+    if (request.message === "handle_comments_close") {
+        videoTimer.stopWatchTimer();
+        console.log("handle_comments_close")
     }
 
     if (request.message === "handle_video_pause") {
         handleVideoPause();
+        console.log("handle_video_pause")
     }
 
     if (request.message === "add_video_watch") {
