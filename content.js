@@ -9,9 +9,7 @@ function SaveDeveloperFromScrolling() {
     injectDebugBlocker();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    observeDOMChanges();
-});
+
 
 function injectDebugBlocker() {
     const sequenceElements = document.getElementsByClassName('reel-video-in-sequence style-scope ytd-shorts');
@@ -165,6 +163,7 @@ window.addEventListener('yt-navigate-finish', async function() {
     const pagePosition = await chrome.storage.local.get("isOnShortPage");
     if (url.href.includes('shorts')) {
 
+        observeDOMChanges();
         addVideoListeners(videoElement);
 
         const initialCommentsButtons = Array.from(document.querySelectorAll('div#comments-button.button-container.style-scope.ytd-reel-player-overlay-renderer'));

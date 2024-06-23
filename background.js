@@ -655,22 +655,22 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.message === "handle_video_play") {
         // console.log("Handling video play in the background");
         videoTimer.startWatchTimer();
-        console.log("handle_video_play")
+        // console.log("handle_video_play")
     }
 
     if (request.message === "handle_comments_open") {
         videoTimer.startWatchTimer();
-        console.log("handle_comments_open")
+        // console.log("handle_comments_open")
     }
     
     if (request.message === "handle_comments_close") {
         videoTimer.stopWatchTimer();
-        console.log("handle_comments_close")
+        // console.log("handle_comments_close")
     }
 
     if (request.message === "handle_video_pause") {
         handleVideoPause();
-        console.log("handle_video_pause")
+        // console.log("handle_video_pause")
     }
 
     if (request.message === "add_video_watch") {
