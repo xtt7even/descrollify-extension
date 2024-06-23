@@ -9,6 +9,10 @@ function SaveDeveloperFromScrolling() {
     injectDebugBlocker();
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    observeDOMChanges();
+});
+
 function injectDebugBlocker() {
     const sequenceElements = document.getElementsByClassName('reel-video-in-sequence style-scope ytd-shorts');
 
@@ -112,6 +116,38 @@ window.addEventListener('load', () => {
     });
 });
 
+function addListenersToCommentsButtons(buttons) {
+    buttons.forEach(button => {
+        button.addEventListener('click', handleCommentsOpen);
+    });
+}
+
+function removeListenersFromCommentsButtons(buttons) {
+    buttons.forEach(button => {
+        button.removeEventListener('click', handleCommentsOpen);
+    });
+}
+
+function observeDOMChanges() {
+    const videoContainer = document.querySelector('ytd-watch-flexy');
+
+    if (!videoContainer) return;
+
+    const observer = new MutationObserver(mutationsList => {
+        for (let mutation of mutationsList) {
+            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                const newCommentsButtons = Array.from(mutation.addedNodes)
+                    .filter(node => node.matches('div#comments-button.button-container.style-scope.ytd-reel-player-overlay-renderer'));
+
+                addListenersToCommentsButtons(newCommentsButtons);
+            }
+        }
+    });
+
+    const config = { childList: true, subtree: true };
+    observer.observe(videoContainer, config);
+}
+
 // Event listener for page change
 window.addEventListener('yt-navigate-finish', async function() {
     removeBlocker()
@@ -128,8 +164,11 @@ window.addEventListener('yt-navigate-finish', async function() {
     const url = new URL(window.location.href);
     const pagePosition = await chrome.storage.local.get("isOnShortPage");
     if (url.href.includes('shorts')) {
-        // If URL includes "shorts" set isOnShortPage to true (session based storage)
+
         addVideoListeners(videoElement);
+
+        const initialCommentsButtons = Array.from(document.querySelectorAll('div#comments-button.button-container.style-scope.ytd-reel-player-overlay-renderer'));
+        addListenersToCommentsButtons(initialCommentsButtons);
        
         const short = await scanForShort();
         //if previous location was short page, before starting the timer we stoping it and saving the timer.
@@ -288,7 +327,8 @@ function buildBlockerLogo() {
 
 
 function addVideoListeners (videoElement) {
-
+    const commentsButton = document.querySelector('div#comments-button.button-container.style-scope.ytd-reel-player-overlay-renderer');
+    if (commentsButton) commentsButton.addEventListener('click', handleCommentsOpen)
     if (videoElement) {
         videoElement.addEventListener('pause', handleVideoPause);
         videoElement.addEventListener('play', handleVideoPlay);
@@ -297,11 +337,38 @@ function addVideoListeners (videoElement) {
 }
 
 function removeVideoListeners (videoElement) {
+    const commentsButton = document.querySelector('div#comments-button.button-container.style-scope.ytd-reel-player-overlay-renderer');
+    if (commentsButton) commentsButton.removeEventListener('click', handleCommentsOpen);
     if (videoElement) {
         videoElement.removeEventListener('pause', handleVideoPause);
         videoElement.removeEventListener('play', handleVideoPlay);
     }   
     console.log("[Short Blocker] Removed video event listeners")
+}
+
+async function handleCommentsOpen() {
+    await chrome.runtime.sendMessage({message: "handle_comments_open"});
+    console.log("handle_comments_open")
+    const closeComments = document.querySelector('div#visibility-button.style-scope.ytd-engagement-panel-title-header-renderer');
+    if (closeComments) {
+        closeComments.addEventListener('click', handleCommentsClose);
+    }
+}
+
+async function handleCommentsClose() {
+    const videoElement = document.querySelector('video'); 
+    if (videoElement.paused) {
+        await chrome.runtime.sendMessage({message: "handle_comments_close"});
+    }
+
+    const closeComments = document.querySelector('div#visibility-button.style-scope.ytd-engagement-panel-title-header-renderer');
+    // const commentsButton = document.querySelector('div#comments-button.button-container.style-scope.ytd-reel-player-overlay-renderer');
+    try {
+        closeComments.removeEventListener('click', handleCommentsClose);
+        console.log("Removed close btn listener")
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 async function handleVideoPause() {
