@@ -3,6 +3,11 @@
     src: url('fonts/static/RobotoCondensed-Medium.ttf') format('truetype');
 }
 
+@font-face {
+    font-family: 'Roboto Condensed Thin';
+    src: url('fonts/static/RobotoCondensed-Thin.ttf') format('truetype');
+}
+
 body {
     margin: 0;
     font-family: 'Roboto Condensed';
@@ -69,8 +74,8 @@ body {
 h3 {
     color: white;
     margin: 0;
-    font-family: 'Roboto Condensed';
-    font-weight: 100;
+    font-family: 'Roboto Condensed Thin';
+    font-weight: 600;
     font-size: 16px;
 }
 
