@@ -609,7 +609,7 @@ function secondsToTime(seconds) {
     const minutes = Math.floor(seconds / 60);
     seconds = Math.floor(seconds % 60);
 
-    return { hours: hours, minutes: minutes, seconds: seconds};
+    return { hours: Math.max(0, hours), minutes: Math.max(0, minutes), seconds: Math.max(0, seconds)};
 }
 
 
