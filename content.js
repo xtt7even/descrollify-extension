@@ -92,8 +92,20 @@ async function blockShortThumbnails() {
 
 
 
-window.addEventListener('load', () => {
-    redirectBackNotification();
+window.addEventListener('load', async () => {
+
+    const {awaitingRedirectNotification} = await chrome.storage.local.get("awaitingRedirectNotification");
+    if (awaitingRedirectNotification) {
+        drawRedirectBackNotification();
+        setTimeout(() => {
+            hideRedirectBackNotification();
+            chrome.storage.local.set({"awaitingRedirectNotification": false});
+        }, 7000)
+    }
+    else {
+        hideRedirectBackNotification();
+    }
+
     chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         console.log(message)
         // console.log(message == 'videoplayer closed', message == 'remove_shortcontainer')
@@ -108,50 +120,59 @@ window.addEventListener('load', () => {
             alert('[DESCROLLIFY REMINDER]\nYOU CURRENTLY WATCHING SHORT VIDEOS IN "LET ME WATCH" MODE! CONSIDER SWITCHING TO THE "WATCH A FEW MODE" TO AVOID ENDLESS SCROLLING')
         }
         if(message.message == 'redirect_back') {
+            await chrome.storage.local.set({"awaitingRedirectNotification": true});
             window.location.href = ".."  ;
         }
         return true
     });
 });
 
-function redirectBackNotification() {
-            const div = document.createElement('div');
-            div.className = 'custom-div';
+function hideRedirectBackNotification() {
+    const totalFocusNote = document.querySelector(".totalfocus-notification");
+    if (totalFocusNote) {
+        totalFocusNote.remove();
+    }
+}
+
+function drawRedirectBackNotification() {
+
+    const div = document.createElement('div');
+    div.className = 'totalfocus-notification';
 
 
-            const headerContainer = document.createElement('div');
-            headerContainer.className = 'totalfocus-header-container';
+    const headerContainer = document.createElement('div');
+    headerContainer.className = 'totalfocus-header-container';
 
-            const header = document.createElement('h1');
-            header.className = 'totalfocus-notification-header';
-            header.innerText = 'DESCROLLIFY';
+    const header = document.createElement('h1');
+    header.className = 'totalfocus-notification-header';
+    header.innerText = 'DESCROLLIFY';
 
 
-            headerContainer.appendChild(header);
-            const noteContainer = document.createElement('div');
-            noteContainer.className = 'totalfocus-note-container';
+    headerContainer.appendChild(header);
+    const noteContainer = document.createElement('div');
+    noteContainer.className = 'totalfocus-note-container';
 
-            const note = document.createElement('p');
-            note.className = 'totalfocus-note';
-            note.innerText = 'TOTAL FOCUS MODE PREVENTED YOU TO FROM SCROLLING, AND REDIRECTED YOU BACK, YOU CAN TURN THIS MODE OFF IN THE DESCROLLIFY POPUP';
+    const note = document.createElement('p');
+    note.className = 'totalfocus-note';
+    note.innerText = 'TOTAL FOCUS MODE PREVENTED YOU TO FROM SCROLLING, AND REDIRECTED YOU BACK, YOU CAN TURN THIS MODE OFF IN THE DESCROLLIFY POPUP';
 
-            noteContainer.appendChild(note);
+    noteContainer.appendChild(note);
 
-            div.appendChild(headerContainer);
-            div.appendChild(noteContainer);
+    div.appendChild(headerContainer);
+    div.appendChild(noteContainer);
 
-            const progressBar = document.createElement('div');
-            progressBar.className = 'progress-bar';
+    const progressBar = document.createElement('div');
+    progressBar.className = 'progress-bar';
 
-            // Create progress animation bar
-            const progress = document.createElement('div');
-            progress.className = 'progress';
-            progressBar.appendChild(progress);
+    // Create progress animation bar
+    const progress = document.createElement('div');
+    progress.className = 'progress';
+    progressBar.appendChild(progress);
 
-            // Append progress bar to the main div
-            div.appendChild(progressBar);
+    // Append progress bar to the main div
+    div.appendChild(progressBar);
 
-            document.body.appendChild(div);
+    document.body.appendChild(div);
 }
 
 function addListenersToCommentsButtons(buttons) {
