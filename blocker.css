@@ -64,12 +64,12 @@
     .progress {
         height: 100%;
         width: 100%;
-        background-color: #5a5a5a; /* Green color for progress */
-        animation: progressAnimation 7s linear forwards; /* Adjust time as needed */
+        background-color: #5a5a5a; 
+        animation: progressAnimation 7s linear forwards; 
     }
 @keyframes progressAnimation {
-        0% { width: 100%; } /* Starting point */
-        100% { width: 0%; } /* End point */
+        0% { width: 100%; } 
+        100% { width: 0%; } 
 }
 
 .totalfocus-note-container {

@@ -79,7 +79,7 @@ async function initializeStorage() {
     }
 
     if (!Object.hasOwn(storageData, "watchedVideosLimit")) {
-        chrome.storage.local.set({ "watchedVideosLimit": 3})
+        chrome.storage.local.set({ "watchedVideosLimit": 15})
     }
 
     if (!Object.hasOwn(storageData, "lmwSessionHistory")) {

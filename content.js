@@ -154,7 +154,7 @@ function drawRedirectBackNotification() {
 
     const note = document.createElement('p');
     note.className = 'totalfocus-note';
-    note.innerText = 'TOTAL FOCUS MODE PREVENTED YOU TO FROM SCROLLING, AND REDIRECTED YOU BACK, YOU CAN TURN THIS MODE OFF IN THE DESCROLLIFY POPUP';
+    note.innerText = 'TOTAL FOCUS MODE PREVENTED YOU FROM SCROLLING AND REDIRECTED YOU BACK. YOU CAN TURN THIS MODE OFF IN THE DESCROLLIFY POPUP';
 
     noteContainer.appendChild(note);
 
