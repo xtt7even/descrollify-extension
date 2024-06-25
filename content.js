@@ -2,56 +2,56 @@
 
 
 //Following 2 functions are only for using during development to stop myself from distracting while testing/debugging extension.
-function SaveDeveloperFromScrolling() {
-    const existingBlockers = document.querySelectorAll('.developer-saver-debug-descrollify');
-    existingBlockers.forEach(blocker => blocker.remove());
+// function SaveDeveloperFromScrolling() {
+//     const existingBlockers = document.querySelectorAll('.developer-saver-debug-descrollify');
+//     existingBlockers.forEach(blocker => blocker.remove());
 
-    injectDebugBlocker();
-}
+//     injectDebugBlocker();
+// }
 
 
 
-function injectDebugBlocker() {
-    const sequenceElements = document.getElementsByClassName('reel-video-in-sequence style-scope ytd-shorts');
+// function injectDebugBlocker() {
+//     const sequenceElements = document.getElementsByClassName('reel-video-in-sequence style-scope ytd-shorts');
 
-    for (let i = sequenceElements.length - 1; i >= 0; i--) {
-        const sequenceElement = sequenceElements[i];
+//     for (let i = sequenceElements.length - 1; i >= 0; i--) {
+//         const sequenceElement = sequenceElements[i];
 
-        const existingBlocker = sequenceElement.querySelector('.developer-saver-debug-descrollify');
-        if (!existingBlocker) {
-            const overlay = document.createElement('div');
-            overlay.className = 'developer-saver-debug-descrollify';
+//         const existingBlocker = sequenceElement.querySelector('.developer-saver-debug-descrollify');
+//         if (!existingBlocker) {
+//             const overlay = document.createElement('div');
+//             overlay.className = 'developer-saver-debug-descrollify';
 
-            const textElement = document.createElement('div');
-            textElement.id = 'debugging-blocker-text';
-            textElement.innerText = 'THIS IS THE DEBUGGING BLOCKER!';
-            textElement.style.background = 'rgba(0, 0, 0, 0.7)';
-            textElement.style.padding = '10px 20px';
-            textElement.style.borderRadius = '10px';
+//             const textElement = document.createElement('div');
+//             textElement.id = 'debugging-blocker-text';
+//             textElement.innerText = 'THIS IS THE DEBUGGING BLOCKER!';
+//             textElement.style.background = 'rgba(0, 0, 0, 0.7)';
+//             textElement.style.padding = '10px 20px';
+//             textElement.style.borderRadius = '10px';
 
-            overlay.appendChild(textElement);
+//             overlay.appendChild(textElement);
 
-            overlay.style.position = 'absolute';
-            overlay.style.top = '0';
-            overlay.style.left = '0';
-            overlay.style.width = '100%';
-            overlay.style.height = '100%';
-            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-            overlay.style.backdropFilter = 'blur(30px)';
-            overlay.style.zIndex = '9999';
-            overlay.style.display = 'flex';
-            overlay.style.alignItems = 'center';
-            overlay.style.justifyContent = 'center';
-            overlay.style.color = 'white';
-            overlay.style.fontSize = '24px';
-            overlay.style.fontWeight = 'bold';
-            overlay.style.textAlign = 'center';
+//             overlay.style.position = 'absolute';
+//             overlay.style.top = '0';
+//             overlay.style.left = '0';
+//             overlay.style.width = '100%';
+//             overlay.style.height = '100%';
+//             overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+//             overlay.style.backdropFilter = 'blur(30px)';
+//             overlay.style.zIndex = '9999';
+//             overlay.style.display = 'flex';
+//             overlay.style.alignItems = 'center';
+//             overlay.style.justifyContent = 'center';
+//             overlay.style.color = 'white';
+//             overlay.style.fontSize = '24px';
+//             overlay.style.fontWeight = 'bold';
+//             overlay.style.textAlign = 'center';
 
-            sequenceElement.style.position = 'relative';
-            sequenceElement.prepend(overlay);
-        }
-    }
-}
+//             sequenceElement.style.position = 'relative';
+//             sequenceElement.prepend(overlay);
+//         }
+//     }
+// }
 
 
 function locateShort() {
@@ -93,7 +93,7 @@ async function blockShortThumbnails() {
 
 
 window.addEventListener('load', () => {
-
+    redirectBackNotification();
     chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         console.log(message)
         // console.log(message == 'videoplayer closed', message == 'remove_shortcontainer')
@@ -113,6 +113,46 @@ window.addEventListener('load', () => {
         return true
     });
 });
+
+function redirectBackNotification() {
+            const div = document.createElement('div');
+            div.className = 'custom-div';
+
+
+            const headerContainer = document.createElement('div');
+            headerContainer.className = 'totalfocus-header-container';
+
+            const header = document.createElement('h1');
+            header.className = 'totalfocus-notification-header';
+            header.innerText = 'DESCROLLIFY';
+
+
+            headerContainer.appendChild(header);
+            const noteContainer = document.createElement('div');
+            noteContainer.className = 'totalfocus-note-container';
+
+            const note = document.createElement('p');
+            note.className = 'totalfocus-note';
+            note.innerText = 'TOTAL FOCUS MODE PREVENTED YOU TO FROM SCROLLING, AND REDIRECTED YOU BACK, YOU CAN TURN THIS MODE OFF IN THE DESCROLLIFY POPUP';
+
+            noteContainer.appendChild(note);
+
+            div.appendChild(headerContainer);
+            div.appendChild(noteContainer);
+
+            const progressBar = document.createElement('div');
+            progressBar.className = 'progress-bar';
+
+            // Create progress animation bar
+            const progress = document.createElement('div');
+            progress.className = 'progress';
+            progressBar.appendChild(progress);
+
+            // Append progress bar to the main div
+            div.appendChild(progressBar);
+
+            document.body.appendChild(div);
+}
 
 function addListenersToCommentsButtons(buttons) {
     buttons.forEach(button => {
@@ -145,11 +185,15 @@ function observeDOMChanges() {
     const config = { childList: true, subtree: true };
     observer.observe(videoContainer, config);
 }
+document.addEventListener('DOMContentLoaded', () => {
+
+});
 
 // Event listener for page change
 window.addEventListener('yt-navigate-finish', async function() {
+
     removeBlocker()
-    SaveDeveloperFromScrolling();
+    // SaveDeveloperFromScrolling();
 
     const {isBlocked} = await chrome.storage.local.get("isBlocked");
     const videoElement = document.querySelector('video');
