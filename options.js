@@ -94,20 +94,6 @@ window.addEventListener("load", async function() {
     });
 
     //--------------------------------------
-    // Automatically redirect back on short video open button
-    const autoRedirectBtn = document.getElementById("autoRedirect");
-
-    const autoRedirectRadioButton = autoRedirectBtn.querySelector("input[type='radio']");
-    setToggleOption('autoRedirect', autoRedirectRadioButton, false);
-
-    autoRedirect.addEventListener('click', async () => {
-        setToggleOption('autoRedirect', autoRedirectRadioButton, true);
-
-        const button = document.querySelector("#autoRedirect");
-        const paragraph = button.querySelector("p");
-    });
-
-    //--------------------------------------
     // "Remove blocker after" timer
     const hourSelector = document.querySelector('#hours-select');
     fillTimeSelectList(hourSelector, 0, 24);

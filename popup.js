@@ -26,6 +26,8 @@
 // } 
 
 // resetWatchStats();
+
+chrome.storage.local.set({ "mode": "TOTAL FOCUS MODE"})
 let stats;
 
 window.addEventListener('load', async function(event) {
@@ -108,7 +110,7 @@ class Stats {
         const {"watchSessionsDifference": difference} = await chrome.storage.local.get("watchSessionsDifference");
          
         this.statsFirstTitle.innerHTML = 'ON AVERAGE, YOU WATCH'
-        this.statsSecondTitle.innerHTML = 'LESS, IN ¨WATCH A FEW MODE¨'
+        this.statsSecondTitle.innerHTML = 'LESS IN THE LIMITER MODE'
         this.statsField.innerHTML = difference == 1 ? difference + " VIDEO" : difference + " VIDEOS";   
     }
 
@@ -124,7 +126,7 @@ class Stats {
         const {"savedTime": savedWatchTime} = await chrome.storage.local.get("savedTime");
 
         this.statsFirstTitle.innerHTML = 'ON AVERAGE YOU SAVE'
-        this.statsSecondTitle.innerHTML = 'EACH "WATCH A FEW" SESSION'
+        this.statsSecondTitle.innerHTML = 'WHILE IN THE LIMITER MODE'
         this.statsField.innerHTML = this.formatToString(savedWatchTime);   
     }
     
@@ -157,11 +159,12 @@ async function setMode() {
         const buttonText = buttons[button].querySelector('.modeselector-text');
         const radioButton =  buttons[button].querySelector('.mode-selector');
 
-        if (buttonText.innerHTML === modeObject.mode) radioButton.checked = true;
+        if (buttonText.id === modeObject.mode) radioButton.checked = true;
 
         buttons[button].onclick = async function() {
             radioButton.checked = true;
-            const response = await chrome.runtime.sendMessage({mode: buttonText.innerHTML});
+            const response = await chrome.runtime.sendMessage({mode: buttonText.id});
+            console.log(buttonText.id)
         }
     }
 }

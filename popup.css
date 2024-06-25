@@ -211,7 +211,9 @@ select::-webkit-scrollbar-thumb {
 
 .modebtn-content {
     display: flex;
-    margin-left: 10%;
+    width: 100%;
+    justify-content: center;
+    /* margin-left: 7%; */
     text-align: center;
     align-items: center; /* Center the content vertically */
 }

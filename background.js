@@ -260,17 +260,6 @@ class TabHandler {
         }
     }
 
-    /**
-     * Sends a session save request to the content of the first active tab found
-     * Content script then sends a saveSession request back to the background.js with all the props
-     *
-     * 
-     *                                  --------------IMPORTANT NOTE--------------
-     *      I think almost everything in the content.js, related to session saving, can be done here
-     *          with no need to send message requests to the content.js
-     *      If I have something that triggers the session save from the content.js (pressing the blocker logo for example), I could just send 
-     *          the message to background.js and do the saving here.
-     */
     async sendRequest(message) {
         let activeTab = await this.getActiveTab();  
         if (activeTab.url.includes("youtube")) {
