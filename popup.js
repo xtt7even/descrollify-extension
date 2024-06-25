@@ -27,7 +27,6 @@
 
 // resetWatchStats();
 
-chrome.storage.local.set({ "mode": "TOTAL FOCUS MODE"})
 let stats;
 
 window.addEventListener('load', async function(event) {
@@ -148,8 +147,9 @@ class Stats {
 async function setMode() {
     let buttons = document.getElementsByClassName('popup-modeselector-btn');
 
-    const modeObject = await chrome.storage.local.get(["mode"])
-    if (!Object.hasOwn(modeObject, "mode")) {
+    const {mode: mode} = await chrome.storage.local.get("mode")
+    console.log(mode)
+    if (!mode) {
         chrome.storage.local.set({"mode": "WATCH A FEW MODE"});
         return;
     }
@@ -159,7 +159,7 @@ async function setMode() {
         const buttonText = buttons[button].querySelector('.modeselector-text');
         const radioButton =  buttons[button].querySelector('.mode-selector');
 
-        if (buttonText.id === modeObject.mode) radioButton.checked = true;
+        if (buttonText.id === mode) radioButton.checked = true;
 
         buttons[button].onclick = async function() {
             radioButton.checked = true;
