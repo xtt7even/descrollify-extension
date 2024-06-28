@@ -59,7 +59,7 @@ async function initializeStorage() {
                 "hideThumbnails": false,
                 "autoRedirect": false,
                 "maxVideosAllowed": 15,
-                "removeBlockerTimer": {hours: 0, minutes: 15, seconds: 0},
+                "removeBlockerTimer": {hours: 0, minutes: 1, seconds: 0},
                 "remindAboutLmwMode": false,
                 "blocker_remove_timestamp": null
             }
@@ -254,7 +254,7 @@ class TabHandler {
         const {options: options} = await chrome.storage.local.get("options");
         const {mode} = await chrome.storage.local.get("mode"); 
         // console.log(mode);
-        if (options.autoRedirect && mode == "TOTAL FOCUS MODE" && tab.url.includes("short")) {
+        if (mode == "TOTAL FOCUS MODE" && tab.url.includes("short")) {
             // console.log("Redirecting back");
             await this.sendRequest("redirect_back");
         }
@@ -732,7 +732,6 @@ const handleAddVideo = async (sendResponse) => {
  */
 async function changeWatchMode(newMode) {
     const sessionHandler = new SessionsHandler();
-    
     await chrome.storage.local.set({"mode": newMode});
     await chrome.storage.local.set({"watchedVideosCounter": 0});
     setWatchLimit(newMode);
