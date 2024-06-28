@@ -63,16 +63,6 @@ window.addEventListener("load", async function() {
 
 
 
-    const remindAboutLmwBtn = document.getElementById("remindAboutLmwMode");
-
-    const remindAboutLmwRadioButton  = remindAboutLmwBtn.querySelector("input[type='radio']");
-    setToggleOption('remindAboutLmwMode', remindAboutLmwRadioButton, false);
-
-    remindAboutLmwBtn.addEventListener('click', async () => {
-        await setToggleOption('remindAboutLmwMode', remindAboutLmwRadioButton, true);
-        chrome.runtime.sendMessage({message: "toggle_mode_reminder"});
-    });
-
     //--------------------------------------
     // Hide thumbnail button
     const hideThumbnailsBtn = document.getElementById("hideThumbnails");

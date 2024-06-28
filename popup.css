@@ -287,13 +287,13 @@ select::-webkit-scrollbar-thumb {
     font-weight: 400;
 }
 
-.options-subheader {
+/* .options-subheader {
     margin-top: 5px;
     background-color: #838383;
     padding: 10px;
     box-sizing: border-box;
     width: 100%;
-}
+} */
 
 .options-subheader > h3 {
     color: #fff;
