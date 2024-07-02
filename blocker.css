@@ -3,6 +3,10 @@
     src: url('fonts/static/RobotoCondensed-Black.ttf') format('truetype');
 }
 
+body {
+        font-family: 'Roboto Condensed';
+}
+
 #blocker-container {
     background-color: rgba(107, 201, 255, 0.4);
     border-radius: 30px;
