@@ -61,6 +61,19 @@ body {
     width: 20px;
 }
 
+#mode-pointer-box {
+    border: solid 5px white;
+    border-radius: 2px;
+    position: absolute;
+    width: 95px;
+    height: 76px;
+    z-index: 1000;
+
+    /* for style testing purposes only*/
+    bottom: 18.3%;
+    left: 2.5%;
+}
+
 #popup-container {
     background-color: #222222;
     min-width: 320px;
