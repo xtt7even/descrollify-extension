@@ -55,6 +55,8 @@ function setListeners() {
             };
         };
     });
+
+
 }
 
 
@@ -147,7 +149,6 @@ class Stats {
 async function setMode() {
     let buttons = document.getElementsByClassName('popup-modeselector-btn');
     let modeSelector = document.querySelector('#mode-pointer-box');
-    modeSelector.hidden = false;
 
     const {mode: mode} = await chrome.storage.local.get("mode")
     if (!mode) {
@@ -163,6 +164,7 @@ async function setMode() {
 
         if (buttonText.id === mode) {
             setModePointerPosition(modeSelector, rect);
+            modeSelector.hidden = false;
         }
 
         buttons[button].onclick = async function() {

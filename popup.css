@@ -376,6 +376,30 @@ select::-webkit-scrollbar-thumb {
     margin: 0;
 }
 
+.support-button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.support-button {
+    all: unset;
+    font-family: 'Roboto Condensed';
+    color: white; /* Button text color */
+    border: none;
+    width: 70%;
+    height: 40px;
+    font-size: 20px; /* Font size of the button text */
+    border-radius: 4px; /* Rounded border */
+    cursor: pointer; /* Cursor changes to pointer when hovering */
+    transition: background-color 0.3s ease; /* Smooth transition for background color */
+  }
+  
+  .support-button:hover {
+    background-color: #0056b3; /* Darker background color on hover */
+  }
+
 
 @-webkit-keyframes scale-up-center {
 0% {
