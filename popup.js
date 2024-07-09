@@ -146,9 +146,10 @@ class Stats {
 
 async function setMode() {
     let buttons = document.getElementsByClassName('popup-modeselector-btn');
+    let modeSelector = document.querySelector('#mode-pointer-box');
+    modeSelector.hidden = false;
 
     const {mode: mode} = await chrome.storage.local.get("mode")
-    console.log(mode)
     if (!mode) {
         chrome.storage.local.set({"mode": "WATCH A FEW MODE"});
         return;
@@ -157,17 +158,29 @@ async function setMode() {
     //TODO: Add deletion function on popup close
     for (let button = 0; button < buttons.length; button++) {
         const buttonText = buttons[button].querySelector('.modeselector-text');
-        const radioButton =  buttons[button].querySelector('.mode-selector');
+        let rect = buttons[button].getBoundingClientRect();
+        console.log(rect)
 
-        if (buttonText.id === mode) radioButton.checked = true;
+        if (buttonText.id === mode) {
+            setModePointerPosition(modeSelector, rect);
+        }
 
         buttons[button].onclick = async function() {
-            radioButton.checked = true;
+            setModePointerPosition(modeSelector, rect);
             const response = await chrome.runtime.sendMessage({mode: buttonText.id});
-            console.log(buttonText.id)
         }
+        
     }
 }
+
+function setModePointerPosition(modeSelector, rectPos) {
+    modeSelector.style.top = (rectPos.top - 16) + 'px';
+    modeSelector.style.bottom = rectPos.bottom + 'px';
+    modeSelector.style.right = rectPos.right + 'px';
+    modeSelector.style.left = rectPos.left + 'px';
+}
+
+
 
 async function getStorageData() {
     const storageData = await chrome.storage.local.get();

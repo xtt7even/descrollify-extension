@@ -25,7 +25,7 @@ body {
 }
 
 #iframe-settings {
-    z-index: 100;
+    z-index: 1001;
     width: 340px;
     height: 100%;
     margin: 0;
@@ -54,7 +54,7 @@ body {
     background-color: Transparent;
     background-repeat:no-repeat;
     border: none;
-    cursor:pointer;
+    cursor: pointer;
 }
 
 #close-btn-image {
@@ -65,13 +65,11 @@ body {
     border: solid 5px white;
     border-radius: 2px;
     position: absolute;
-    width: 95px;
-    height: 76px;
+    width: 88px;
+    height: 67px;
     z-index: 1000;
 
-    /* for style testing purposes only*/
-    bottom: 18.3%;
-    left: 2.5%;
+    transition: all 0.2s ease-in-out;
 }
 
 #popup-container {
