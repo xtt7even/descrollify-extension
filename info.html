@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            font-size: large;
+            max-width: 60%;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .faq {
+            margin-bottom: 20px;
+        }
+        .question {
+            font-weight: bold;
+            cursor: pointer;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .question:hover {
+            background-color: #0056b3;
+        }
+        .answer {
+            display: none;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+        <div class="container">
+            <div class="information">
+                <h2>Information</h2>
+                <p>Descrollify  offers three different modes to enhance your browsing experience:</p>
+                <ul>
+                    <li>
+                        <strong>OFF:</strong> In this mode, the extension is inactive and does not block any short videos. This allows for an uninterrupted browsing experience where all content is accessible.
+                    </li>
+                    <li>
+                        <strong>Limit:</strong> This mode helps you stay focused by restricting the viewing of short video content based on the number of videos you've watched. It allows you to watch some videos but blocks further viewing when you've reached your limit.
+                    </li>
+                    <li>
+                        <strong>Focus:</strong> This mode provides the highest level of restriction by blocking all short video content and preventing accidental short video links from opening. Use this mode when you need to eliminate distractions completely and concentrate on your tasks. Optionally, you can also hide short video thumbnails.
+                    </li>
+                </ul>
+                <h3>How to Use the Modes</h3>
+                <p>To switch between modes, follow these steps:</p>
+                <ol>
+                    <li>Click on the extension icon in your browser's toolbar.</li>
+                    <li>In the dropdown menu, select the desired mode (OFF, Limit, or Focus).</li>
+                    <li>Adjust any additional settings to fine-tune your preferences.</li>
+                    <li>The extension will now operate according to the selected mode.</li>
+                </ol>
+            </div>
+        </div>
+    
+        <div class="container">
+            <h1>Frequently Asked Questions</h1>
+            <div class="faq">
+                <div class="question">Is the extension compatible with all browsers?</div>
+                <div class="answer">Currently, the extension is compatible with popular browsers like Google Chrome and Microsoft Edge. It's planned to expand compatibility to other browsers.</div>
+            </div>
+            <div class="faq">
+                <div class="question">Does it block short videos from all social media?</div>
+                <div class="answer">Currently, this extension is only compatible with YouTube shorts. I'm working on implementing wider compatibility with other social media platforms.</div>
+            </div>
+            <div class="faq">  
+                <div class="question">Does Descrollify access my watch or browser history or save sensitive information?</div>
+                <div class="answer">No, Descrollify does not collect any data from your watch or browser history. It generates its own data as you scroll through different short videos to create statistical information. Moreover, all the data is stored locally on your computer. The extension does not save any video links or other sensitive data.</div>
+            </div>
+        </div>
+    <script src="./info.js"></script>
+</body>
+</html>
