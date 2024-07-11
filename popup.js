@@ -42,7 +42,7 @@ function setListeners() {
     const settingsBtn = document.getElementById("settings-btn");
 
     infoBtn.addEventListener("click", () => {
-        chrome.tabs.create({url: "extension://llbeomiepdfkkldghiinkibjkdkanknl/info.html"});
+        chrome.tabs.create({url: "/info.html"});
     });
 
     settingsBtn.addEventListener("click", async () => {
