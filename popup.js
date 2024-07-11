@@ -119,8 +119,14 @@ class Stats {
         const {"numberOfEscapes": escapes} = await getStorageData("numberOfEscapes");
 
         this.statsSecondTitle.innerHTML = escapes > 0 ? 'KEEP THAT MOMENTUM!' : "START USING AND BOOST PRODUCTIVITY!" 
-        this.statsField.innerHTML = escapes == 1 ? escapes + ' TIME' : escapes + ' TIMES';   
-        this.statsFirstTitle.innerHTML = "YOU'VE ESCAPED SCROLLING"
+        if (escapes == 0) {
+            this.statsField.innerHTML = "NO DATA";
+        }
+        else {
+            this.statsField.innerHTML = escapes == 1 ? escapes + ' TIME' : escapes + ' TIMES';   
+        }
+        
+        this.statsFirstTitle.innerHTML = escapes > 0 ? "YOU'VE ESCAPED SCROLLING" : "WELCOME TO DESCROLLIFY";
     }
     
     async setSavedTime() {
