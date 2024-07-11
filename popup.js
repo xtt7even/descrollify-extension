@@ -182,7 +182,7 @@ async function setMode() {
 }
 
 function setModePointerPosition(modeSelector, rectPos) {
-    modeSelector.style.top = (rectPos.top - 16) + 'px';
+    modeSelector.style.top = rectPos.top + 'px';
     modeSelector.style.bottom = rectPos.bottom + 'px';
     modeSelector.style.right = rectPos.right + 'px';
     modeSelector.style.left = rectPos.left + 'px';
