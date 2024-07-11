@@ -355,9 +355,17 @@ async function buildBlocker(short) {
         throw error; // re-throwing the error to propagate it further if needed
     }
 }
+
+function isYouTubeInDarkMode() {
+    const htmlElement = document.querySelector('html');
+    console.log(htmlElement.hasAttribute('dark'))
+    return htmlElement.hasAttribute('dark');
+}
+
 function buildBlockerContainer(short) {
     const blockerContainer = document.createElement("div");
-    blockerContainer.setAttribute("id", "blocker-container");   
+    blockerContainer.setAttribute("id", "blocker-container"); 
+    blockerContainer.style.backgroundColor = isYouTubeInDarkMode() ? "rgba(107, 201, 255, 0.4)" : "rgba(0, 123, 199, 0.5)"
 
     const width = short.offsetWidth;
     const height = short.offsetHeight - (short.offsetHeight * 0.05);
