@@ -31,7 +31,7 @@ Short-form content platforms often encourage addictive scrolling behavior.
 
 ## 🧠 Key Learning Outcomes
 
-– **Practicing GIT and general version controlling**
+- **Practicing GIT and general version controlling**
 - Working with browser extension APIs (content scripts, background scripts, and message passing).  
 - DOM manipulation and event interception to detect short video elements.  
 - Building user settings with persistent local storage.  
