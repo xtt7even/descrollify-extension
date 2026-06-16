@@ -35,11 +35,11 @@ body {
         border-radius: 10px;
         box-sizing: border-box;
         margin: 20px auto;
-        background-color: #222222; 
+        background-color: #222222;
         position: fixed;
-        top: 10px; 
-        right: 10px; 
-        z-index: 10000; 
+        top: 10px;
+        right: 10px;
+        z-index: 10000;
 }
 
 .totalfocus-header-container {

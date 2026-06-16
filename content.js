@@ -1,86 +1,19 @@
 'use strict';
 
+// YouTube's internal markup changes over time; if these break, fix them here.
+// Prefer ytd-* element tags and stable ids over utility classes like "style-scope".
+const SELECTORS = {
+    commentsButton: 'ytd-reel-player-overlay-renderer #comments-button',
+    closeComments: 'ytd-engagement-panel-title-header-renderer #visibility-button',
+    commentsPanelExpanded: 'ytd-engagement-panel-section-list-renderer[visibility="ENGAGEMENT_PANEL_VISIBILITY_EXPANDED"]',
+    watchFlexy: 'ytd-watch-flexy',
+};
 
-//Following 2 functions are only for using during development to stop myself from distracting while testing/debugging extension.
-// function SaveDeveloperFromScrolling() {
-//     const existingBlockers = document.querySelectorAll('.developer-saver-debug-descrollify');
-//     existingBlockers.forEach(blocker => blocker.remove());
+// Toast message shown after Total Focus mode redirects the user off a Short.
+const FOCUS_NOTIFICATION = 'TOTAL FOCUS MODE PREVENTED YOU FROM SCROLLING AND REDIRECTED YOU BACK. YOU CAN TURN THIS MODE OFF IN THE DESCROLLIFY POPUP';
 
-//     injectDebugBlocker();
-// }
-
-
-
-// function injectDebugBlocker() {
-//     const sequenceElements = document.getElementsByClassName('reel-video-in-sequence style-scope ytd-shorts');
-
-//     for (let i = sequenceElements.length - 1; i >= 0; i--) {
-//         const sequenceElement = sequenceElements[i];
-
-//         const existingBlocker = sequenceElement.querySelector('.developer-saver-debug-descrollify');
-//         if (!existingBlocker) {
-//             const overlay = document.createElement('div');
-//             overlay.className = 'developer-saver-debug-descrollify';
-
-//             const textElement = document.createElement('div');
-//             textElement.id = 'debugging-blocker-text';
-//             textElement.innerText = 'THIS IS THE DEBUGGING BLOCKER!';
-//             textElement.style.background = 'rgba(0, 0, 0, 0.7)';
-//             textElement.style.padding = '10px 20px';
-//             textElement.style.borderRadius = '10px';
-
-//             overlay.appendChild(textElement);
-
-//             overlay.style.position = 'absolute';
-//             overlay.style.top = '0';
-//             overlay.style.left = '0';
-//             overlay.style.width = '100%';
-//             overlay.style.height = '100%';
-//             overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-//             overlay.style.backdropFilter = 'blur(30px)';
-//             overlay.style.zIndex = '9999';
-//             overlay.style.display = 'flex';
-//             overlay.style.alignItems = 'center';
-//             overlay.style.justifyContent = 'center';
-//             overlay.style.color = 'white';
-//             overlay.style.fontSize = '24px';
-//             overlay.style.fontWeight = 'bold';
-//             overlay.style.textAlign = 'center';
-
-//             sequenceElement.style.position = 'relative';
-//             sequenceElement.prepend(overlay);
-//         }
-//     }
-// }
-
-
-function locateShort() {
-    // Returns a promise to asynchronously locate an element by its ID
-    return new Promise((resolve, reject) => {
-        let intervalIterations = 0; // Counter to track iterations for the interval
-        const waitForShort = setInterval(() => {
-            //Check if maximum number of iterations reached
-            if (intervalIterations > 3) {
-                clearInterval(waitForShort);
-                reject();
-            }
-
-            const element = document.getElementById("shorts-inner-container");
-            // If the element is found, stop the interval and resolve the promise with the element
-            if (element) { 
-                clearInterval(waitForShort);
-                resolve(element);
-            }
-            
-            intervalIterations++;
-        }, 1000);
-    });
-}
-
-/**
- * Function that checks if user is allowed to watch a video
- * @returns True - allowed to watch, false - not allowed to watch
- */
+// How long the explanatory toast stays up before we leave the page.
+const LEAVE_DELAY_MS = 3000;
 
 async function blockShortThumbnails() {
     const shortThumbnails = await document.querySelectorAll('ytd-rich-shelf-renderer');
@@ -93,48 +26,74 @@ async function blockShortThumbnails() {
 
 
 window.addEventListener('load', async () => {
-
-    const {awaitingRedirectNotification} = await chrome.storage.local.get("awaitingRedirectNotification");
-    if (awaitingRedirectNotification) {
-        drawRedirectBackNotification();
-        setTimeout(() => {
-            hideRedirectBackNotification();
-            chrome.storage.local.set({"awaitingRedirectNotification": false});
-        }, 7000)
-    }
-    else {
-        hideRedirectBackNotification();
-    }
-
     chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
-        console.log(message)
-        // console.log(message == 'videoplayer closed', message == 'remove_shortcontainer')
         if (message.message == 'videoplayer closed') {
             await chrome.runtime.sendMessage({message: "save_sessions"});
         }
         if (message.message == 'remove_shortcontainer') {
             blockShortThumbnails();
-            console.log("Sent");
         }
         if(message.message == 'mode_reminder') {
             alert('[DESCROLLIFY REMINDER]\nYOU CURRENTLY WATCHING SHORT VIDEOS IN "LET ME WATCH" MODE! CONSIDER SWITCHING TO THE "WATCH A FEW MODE" TO AVOID ENDLESS SCROLLING')
         }
         if(message.message == 'redirect_back') {
-            await chrome.storage.local.set({"awaitingRedirectNotification": true});
-            window.location.href = ".."  ;
+            showToastThenLeave(FOCUS_NOTIFICATION);
         }
         return true
     });
 });
 
-function hideRedirectBackNotification() {
-    const totalFocusNote = document.querySelector(".totalfocus-notification");
-    if (totalFocusNote) {
-        totalFocusNote.remove();
+/**
+ * Pauses the Short, shows the explanatory toast, then leaves to the user's
+ * configured destination. DOM-independent — only touches <video> and <body>.
+ */
+async function showToastThenLeave(noteText) {
+    const {options} = await chrome.storage.local.get("options");
+    const dest = (options && options.blockRedirect) || "youtube";
+
+    const video = document.querySelector('video');
+    if (video) video.pause();
+
+    drawNotification(noteText, LEAVE_DELAY_MS);
+
+    setTimeout(() => leaveTo(dest, options), LEAVE_DELAY_MS);
+}
+
+// Ensures a custom destination is an absolute URL; a bare "example.com" would
+// otherwise resolve relative to the Short and loop straight back into Shorts.
+function normalizeUrl(url) {
+    if (!url) return null;
+    return /^(https?:|about:)/i.test(url) ? url : "https://" + url;
+}
+
+// Navigates away per the user's "When blocked, go to" setting (default: YouTube home).
+function leaveTo(dest, options) {
+    switch (dest) {
+        case "close":
+            chrome.runtime.sendMessage({message: "close_tab"});
+            break;
+        case "blank":
+            window.location.href = "about:blank";
+            break;
+        case "custom": {
+            const target = normalizeUrl(options && options.blockRedirectUrl);
+            window.location.href = target || "https://www.youtube.com";
+            break;
+        }
+        default: // "youtube"
+            window.location.href = "https://www.youtube.com";
     }
 }
 
-function drawRedirectBackNotification() {
+function hideNotification() {
+    const note = document.querySelector(".totalfocus-notification");
+    if (note) {
+        note.remove();
+    }
+}
+
+function drawNotification(noteText, durationMs) {
+    hideNotification(); // avoid stacking duplicates
 
     const div = document.createElement('div');
     div.className = 'totalfocus-notification';
@@ -154,7 +113,7 @@ function drawRedirectBackNotification() {
 
     const note = document.createElement('p');
     note.className = 'totalfocus-note';
-    note.innerText = 'TOTAL FOCUS MODE PREVENTED YOU FROM SCROLLING AND REDIRECTED YOU BACK. YOU CAN TURN THIS MODE OFF IN THE DESCROLLIFY POPUP';
+    note.innerText = noteText;
 
     noteContainer.appendChild(note);
 
@@ -164,9 +123,10 @@ function drawRedirectBackNotification() {
     const progressBar = document.createElement('div');
     progressBar.className = 'progress-bar';
 
-    // Create progress animation bar
+    // Create progress animation bar; match its duration to the leave delay.
     const progress = document.createElement('div');
     progress.className = 'progress';
+    if (durationMs) progress.style.animationDuration = (durationMs / 1000) + 's';
     progressBar.appendChild(progress);
 
     // Append progress bar to the main div
@@ -188,7 +148,7 @@ function removeListenersFromCommentsButtons(buttons) {
 }
 
 function observeDOMChanges() {
-    const videoContainer = document.querySelector('ytd-watch-flexy');
+    const videoContainer = document.querySelector(SELECTORS.watchFlexy);
 
     if (!videoContainer) return;
 
@@ -196,7 +156,7 @@ function observeDOMChanges() {
         for (let mutation of mutationsList) {
             if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
                 const newCommentsButtons = Array.from(mutation.addedNodes)
-                    .filter(node => node.matches('div#comments-button.button-container.style-scope.ytd-reel-player-overlay-renderer'));
+                    .filter(node => node.nodeType === Node.ELEMENT_NODE && typeof node.matches === 'function' && node.matches('#comments-button'));
 
                 addListenersToCommentsButtons(newCommentsButtons);
             }
@@ -213,16 +173,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // Event listener for page change
 window.addEventListener('yt-navigate-finish', async function() {
 
-    removeBlocker()
-    // SaveDeveloperFromScrolling();
-
     const {isBlocked} = await chrome.storage.local.get("isBlocked");
     const videoElement = document.querySelector('video');
-
-    //for debugging only!!!!!!
-        const storage = await chrome.storage.local.get();
-        console.log(storage);
-    //for debugging only!!!!!!
 
     const url = new URL(window.location.href);
     const pagePosition = await chrome.storage.local.get("isOnShortPage");
@@ -231,17 +183,15 @@ window.addEventListener('yt-navigate-finish', async function() {
         observeDOMChanges();
         addVideoListeners(videoElement);
 
-        const initialCommentsButtons = Array.from(document.querySelectorAll('div#comments-button.button-container.style-scope.ytd-reel-player-overlay-renderer'));
+        const initialCommentsButtons = Array.from(document.querySelectorAll(SELECTORS.commentsButton));
         addListenersToCommentsButtons(initialCommentsButtons);
-       
-        const short = await scanForShort();
+
         //if previous location was short page, before starting the timer we stoping it and saving the timer.
         if (pagePosition.isOnShortPage) await chrome.runtime.sendMessage({message: "handle_video_pause"});
         await chrome.runtime.sendMessage({message: "handle_video_play"});
         await chrome.runtime.sendMessage({message: "add_video_watch"}, async function(response) {
             if (response.response == "block_video" || isBlocked) {
-                await injectBlocker(short);
-                console.log("Injected blocker");
+                await blockShort();
             }
         });
 
@@ -256,28 +206,21 @@ window.addEventListener('yt-navigate-finish', async function() {
 
 }); 
 
-async function injectBlocker(short) {
-    pauseVideo();
-    const blocker = await buildBlocker(short);
-    removeUnecessaryElements();
-    short.parentNode.prepend(blocker);
+// Called when the watch limit is reached. Tells the background to mark the
+// session blocked (which also starts the unblock timer), then redirects off the
+// Short with a toast built from a random pair of lines.
+async function blockShort() {
     await chrome.runtime.sendMessage({message: "blocker_appended"});
-}
 
-function removeBlocker() {
-    if (document.getElementById("blocker-container")) {
-        document.getElementById("blocker-container").remove();
+    let note = "YOU'VE REACHED YOUR SHORTS LIMIT. TIME TO STEP AWAY AND STAY FOCUSED!";
+    try {
+        const lines = await pickASetOfLines();
+        note = `${lines.upperline} ${lines.lowerline}`;
+    } catch (error) {
+        console.error('[Descrollify] Could not load lines, using default message:', error);
     }
-}
 
-// Function to scan for short video element
-async function scanForShort () {
-    let short = await locateShort();
-    if (!short) {
-        console.error("No short located on this page"); 
-        return;
-    }
-    return short;
+    showToastThenLeave(note);
 }
 
 function pickASetOfLines() {
@@ -294,112 +237,8 @@ function pickASetOfLines() {
         });
 }
 
-function pauseVideo() {
-    const videoElement = document.querySelector('video');
-    // If a video element is found and it's currently playing
-    if (videoElement && !videoElement.paused) {
-        videoElement.click();
-        videoElement.pause();
-    }
-}
-
-//Function to remove video sequence to prevent scrolling, and short video overlay. 
-function removeUnecessaryElements() {
-    //Getting video sequence array (usually 4-10 videos), and then delete all elements except the first.
-    const sequenceElements = document.getElementsByClassName('reel-video-in-sequence style-scope ytd-shorts');
-    for (let i = sequenceElements.length - 1; i > 0; i--) {
-        sequenceElements[i].remove();
-        console.log("Blocker: removed video sequence and overlay");
-    }
-    sequenceElements[0].style.opacity = 0;
-
-    //Deleting overlay elements
-    const overlayElements = document.getElementsByClassName('action-container style-scope ytd-reel-player-overlay-renderer');
-    
-    for (let i = overlayElements.length - 1; i >= 0; i--) {
-        overlayElements[i].remove();   
-    }
-}
-
-
-
-async function buildBlocker(short) {
-    const blockerContainer = buildBlockerContainer(short);
-
-    try {
-        //generating a set of randomly picked upper and lower lines
-        const linesSet = await pickASetOfLines();
-
-        //upper line
-        const blockerUpperText = buildBlockerText(linesSet.upperline);
-        blockerContainer.appendChild(blockerUpperText);
-
-        //logo
-        const blockerLogo = buildBlockerLogo();
-        blockerContainer.append(blockerLogo);
-
-        blockerLogo.addEventListener('click', () => {
-            (async () => {
-                window.location.href = ".."
-            })(); 
-        })
-
-        //lower line
-        const blockerLowerText = buildBlockerText(linesSet.lowerline);
-        blockerContainer.appendChild(blockerLowerText);
-
-        return blockerContainer;
-    } catch (error) {
-        // Handle errors if necessary
-        console.error('Error building blocker:', error);
-        throw error; // re-throwing the error to propagate it further if needed
-    }
-}
-
-function isYouTubeInDarkMode() {
-    const htmlElement = document.querySelector('html');
-    console.log(htmlElement.hasAttribute('dark'))
-    return htmlElement.hasAttribute('dark');
-}
-
-function buildBlockerContainer(short) {
-    const blockerContainer = document.createElement("div");
-    blockerContainer.setAttribute("id", "blocker-container"); 
-    blockerContainer.style.backgroundColor = isYouTubeInDarkMode() ? "rgba(107, 201, 255, 0.4)" : "rgba(0, 123, 199, 0.5)"
-
-    const width = short.offsetWidth;
-    const height = short.offsetHeight - (short.offsetHeight * 0.05);
-
-    blockerContainer.style.width = width.toString() + 'px';
-    blockerContainer.style.height = height.toString() + 'px';
-        return blockerContainer;
-    }
-
-function buildBlockerText(text) {
-    const textContainer = document.createElement('div');
-    textContainer.setAttribute('id', 'text-container')
-    
-    const blockerText = document.createElement("h2");
-    blockerText.innerText = text;
-    blockerText.setAttribute('id', 'big-text')
-
-    textContainer.append(blockerText);
-
-    return textContainer;
-}
-
-
-function buildBlockerLogo() {
-    const blockerLogo = document.createElement("img");
-    blockerLogo.src = chrome.runtime.getURL("./images/logo_transparent_white.png");
-    blockerLogo.alt = "logo";
-    blockerLogo.setAttribute('id', 'blocker-logo');
-    return blockerLogo;
-}
-
-
 function addVideoListeners (videoElement) {
-    const commentsButton = document.querySelector('div#comments-button.button-container.style-scope.ytd-reel-player-overlay-renderer');
+    const commentsButton = document.querySelector(SELECTORS.commentsButton);
     if (commentsButton) commentsButton.addEventListener('click', handleCommentsOpen)
     if (videoElement) {
         videoElement.addEventListener('pause', handleVideoPause);
@@ -409,7 +248,7 @@ function addVideoListeners (videoElement) {
 }
 
 function removeVideoListeners (videoElement) {
-    const commentsButton = document.querySelector('div#comments-button.button-container.style-scope.ytd-reel-player-overlay-renderer');
+    const commentsButton = document.querySelector(SELECTORS.commentsButton);
     if (commentsButton) commentsButton.removeEventListener('click', handleCommentsOpen);
     if (videoElement) {
         videoElement.removeEventListener('pause', handleVideoPause);
@@ -421,7 +260,7 @@ function removeVideoListeners (videoElement) {
 async function handleCommentsOpen() {
     await chrome.runtime.sendMessage({message: "handle_comments_open"});
     console.log("handle_comments_open")
-    const closeComments = document.querySelector('div#visibility-button.style-scope.ytd-engagement-panel-title-header-renderer');
+    const closeComments = document.querySelector(SELECTORS.closeComments);
     if (closeComments) {
         closeComments.addEventListener('click', handleCommentsClose);
     }
@@ -433,8 +272,7 @@ async function handleCommentsClose() {
         await chrome.runtime.sendMessage({message: "handle_comments_close"});
     }
 
-    const closeComments = document.querySelector('div#visibility-button.style-scope.ytd-engagement-panel-title-header-renderer');
-    // const commentsButton = document.querySelector('div#comments-button.button-container.style-scope.ytd-reel-player-overlay-renderer');
+    const closeComments = document.querySelector(SELECTORS.closeComments);
     try {
         closeComments.removeEventListener('click', handleCommentsClose);
         console.log("Removed close btn listener")
@@ -445,7 +283,7 @@ async function handleCommentsClose() {
 
 async function handleVideoPause() {
     // console.log("Video Pause");
-    const commentSection = document.querySelector('ytd-engagement-panel-section-list-renderer[visibility="ENGAGEMENT_PANEL_VISIBILITY_EXPANDED"]');
+    const commentSection = document.querySelector(SELECTORS.commentsPanelExpanded);
     if (commentSection == null) {
         await chrome.runtime.sendMessage({message: "handle_video_pause"});
     }
