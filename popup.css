@@ -479,7 +479,31 @@ select::-webkit-scrollbar-thumb {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 16px;
+}
+
+#popup-footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 14px;
+    font-size: 12px;
+    color: #777;
+}
+
+#popup-footer a {
+    color: #777;
+    text-decoration: none;
+}
+
+#popup-footer a:hover {
+    color: #4FB0EE;
+    text-decoration: underline;
+}
+
+#popup-footer .footer-sep {
+    color: #555;
 }
   
 

@@ -35,7 +35,14 @@ window.addEventListener('load', async function(event) {
     await stats.drawPages();
     await setMode();
     setListeners();
+    setFooterVersion();
 });
+
+// Pull the version straight from the manifest so the footer never goes stale.
+function setFooterVersion() {
+    const versionLink = document.getElementById('footer-version');
+    if (versionLink) versionLink.textContent = 'v' + chrome.runtime.getManifest().version;
+}
 
 function setListeners() {
     const infoBtn = document.getElementById("info-btn");
