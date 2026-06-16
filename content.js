@@ -33,9 +33,6 @@ window.addEventListener('load', async () => {
         if (message.message == 'remove_shortcontainer') {
             blockShortThumbnails();
         }
-        if(message.message == 'mode_reminder') {
-            alert('[DESCROLLIFY REMINDER]\nYOU CURRENTLY WATCHING SHORT VIDEOS IN "LET ME WATCH" MODE! CONSIDER SWITCHING TO THE "WATCH A FEW MODE" TO AVOID ENDLESS SCROLLING')
-        }
         if(message.message == 'redirect_back') {
             showToastThenLeave(FOCUS_NOTIFICATION);
         }

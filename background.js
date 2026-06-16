@@ -4,14 +4,12 @@
 
 // Alarms survive service-worker termination; setInterval/setTimeout do not (MV3).
 const BLOCKER_ALARM = 'descrollify-unblock';
-const REMINDER_ALARM = 'descrollify-lmw-reminder';
 
-let reminder;
 let tabHandler;
 let videoTimer;
 
 chrome.runtime.onInstalled.addListener((details) => {
-    if (details.reason === "install" || details.reason === "update") { 
+    if (details.reason === "install" || details.reason === "update") {
         console.log("First initialization!");
         initializeStorage();
     }
@@ -21,7 +19,6 @@ chrome.runtime.onInstalled.addListener((details) => {
 chrome.runtime.onStartup.addListener(() => {
     console.log("Browser has started");
     startBlockerInterval();
-    reminder.toggleReminderInterval();
 });
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
@@ -32,13 +29,10 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
             options.blocker_remove_timestamp = null;
             chrome.storage.local.set({ options });
         }
-    } else if (alarm.name === REMINDER_ALARM) {
-        await reminder.fireReminder();
     }
 });
 
 function initializeInstances() {
-    reminder = reminder ? reminder : new Reminder();
     tabHandler = tabHandler ? tabHandler : new TabHandler();
     videoTimer = videoTimer ? videoTimer : new VideoTimer();
     console.log("Initialized instances");
@@ -74,7 +68,6 @@ async function initializeStorage() {
                 "autoRedirect": false,
                 "maxVideosAllowed": 15,
                 "removeBlockerTimer": {hours: 0, minutes: 1, seconds: 0},
-                "remindAboutLmwMode": false,
                 "blocker_remove_timestamp": null,
                 "blockRedirect": "youtube",
                 "blockRedirectUrl": ""
@@ -579,27 +572,6 @@ class SessionsHandler {
     }
 }
 
-class Reminder {
-    async toggleReminderInterval() {
-        const {options} = await chrome.storage.local.get('options');
-        const {mode} = await chrome.storage.local.get('mode');
-
-        if (options && options.remindAboutLmwMode && mode === "LET ME WATCH MODE") {
-            chrome.alarms.create(REMINDER_ALARM, { periodInMinutes: 10 });
-        } else {
-            chrome.alarms.clear(REMINDER_ALARM);
-        }
-    }
-
-    // Fired by REMINDER_ALARM; only nudges if the user is on a Shorts page now.
-    async fireReminder() {
-        const activeTab = await tabHandler.getActiveTab().catch(() => null);
-        if (activeTab && activeTab.url && activeTab.url.includes("youtube") && activeTab.url.includes("short")) {
-            tabHandler.sendRequest("mode_reminder");
-        }
-    }
-}
-
 
 
 function secondsToTime(seconds) {
@@ -629,10 +601,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
     if (request.type === "append_session") {
         handleAppendSession(request);
-    }
-
-    if (request.message === "toggle_mode_reminder") {
-        reminder.toggleReminderInterval();
     }
 
     if (request.message === "blocker_appended") {
@@ -685,10 +653,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
     return false; 
 });
-
-async function handleReminderToggle() {
-    reminder.toggleReminderInterval();
-}
 
 async function handleAppendSession(request) {
     let sessionHandler = new SessionsHandler(
@@ -743,7 +707,6 @@ async function changeWatchMode(newMode) {
     await chrome.storage.local.set({"mode": newMode});
     await chrome.storage.local.set({"watchedVideosCounter": 0});
     setWatchLimit(newMode);
-    reminder.toggleReminderInterval();
     await sessionHandler.saveSessions();
 }
 
