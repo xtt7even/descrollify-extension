@@ -14,10 +14,9 @@ function resetStats(resetButton) {
         chrome.storage.local.set({ "sessionWafWatchTimeHistory": []})
         chrome.storage.local.set({ "numberOfEscapes": 0})
 
-        console.log("Reset")
-        resetButton.firstChild.parentElement.innerHTML = "<p>RESET SUCCESSFULLY<p>"
-        const successfulReset = setTimeout(() => {
-            resetButton.firstChild.parentElement.innerHTML = "<p>RESET STATISTICS<p>";
+        resetButton.innerHTML = "<p>RESET SUCCESSFULLY</p>";
+        setTimeout(() => {
+            resetButton.innerHTML = "<p>RESET STATISTICS</p>";
         }, 3000);
     }
 }
@@ -30,124 +29,75 @@ const countClicks = (function () {
     }
 })();
 
-
 function isResetConfirmed(resetButton) {
     if (countClicks() % 2 == 0) {
-        resetButton.firstChild.parentElement.innerHTML = "<p>RESET STATISTICS<p>";
+        resetButton.innerHTML = "<p>RESET STATISTICS</p>";
         return true;
-    } 
-    else {
-        console.log(resetButton.firstChild, resetButton.firstChild.innerText);
-        resetButton.firstChild.parentElement.innerHTML = "<p>PRESS TO CONFIRM<p>";
     }
+    resetButton.innerHTML = "<p>PRESS TO CONFIRM</p>";
     return false;
 }
 
+window.addEventListener("load", async function() {
+    const {options} = await chrome.storage.local.get('options');
 
-let reminderInterval;
-let reminderIntervalCounter = 0;
+    // Reset statistics
+    const resetButton = document.getElementById("reset-btn");
+    resetButton.addEventListener('click', () => resetStats(resetButton));
+
+    // Toggles
+    initToggle("hideThumbnails-toggle", "hideThumbnails", options, () => {
+        const hint = document.getElementById("hideThumbnails-hint");
+        hint.textContent = "Refresh open YouTube tabs to apply";
+        setTimeout(() => { hint.textContent = ""; }, 3000);
+    });
+
+    // Max videos allowed to watch
+    const maxVideos = document.getElementById("maxVideos");
+    maxVideos.value = options.maxVideosAllowed;
+    ["change", "blur"].forEach(ev => maxVideos.addEventListener(ev, async () => {
+        validateInput(maxVideos);
+        await setAllowedVideos(maxVideos.value);
+    }));
+
+    // "Unblock after" timer
+    const hourSelector = document.getElementById('hours-select');
+    const minuteSelector = document.getElementById('minutes-select');
+    const secondSelector = document.getElementById('seconds-select');
+    fillTimeSelectList(hourSelector, 0, 24);
+    fillTimeSelectList(minuteSelector, 0, 60);
+    fillTimeSelectList(secondSelector, 0, 60);
+    setTimeSelectors(hourSelector, minuteSelector, secondSelector);
+    hourSelector.addEventListener("blur", () => saveTimerField("hours", hourSelector.value));
+    minuteSelector.addEventListener("blur", () => saveTimerField("minutes", minuteSelector.value));
+    secondSelector.addEventListener("blur", () => saveTimerField("seconds", secondSelector.value));
+
+    // "When blocked, go to" destination
+    await setupBlockRedirect();
+});
+
+// Reads the stored value into the checkbox and persists changes; onChange runs after save.
+async function initToggle(checkboxId, optionKey, options, onChange) {
+    const checkbox = document.getElementById(checkboxId);
+    checkbox.checked = !!options[optionKey];
+    checkbox.addEventListener("change", async () => {
+        await saveOption(optionKey, checkbox.checked);
+        if (onChange) onChange(checkbox.checked);
+    });
+}
 
 async function setTimeSelectors(hours, minutes, seconds) {
     const {options} = await chrome.storage.local.get("options");
-    console.log(hours.value, minutes, seconds);   
     hours.value = options.removeBlockerTimer.hours;
     minutes.value = options.removeBlockerTimer.minutes;
     seconds.value = options.removeBlockerTimer.seconds;
 }
 
-window.addEventListener("load", async function() {
-    const resetButton = document.getElementById("reset-btn");
-    resetButton.addEventListener('click', () => {
-        resetStats(resetButton);
-    });
-
-
-
-    //--------------------------------------
-    // Hide thumbnail button
-    const hideThumbnailsBtn = document.getElementById("hideThumbnails");
-
-    const hideThumbnailsRadioButton = hideThumbnailsBtn.querySelector("input[type='radio']");
-    setToggleOption('hideThumbnails', hideThumbnailsRadioButton, false);
-
-    hideThumbnailsBtn.addEventListener('click', async () => {
-        setToggleOption('hideThumbnails', hideThumbnailsRadioButton, true);
-
-        const button = document.querySelector("#hideThumbnails");
-        const paragraph = button.querySelector("p");
-    
-        paragraph.innerText = "PAGE REFRESH REQUIRED";
-    
-        setTimeout(() => {
-            paragraph.innerText = "Also hide short videos thumbnails and previews";
-        }, 3000);
-    });
-
-    //--------------------------------------
-    // "Remove blocker after" timer
-    const hourSelector = document.querySelector('#hours-select');
-    fillTimeSelectList(hourSelector, 0, 24);
-
-    const minuteSelector = document.querySelector('#minutes-select');
-    fillTimeSelectList(minuteSelector, 0, 60);
-
-    const secondSelector = document.querySelector('#seconds-select');
-    fillTimeSelectList(secondSelector, 0, 60);
-
-    setTimeSelectors(hourSelector, minuteSelector, secondSelector)
-
-    hourSelector.addEventListener("blur", async () => {
-        const {options} = await chrome.storage.local.get("options") 
-        const selectedValue = parseInt(hourSelector.value);
-        options.removeBlockerTimer.hours = selectedValue;
-        chrome.storage.local.set({options: options})
-    })
-
-    minuteSelector.addEventListener("blur", async () => {
-        const {options} = await chrome.storage.local.get("options") 
-        const selectedValue = parseInt(minuteSelector.value);
-        console.log(selectedValue, minuteSelector.value);
-        options.removeBlockerTimer.minutes = selectedValue;
-        chrome.storage.local.set({options: options})
-    })
-
-    secondSelector.addEventListener("blur", async () => {
-        const {options} = await chrome.storage.local.get("options") 
-        const selectedValue = parseInt(secondSelector.value);
-        console.log(selectedValue, secondSelector.value);
-        options.removeBlockerTimer.seconds = selectedValue;
-        chrome.storage.local.set({options: options})
-    })
-
-
-
-    //--------------------------------------
-    // Max videos allowed to watch
-    const digitSelector = document.querySelector(".onedigit-number");
-    const {options: fetchedOptions} = await chrome.storage.local.get('options');
-    console.log(fetchedOptions);
-    digitSelector.value = fetchedOptions.maxVideosAllowed;
-
-    digitSelector.addEventListener('change', async () => {    
-        validateInput(digitSelector)
-        await setAllowedVideos(digitSelector.value);
-    });
-
-    digitSelector.addEventListener('mouseout', async () => {    
-        validateInput(digitSelector)
-        await setAllowedVideos(digitSelector.value);
-    });
-
-    digitSelector.addEventListener('blur', async () => {
-        validateInput(digitSelector)
-        await setAllowedVideos(digitSelector.value);
-    });
-
-
-    //--------------------------------------
-    // "When blocked, go to" destination
-    await setupBlockRedirect();
-});
+async function saveTimerField(field, value) {
+    const {options} = await chrome.storage.local.get("options");
+    options.removeBlockerTimer[field] = parseInt(value);
+    await chrome.storage.local.set({options});
+}
 
 async function setupBlockRedirect() {
     const select = document.getElementById("block-redirect-select");
@@ -184,49 +134,25 @@ async function saveOption(key, value) {
     await chrome.storage.local.set({options});
 }
 
-function validateInput (digitSelector) {
-    let regex = /^\d+$/;
-    if (digitSelector.value > 30) digitSelector.value = 30;
-    if (digitSelector.value < 1) digitSelector.value = 1;
-    if (!regex.test(digitSelector.value)) digitSelector.value = 0;
+function validateInput(input) {
+    const regex = /^\d+$/;
+    if (input.value > 30) input.value = 30;
+    if (input.value < 1) input.value = 1;
+    if (!regex.test(input.value)) input.value = 1;
 }
 
-async function setAllowedVideos(digitSelectorValue) {
-    await chrome.storage.local.get('options', async function(result) {
-        let options = result.options || {};
-
-        options['maxVideosAllowed'] = parseInt(digitSelectorValue);
-        console.log(options);
-        await chrome.storage.local.set({ options: options });
-        await chrome.runtime.sendMessage({message: "set_watch_limit"});
-    });
-}
-
-async function setToggleOption(option, radio, isToSwitch) {
-    await chrome.storage.local.get('options', function(result) {
-        let options = result.options || {};
-
-        //If function being called onclick we toggle the option value, instead we just set radio button to on/off
-        if (isToSwitch) {
-            console.log("options",options);
-            options[option] = !options[option];
-            chrome.storage.local.set({ options: options });
-        }
-        radio.checked = options[option];
-    });
+async function setAllowedVideos(value) {
+    const {options} = await chrome.storage.local.get('options');
+    options.maxVideosAllowed = parseInt(value);
+    await chrome.storage.local.set({options});
+    await chrome.runtime.sendMessage({message: "set_watch_limit"});
 }
 
 function fillTimeSelectList(list, min, max) {
-    // const list = document.querySelector('#'+listid);
-     
     for (let i = min; i < max; i++) {
-        let option = document.createElement('option');
+        const option = document.createElement('option');
         option.value = i;
-        option.text = i // if 1 => minute, if not => minuteS (minute + 's')
-
+        option.text = i;
         list.add(option);
-        
     }
-
-
 }
