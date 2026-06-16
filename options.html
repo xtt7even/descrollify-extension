@@ -1,67 +1,102 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="popup.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="popup.css" />
     <script src="./options.js"></script>
-</head>
-<body>
+  </head>
+  <body>
     <div id="settings-popup">
-        <nav id="popup-navbar">
-            <button class="popup-navbar-btn" id="info-btn"><img class='helping-icons' src="images/question-mark-round-icon.png" alt="help" style="opacity: 0%;"></button>
-            <img id='logo' src="images/logo_transparent_white.png" alt="logo">
-            <button id='close-btn'><img id='close-btn-image' src="images/close-line-icon.png" alt="logo"></button>
-        </nav>
-        <div id="options-container">
-            <div id="options-header"><h2>SETTINGS</h2></div>
+      <nav id="popup-navbar">
+        <button class="popup-navbar-btn" id="info-btn">
+          <img
+            class="helping-icons"
+            src="images/question-mark-round-icon.png"
+            alt="help"
+            style="opacity: 0%"
+          />
+        </button>
+        <img id="logo" src="images/logo_transparent_white.png" alt="logo" />
+        <button id="close-btn">
+          <img
+            id="close-btn-image"
+            src="images/close-line-icon.png"
+            alt="logo"
+          />
+        </button>
+      </nav>
+      <div id="options-container">
+        <div id="options-header"><h2>SETTINGS</h2></div>
 
-            <div class="settings-list">
-                <div class="settings-group-title">General</div>
+        <div class="settings-list">
+          <div class="settings-group-title">General</div>
 
-                <div class="setting-row">
-                    <span class="setting-label">Hide Shorts thumbnails</span>
-                    <label class="switch">
-                        <input type="checkbox" id="hideThumbnails-toggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="setting-hint" id="hideThumbnails-hint"></div>
+          <div class="setting-row">
+            <span class="setting-label">Hide Shorts thumbnails</span>
+            <label class="switch">
+              <input type="checkbox" id="hideThumbnails-toggle" />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="setting-hint" id="hideThumbnails-hint"></div>
 
-                <div class="settings-group-title">Limiter</div>
+          <div class="settings-group-title">Limiter</div>
 
-                <div class="setting-row">
-                    <span class="setting-label">Max videos before blocking</span>
-                    <input type="number" id="maxVideos" class="setting-number" name="set-maxnumber" value="15" min="1" max="30">
-                </div>
+          <div class="setting-row">
+            <span class="setting-label">Max videos before blocking</span>
+            <input
+              type="number"
+              id="maxVideos"
+              class="setting-number"
+              name="set-maxnumber"
+              value="15"
+              min="1"
+              max="99"
+            />
+          </div>
 
-                <div class="setting-row">
-                    <span class="setting-label">Unblock after</span>
-                    <div class="time-input-container">
-                        <select class="time-selector" id="hours-select"></select><span class="time-unit">h</span>
-                        <select class="time-selector" id="minutes-select"></select><span class="time-unit">m</span>
-                        <select class="time-selector" id="seconds-select"></select><span class="time-unit">s</span>
-                    </div>
-                </div>
-
-                <div class="setting-row">
-                    <span class="setting-label">When blocked, go to</span>
-                    <select class="setting-select" id="block-redirect-select">
-                        <option value="youtube">YouTube home</option>
-                        <option value="blank">Blank page</option>
-                        <option value="custom">Custom URL</option>
-                        <option value="close">Close the tab</option>
-                    </select>
-                </div>
-
-                <div class="setting-row setting-row--sub" id="blockRedirectUrlRow" style="display: none;">
-                    <span class="setting-label">Custom URL</span>
-                    <input type="text" id="block-redirect-url" class="setting-text" placeholder="https://example.com">
-                </div>
+          <div class="setting-row">
+            <span class="setting-label">Unblock after</span>
+            <div class="time-input-container">
+              <select class="time-selector" id="hours-select"></select
+              ><span class="time-unit">h</span>
+              <select class="time-selector" id="minutes-select"></select
+              ><span class="time-unit">m</span>
+              <select class="time-selector" id="seconds-select"></select
+              ><span class="time-unit">s</span>
             </div>
+          </div>
 
-            <button class="reset-button" id="reset-btn"><p>RESET STATISTICS</p></button>
+          <div class="setting-row">
+            <span class="setting-label">When blocked, go to</span>
+            <select class="setting-select" id="block-redirect-select">
+              <option value="youtube">YouTube home</option>
+              <option value="blank">Blank page</option>
+              <option value="custom">Custom URL</option>
+              <option value="close">Close the tab</option>
+            </select>
+          </div>
+
+          <div
+            class="setting-row setting-row--sub"
+            id="blockRedirectUrlRow"
+            style="display: none"
+          >
+            <span class="setting-label">Custom URL</span>
+            <input
+              type="text"
+              id="block-redirect-url"
+              class="setting-text"
+              placeholder="https://example.com"
+            />
+          </div>
         </div>
+
+        <button class="reset-button" id="reset-btn">
+          <p>RESET STATISTICS</p>
+        </button>
+      </div>
     </div>
-</body>
+  </body>
 </html>
