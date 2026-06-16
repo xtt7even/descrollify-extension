@@ -1,6 +1,11 @@
 /**
  * Calls initializeStorage() if user just installed the extension
  */
+
+// Alarms survive service-worker termination; setInterval/setTimeout do not (MV3).
+const BLOCKER_ALARM = 'descrollify-unblock';
+const REMINDER_ALARM = 'descrollify-lmw-reminder';
+
 let reminder;
 let tabHandler;
 let videoTimer;
@@ -19,6 +24,19 @@ chrome.runtime.onStartup.addListener(() => {
     reminder.toggleReminderInterval();
 });
 
+chrome.alarms.onAlarm.addListener(async (alarm) => {
+    if (alarm.name === BLOCKER_ALARM) {
+        chrome.storage.local.set({ isBlocked: false });
+        const { options } = await chrome.storage.local.get('options');
+        if (options) {
+            options.blocker_remove_timestamp = null;
+            chrome.storage.local.set({ options });
+        }
+    } else if (alarm.name === REMINDER_ALARM) {
+        await reminder.fireReminder();
+    }
+});
+
 function initializeInstances() {
     reminder = reminder ? reminder : new Reminder();
     tabHandler = tabHandler ? tabHandler : new TabHandler();
@@ -26,19 +44,15 @@ function initializeInstances() {
     console.log("Initialized instances");
 }
 
+// Schedules the unblock alarm at an absolute time. Chrome clamps alarms to ~30s
+// minimum, so sub-30s timers fire a little late — fine for a focus delay.
 async function startBlockerInterval () {
     const {options} = await chrome.storage.local.get('options');
-    if (options.blocker_remove_timestamp != null) {
-        const blockerInterval = setInterval(async () => {
-            const timerEnd = await checkTimerEnd(options.blocker_remove_timestamp, options.removeBlockerTimer);
-            if (timerEnd) {
-                chrome.storage.local.set({isBlocked: false});
-                options.blocker_remove_timestamp = null
-                chrome.storage.local.set({options: options});
-                // console.log("Unblocked");
-                clearInterval(blockerInterval);
-            }
-        }, 1000)
+    if (options && options.blocker_remove_timestamp != null) {
+        const timer = options.removeBlockerTimer;
+        const timerInMs = timer.hours * 3600000 + timer.minutes * 60000 + timer.seconds * 1000;
+        const when = options.blocker_remove_timestamp + timerInMs;
+        chrome.alarms.create(BLOCKER_ALARM, { when });
     }
 }
 
@@ -61,9 +75,18 @@ async function initializeStorage() {
                 "maxVideosAllowed": 15,
                 "removeBlockerTimer": {hours: 0, minutes: 1, seconds: 0},
                 "remindAboutLmwMode": false,
-                "blocker_remove_timestamp": null
+                "blocker_remove_timestamp": null,
+                "blockRedirect": "youtube",
+                "blockRedirectUrl": ""
             }
         });
+    }
+    else {
+        // Backfill option keys added in later versions for upgrading users.
+        const options = storageData.options;
+        if (!Object.hasOwn(options, "blockRedirect")) options.blockRedirect = "youtube";
+        if (!Object.hasOwn(options, "blockRedirectUrl")) options.blockRedirectUrl = "";
+        chrome.storage.local.set({options});
     }
 
     if (!Object.hasOwn(storageData, "mode")) {
@@ -291,20 +314,20 @@ class TabHandler {
 }
 
 class VideoTimer {
-    constructor() {
+    // State in storage.session (not memory) so it survives worker restarts mid-watch.
+    async getState() {
+        const { videoTimerState } = await chrome.storage.session.get('videoTimerState');
+        return videoTimerState || { isStarted: false, startTime: null };
+    }
 
-        this.isStarted = false;
-
-        this.startTime = null;
-        this.endTime = null;
-
-        this.inCommentsInterval = null;
+    async setState(state) {
+        await chrome.storage.session.set({ videoTimerState: state });
     }
 
     /**
      * Converts elapsed time in ms to an object {hours: , minutes: , seconds:}
      * @param {Number} elapsedTime Elapsed time in ms
-     * @returns 
+     * @returns
      */
     formatElapsedTime(elapsedTime) {
         const convertedToSeconds = Math.floor(elapsedTime / 1000);
@@ -313,31 +336,29 @@ class VideoTimer {
         return result;
     }
 
-    startWatchTimer() {
-        if (!this.isStarted) {
-            this.startTime = Date.parse(new Date());
-            this.isStarted = true;
+    async startWatchTimer() {
+        const state = await this.getState();
+        if (!state.isStarted) {
+            await this.setState({ isStarted: true, startTime: Date.now() });
             console.log("[Short Blocker] Started Timer");
         }
     }
-    
+
     /**
      *  Stops the watch timer, calculates elapsed time in ms and saves watch time if necessary.
      */
     async stopWatchTimer() {
-        if (this.isStarted) {    
-            this.endTime = Date.parse(new Date());
-            const elapsedTime = (this.endTime - this.startTime) //* 8; // multiplier is only for debugging, to test time formatting
-            
-            if (elapsedTime > 0) {
-                await this.saveWatchTime(elapsedTime); 
-            }  
+        const state = await this.getState();
+        if (state.isStarted) {
+            const elapsedTime = Date.now() - state.startTime;
 
-            this.isStarted = false;
+            if (elapsedTime > 0) {
+                await this.saveWatchTime(elapsedTime);
+            }
+
+            await this.setState({ isStarted: false, startTime: null });
             console.log("[Short Blocker] Video paused, elapsed time: ", elapsedTime);
         }
-        const storage = await chrome.storage.local.get();
-        console.log(storage); 
     }
 
     /**
@@ -559,33 +580,22 @@ class SessionsHandler {
 }
 
 class Reminder {
-    constructor() {
-        this.reminderInterval = null;
-        this.waitingForAlert = false;
-    }
-
     async toggleReminderInterval() {
         const {options} = await chrome.storage.local.get('options');
         const {mode} = await chrome.storage.local.get('mode');
 
-        // Clear the existing interval if it exists
-        if (this.reminderInterval !== null) {
-            clearInterval(this.reminderInterval);
-            this.reminderInterval = null;
+        if (options && options.remindAboutLmwMode && mode === "LET ME WATCH MODE") {
+            chrome.alarms.create(REMINDER_ALARM, { periodInMinutes: 10 });
+        } else {
+            chrome.alarms.clear(REMINDER_ALARM);
         }
+    }
 
-        // Check if we need to set a new interval
-        if (options.remindAboutLmwMode && mode === "LET ME WATCH MODE" && !this.waitingForAlert) {
-            this.reminderInterval = setInterval(async () => {
-                const activeTab = await tabHandler.getActiveTab().catch(() => {
-                    console.log("[Descrollify]: No active tab timeout");
-                });
-                this.waitingForAlert = true;
-                if (activeTab && activeTab.url.includes("youtube") && activeTab.url.includes("short")) {
-                    tabHandler.sendRequest("mode_reminder");
-                }
-                this.waitingForAlert = false;
-            }, 600000);
+    // Fired by REMINDER_ALARM; only nudges if the user is on a Shorts page now.
+    async fireReminder() {
+        const activeTab = await tabHandler.getActiveTab().catch(() => null);
+        if (activeTab && activeTab.url && activeTab.url.includes("youtube") && activeTab.url.includes("short")) {
+            tabHandler.sendRequest("mode_reminder");
         }
     }
 }
@@ -627,6 +637,12 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
     if (request.message === "blocker_appended") {
         handleBlockerAppended();
+    }
+
+    if (request.message === "close_tab") {
+        if (sender.tab && sender.tab.id != null) {
+            chrome.tabs.remove(sender.tab.id);
+        }
     }
 
 
@@ -682,14 +698,6 @@ async function handleAppendSession(request) {
     );
     await sessionHandler.appendSession();
     sessionHandler = null;
-}
-
-async function checkTimerEnd(blocker_timestamp, timer) { 
-    const timerInMs = timer.hours * 3600000 + timer.minutes * 60000 + timer.seconds * 1000
-    if (Date.now()- blocker_timestamp > timerInMs) {
-        return true;
-    }
-    return false;
 }
 
 async function handleBlockerAppended() {
