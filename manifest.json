@@ -1,44 +1,45 @@
 {
-    "manifest_version": 3,
-    "name": "Descrollify — video scrolling limiter",
-    "version": "0.1",
-    "description": "An extension that prevents and limits endless scrolling through short videos, helping you stay focused and save time.",
-    "icons": {
+  "manifest_version": 3,
+  "name": "Descrollify — video scrolling limiter",
+  "version": "1.1",
+  "description": "An extension that prevents and limits endless scrolling through short videos, helping you stay focused and save time.",
+  "icons": {
+    "48": "icon48.png",
+    "96": "icon96.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "/images/logo_transparent_white.png",
+        "/lines.json",
+        "popup.js",
+        "options.js",
+        "fonts/static/RobotoCondensed-Regular.ttf",
+        "fonts/static/RobotoCondensed-Bold.ttf"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
       "48": "icon48.png",
       "96": "icon96.png"
-    },
-    "web_accessible_resources": [{
-      "resources": ["/images/logo_transparent_white.png", "/lines.json", "popup.js", "options.js", "fonts/static/RobotoCondensed-Regular.ttf", "fonts/static/RobotoCondensed-Bold.ttf"],
-      "matches": ["<all_urls>"]
-      }],
-    "action": {
-      "default_popup": "popup.html",
-      "default_icon": {
-        "48": "icon48.png",
-        "96": "icon96.png"
-      }
-    },
-    "content_security_policy": {
-      "extension_pages": "script-src 'self'; object-src 'self'"
-    },
-    "background": {
-      "service_worker": "background.js"
-    },
-    "content_scripts": [
-      {
-        "matches": [
-          "https://*.youtube.com/*"
-        ],
-        "js": ["content.js"],
-        "css": ["blocker.css"]
-      }
-    ],
-    "permissions": [
-      "tabs",
-      "storage",
-      "activeTab",
-      "alarms"
-    ],
-    "options_page": "options.html"
-    
-  }
+    }
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.youtube.com/*"],
+      "js": ["content.js"],
+      "css": ["blocker.css"]
+    }
+  ],
+  "permissions": ["tabs", "storage", "activeTab", "alarms"],
+  "options_page": "options.html"
+}
