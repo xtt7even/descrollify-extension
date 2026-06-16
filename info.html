@@ -2,246 +2,210 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FAQ Page</title>
+    <title>Descrollify — Help</title>
     <style>
+        @font-face {
+            font-family: 'Roboto Condensed';
+            font-weight: 400;
+            src: url('fonts/static/RobotoCondensed-Regular.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Roboto Condensed';
+            font-weight: 600;
+            src: url('fonts/static/RobotoCondensed-Medium.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Roboto Condensed';
+            font-weight: 700;
+            src: url('fonts/static/RobotoCondensed-Bold.ttf') format('truetype');
+        }
+        :root {
+            --text: #2b2b2b;
+            --muted: #6a6a6a;
+            --accent: #2563eb;
+            --line: #e3e3e3;
+            --bg: #ffffff;
+        }
+        * { box-sizing: border-box; }
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto Condensed', sans-serif;
             font-size: 17px;
-            background-color: #f5f5f5;
-            color: #333;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--bg);
             margin: 0;
             padding: 0;
         }
-        .container {
-            font-size: large;
-            max-width: 60%;
-            margin: 100px auto;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        h2, h3 {
-            color: #333;
-        }
-        .faq {
-            margin-bottom: 20px;
-        }
-        .question {
-            font-weight: bold;
-            cursor: pointer;
-            padding: 10px;
-            background-color: #007bff;
-            color: #fff;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-        }
-        .question:hover {
-            background-color: #0056b3;
-        }
-        .answer {
-            display: none;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background-color: #f9f9f9;
-            margin-top: 10px;
+        .page {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 32px 24px 64px;
         }
 
+        /* Top navigation — plain links, no fixed bar */
         nav {
-            width: 100%;
-            top: 0;
-            background-color: #007bff;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-            position: fixed;
+            border-bottom: 1px solid var(--line);
+            padding-bottom: 16px;
+            margin-bottom: 32px;
         }
         nav ul {
             display: flex;
-            justify-content: center;
-            gap: 100px;
-            list-style-type: none;
+            flex-wrap: wrap;
+            gap: 24px;
+            list-style: none;
             padding: 0;
+            margin: 0;
         }
-        nav ul li {
-            display: inline;
-            margin-right: 15px;
-        }
-        nav ul li a {
-            color: #fff;
+        nav a {
+            color: var(--accent);
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 15px;
         }
-        nav ul li a:hover {
-            text-decoration: underline;
+        nav a:hover { text-decoration: underline; }
+
+        h1 {
+            font-size: 1.9rem;
+            margin: 0 0 8px;
         }
+        h2 {
+            font-size: 1.35rem;
+            margin: 48px 0 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--line);
+        }
+        h3 {
+            font-size: 1.1rem;
+            margin: 24px 0 8px;
+        }
+        p { margin: 0 0 14px; }
+        ul, ol { margin: 0 0 14px; padding-left: 24px; }
+        li { margin-bottom: 6px; }
+        .lead { color: var(--muted); margin-bottom: 0; }
+
+        /* Collapsible items — plain bold text with a small arrow */
+        .faq {
+            border-bottom: 1px solid var(--line);
+        }
+        .question {
+            font-weight: 600;
+            cursor: pointer;
+            padding: 14px 0 14px 22px;
+            position: relative;
+            user-select: none;
+        }
+        .question::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: var(--muted);
+            transition: transform 0.15s ease;
+        }
+        .question.open::before {
+            transform: rotate(90deg);
+        }
+        .answer {
+            display: none;
+            padding: 0 0 16px 22px;
+            color: var(--text);
+        }
+        .answer.open { display: block; }
 
         footer {
-            background-color: #333;
-            color: #fff;
-            padding: 20px;
-            text-align: center;
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-        .footer-container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        form#subscribe-form {
-            margin: 20px 0;
-        }
-        #email {
-            padding: 10px;
-            border: none;
-            border-radius: 4px;
-            margin-right: 10px;
-        }
-        button[type="submit"] {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            background-color: #007bff;
-            color: #fff;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        button[type="submit"]:hover {
-            background-color: #0056b3;
+            margin-top: 56px;
+            padding-top: 24px;
+            border-top: 1px solid var(--line);
+            color: var(--muted);
+            font-size: 15px;
         }
         .donation-link {
-            display: inline-block;
-            padding: 10px 20px;
-            border-radius: 4px;
-            background-color: #28a745;
-            color: #fff;
+            color: var(--accent);
+            font-weight: 600;
             text-decoration: none;
-            transition: background-color 0.3s;
         }
-        .donation-link:hover {
-            background-color: #218838;
-        }
+        .donation-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
-    <nav>
-        <ul>
-            <li><a href="#information">Information</a></li>
-            <li><a href="#options-manual">Options Page Manual</a></li>
-            <li><a href="#faq">Frequently Asked Questions</a></li>
-        </ul>
-    </nav>
-    
-    <div class="container">
-        <div id="information" class="information">
-            <h2>Information</h2>
-            <p>Descrollify offers three different modes to enhance your browsing experience:</p>
+    <div class="page">
+        <nav>
             <ul>
-                <li>
-                    <strong>OFF:</strong> In this mode, the extension is inactive and does not block any short videos. This allows for an uninterrupted browsing experience where all content is accessible.
-                </li>
-                <li>
-                    <strong>Limit:</strong> This mode helps you stay focused by restricting the viewing of short video content based on the number of videos you've watched. It allows you to watch some videos but blocks further viewing when you've reached your limit.
-                </li>
-                <li>
-                    <strong>Focus:</strong> This mode provides the highest level of restriction by blocking all short video content and preventing accidental short video links from opening. Use this mode when you need to eliminate distractions completely and concentrate on your tasks. Optionally, you can also hide short video thumbnails.
-                </li>
+                <li><a href="#information">Information</a></li>
+                <li><a href="#options-manual">Options Manual</a></li>
+                <li><a href="#faq">FAQ</a></li>
             </ul>
-            <h3>How to Use the Modes</h3>
-            <p>To switch between modes, follow these steps:</p>
+        </nav>
+
+        <h1>Descrollify — Help</h1>
+        <p class="lead">Descrollify helps you spend less time on short videos. Here's how the modes work, what each option does, and answers to common questions.</p>
+
+        <section id="information">
+            <h2>The three modes</h2>
+            <p>Descrollify has three modes. Pick the one that matches how much you want to cut back:</p>
+            <ul>
+                <li><strong>OFF</strong> — Nothing is blocked. Watch short videos as usual.</li>
+                <li><strong>Limit</strong> — Set a daily number of short videos. Watch up to that many, then Descrollify blocks the rest.</li>
+                <li><strong>Focus</strong> — Blocks all short videos and stops short-video links from opening, so nothing slips through. You can also hide their thumbnails so you don't even see them.</li>
+            </ul>
+
+            <h3>How to switch modes</h3>
             <ol>
-                <li>Click on the extension icon in your browser's toolbar.</li>
-                <li>In the dropdown menu, select the desired mode (OFF, Limit, or Focus).</li>
-                <li>Adjust any additional settings to fine-tune your preferences.</li>
-                <li>The extension will now operate according to the selected mode.</li>
+                <li>Click the Descrollify icon in your browser's toolbar.</li>
+                <li>Choose a mode: OFF, Limit, or Focus.</li>
+                <li>Change any extra settings if you want to.</li>
+                <li>That's it — the mode is active right away.</li>
             </ol>
-        </div>
-    </div>
+        </section>
 
-    <div class="container">
-        <h1 id="options-manual">Options Page Manual</h1>
-        <div class="faq">
-            <div class="question">1. Reset Statistics</div>
-            <div class="answer">
-                <p>This section allows you to reset all your recorded statistics.</p>
-                <ul>
-                    <li><b>RESET STATISTICS Button:</b> Click this button to clear all your usage statistics and start fresh.</li>
-                </ul>
-            </div>
-        </div>
-        <div class="faq">
-            <div class="question">2. Total Focus Mode</div>
-            <div class="answer">
-                <ul>
-                    <li><b>Hide Short Videos Thumbnails:</b></li>
-                    <ul>
-                        <li><b>What It Does:</b> When enabled, it hides the thumbnails of short videos to reduce distractions.</li>
-                        <li><b>How to Use:</b> Click the "Hide short videos thumbnails" button. Ensure the radio button next to it is selected.</li>
-                    </ul>
-                </ul>
-            </div>
-        </div>
-        <div class="faq">
-            <div class="question">3. Limiter Mode</div>
-            <div class="answer">
-                <ul>
-                    <li><b>Max Videos Allowed:</b></li>
-                    <ul>
-                        <li><b>What It Does:</b> Sets a limit on the number of videos you can watch before a blocker is activated.</li>
-                        <li><b>How to Use:</b></li>
-                        <ol>
-                            <li>Use the number input field to set the maximum number of videos (between 1 and 30). Adjust the number by clicking the up and down arrows or typing the number directly.</li>
-                        </ol>
-                    </ul>
-                    <li><b>Remove Blocker After:</b></li>
-                    <ul>
-                        <li><b>What It Does:</b> Sets a timer for how long the blocker will remain active before it is automatically removed.</li>
-                        <li><b>How to Use:</b></li>
-                        <ol>
-                            <li>Set the desired time using the dropdown menus:</li>
-                            <ul>
-                                <li>Select the number of hours from the "Hours" dropdown.</li>
-                                <li>Select the number of minutes from the "Minutes" dropdown.</li>
-                                <li>Select the number of seconds from the "Seconds" dropdown.</li>
-                                <li>If you don't want to set any timer, use 0 for hours, minutes, and seconds.</li>
-                            </ul>
-                        </ol>
-                    </ul>
-                </ul>
-            </div>
-        </div>
-    </div>
+        <section id="options-manual">
+            <h2>Options Manual</h2>
 
-    <div class="container">
-        <h1 id="faq">Frequently Asked Questions</h1>
-        <div class="faq">
-            <div class="question">Is the extension compatible with all browsers?</div>
-            <div class="answer">Currently, the extension is compatible with popular browsers like Google Chrome and Microsoft Edge. It's planned to expand compatibility to other browsers.</div>
-        </div>
-        <div class="faq">
-            <div class="question">Does it block short videos from all social media?</div>
-            <div class="answer">Currently, this extension is only compatible with YouTube shorts. I'm working on implementing wider compatibility with other social media platforms.</div>
-        </div>
-        <div class="faq">  
-            <div class="question">Does Descrollify access my watch or browser history or save sensitive information?</div>
-            <div class="answer">No, Descrollify does not collect any data from your watch or browser history. It generates its own data as you scroll through different short videos to create statistical information. Moreover, all the data is stored locally on your computer. The extension does not save any video links or other sensitive data.</div>
-        </div>
-    </div>
+            <div class="faq">
+                <div class="question">1. Reset Statistics</div>
+                <div class="answer">
+                    <p>Clears all the usage numbers Descrollify has tracked and starts your stats over from zero. Click <b>RESET STATISTICS</b> to do it.</p>
+                </div>
+            </div>
 
-    <footer>
-        <div class="footer-container">
-            <p>Support us by making a donation:</p>
-            <a href="https://www.buymeacoffee.com/kirillgr1" target="_blank" class="donation-link">Donate</a>
-        </div>
-    </footer>
+            <div class="faq">
+                <div class="question">2. Focus Mode options</div>
+                <div class="answer">
+                    <p><b>Hide short video thumbnails</b></p>
+                    <p>Hides the preview images for short videos so they don't tempt you. Turn it on by clicking "Hide short videos thumbnails" and making sure the radio button next to it is selected.</p>
+                </div>
+            </div>
+
+            <div class="faq">
+                <div class="question">3. Limit Mode options</div>
+                <div class="answer">
+                    <p><b>Max videos allowed</b></p>
+                    <p>How many short videos you can watch before Descrollify starts blocking. Type a number from 1 to 30, or use the up/down arrows.</p>
+
+                    <p><b>Remove blocker after</b></p>
+                    <p>How long the block lasts once it kicks in. Set it with the Hours, Minutes, and Seconds dropdowns. Leave all three at 0 if you want the block to stay until you change the mode yourself.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="faq">
+            <h2>Frequently Asked Questions</h2>
+
+            <div class="faq">
+                <div class="question">Does it block short videos everywhere?</div>
+                <div class="answer">For now it only blocks YouTube Shorts. Support for other platforms is in the works.</div>
+            </div>
+
+            <div class="faq">
+                <div class="question">Does it track my history or collect my data?</div>
+                <div class="answer">No. Descrollify never looks at your watch or browser history. It only counts the short videos you scroll past to build your stats, and everything stays on your own computer. It doesn't save video links or any other personal information.</div>
+            </div>
+        </section>
+
+        <footer>
+            <p>Support development by making a donation: <a href="https://www.buymeacoffee.com/kirillgr1" target="_blank" class="donation-link">Donate</a></p>
+        </footer>
+    </div>
     <script src="./info.js"></script>
 </body>
 </html>
