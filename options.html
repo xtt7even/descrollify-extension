@@ -12,13 +12,29 @@
             <button class="popup-navbar-btn" id="info-btn"><img class='helping-icons' src="images/question-mark-round-icon.png" alt="help" style="opacity: 0%;"></button>
             <img id='logo' src="images/logo_transparent_white.png" alt="logo">
             <button  id='close-btn'><img id='close-btn-image' src="images/close-line-icon.png" alt="logo"></button>
-        </nav>  
+        </nav>
         <div id="options-container">
             <div id="options-header"><h2>SETTINGS</h2></div>
             <!-- <div class="options-subheader"><h3>GENERAL</h3></div> -->
             <div class="options-section">
                 <button class="options-btn" id="reset-btn">
                     <p>RESET STATISTICS</p>
+                </button>
+            </div>
+            <div class="options-section">
+                <h4>When blocked</h4>
+                <button class="options-btn" id="blockRedirect">
+                    <p>Go to</p>
+                    <select name="block-redirect" class="block-redirect-select" id="block-redirect-select">
+                        <option value="youtube">YouTube home</option>
+                        <option value="blank">Blank page</option>
+                        <option value="custom">Custom URL</option>
+                        <option value="close">Close the tab</option>
+                    </select>
+                </button>
+                <button class="options-btn" id="blockRedirectUrlRow" style="display: none;">
+                    <p>Custom URL</p>
+                    <input type="text" id="block-redirect-url" class="block-redirect-url-input" placeholder="https://example.com">
                 </button>
             </div>
             <!-- <div class="options-subheader"><h3>MODES SETTINGS</h3></div> -->
@@ -52,7 +68,7 @@
                 </button>
             </div>
         </div>
-        
+
         </div>
     </div>
 </body>

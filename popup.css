@@ -190,6 +190,30 @@ option {
     background-color: white;
 }
 
+.block-redirect-select {
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    height: 24px;
+    border-radius: 3px;
+    text-align: center;
+    background-color: #74accc;
+    border: none;
+}
+
+.block-redirect-url-input {
+    width: 150px;
+    height: 22px;
+    border-radius: 3px;
+    background-color: #74accc;
+    border: none;
+    color: white;
+    padding: 0 6px;
+}
+
+.block-redirect-url-input::placeholder {
+    color: #e6f1f8;
+}
+
 .time-input-container {
     display: flex;
     align-items: center;

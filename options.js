@@ -138,14 +138,51 @@ window.addEventListener("load", async function() {
         await setAllowedVideos(digitSelector.value);
     });
 
-    digitSelector.addEventListener('blur', async () => {    
+    digitSelector.addEventListener('blur', async () => {
         validateInput(digitSelector)
         await setAllowedVideos(digitSelector.value);
     });
 
 
     //--------------------------------------
+    // "When blocked, go to" destination
+    await setupBlockRedirect();
 });
+
+async function setupBlockRedirect() {
+    const select = document.getElementById("block-redirect-select");
+    const urlRow = document.getElementById("blockRedirectUrlRow");
+    const urlInput = document.getElementById("block-redirect-url");
+
+    const {options} = await chrome.storage.local.get("options");
+    select.value = options.blockRedirect || "youtube";
+    urlInput.value = options.blockRedirectUrl || "";
+    urlRow.style.display = select.value === "custom" ? "" : "none";
+
+    select.addEventListener("change", async () => {
+        urlRow.style.display = select.value === "custom" ? "" : "none";
+        await saveOption("blockRedirect", select.value);
+    });
+
+    urlInput.addEventListener("blur", async () => {
+        const cleaned = normalizeRedirectUrl(urlInput.value.trim());
+        urlInput.value = cleaned;
+        await saveOption("blockRedirectUrl", cleaned);
+    });
+}
+
+// Prepend https:// when the user omits a scheme, so the URL isn't treated as a
+// path relative to the YouTube page (which would loop back into Shorts).
+function normalizeRedirectUrl(url) {
+    if (!url) return "";
+    return /^(https?:|about:)/i.test(url) ? url : "https://" + url;
+}
+
+async function saveOption(key, value) {
+    const {options} = await chrome.storage.local.get("options");
+    options[key] = value;
+    await chrome.storage.local.set({options});
+}
 
 function validateInput (digitSelector) {
     let regex = /^\d+$/;
