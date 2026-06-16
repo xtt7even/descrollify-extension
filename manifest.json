@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Descrollify — video scrolling limiter",
-  "version": "1.1",
+  "name": "Descrollify — Limit YouTube Shorts",
+  "version": "1.1.0",
   "description": "An extension that prevents and limits endless scrolling through short videos, helping you stay focused and save time.",
   "icons": {
     "48": "icon48.png",
