@@ -25,7 +25,19 @@ async function blockShortThumbnails() {
 
 
 
+// Banner duration when shown on the page we land on after redirecting.
+const LANDED_BANNER_MS = 7000;
+
 window.addEventListener('load', async () => {
+    // When we redirect to a YouTube page, the toast is queued here and shown
+    // once that page loads (snappier than waiting on the Short first).
+    const {pendingNotification} = await chrome.storage.local.get("pendingNotification");
+    if (pendingNotification) {
+        await chrome.storage.local.set({pendingNotification: null});
+        drawNotification(pendingNotification, LANDED_BANNER_MS);
+        setTimeout(hideNotification, LANDED_BANNER_MS);
+    }
+
     chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         if (message.message == 'videoplayer closed') {
             await chrome.runtime.sendMessage({message: "save_sessions"});
@@ -41,18 +53,23 @@ window.addEventListener('load', async () => {
 });
 
 /**
- * Pauses the Short, shows the explanatory toast, then leaves to the user's
- * configured destination. DOM-independent — only touches <video> and <body>.
+ * Leaves the Short and shows the explanatory toast. For a YouTube destination we
+ * redirect immediately and show the banner once it loads (content script runs
+ * there); for everywhere else we show the toast in place first, then leave.
  */
 async function showToastThenLeave(noteText) {
     const {options} = await chrome.storage.local.get("options");
     const dest = (options && options.blockRedirect) || "youtube";
 
+    if (dest === "youtube") {
+        await chrome.storage.local.set({pendingNotification: noteText});
+        window.location.href = "https://www.youtube.com";
+        return;
+    }
+
     const video = document.querySelector('video');
     if (video) video.pause();
-
     drawNotification(noteText, LEAVE_DELAY_MS);
-
     setTimeout(() => leaveTo(dest, options), LEAVE_DELAY_MS);
 }
 
