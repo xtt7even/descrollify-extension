@@ -36,7 +36,8 @@
     "permissions": [
       "tabs",
       "storage",
-      "activeTab"
+      "activeTab",
+      "alarms"
     ],
     "options_page": "options.html"
     
