@@ -131,7 +131,7 @@
   "infoOptFocusA": { "message": "Hides the preview images for short videos so they don't tempt you. Turn it on by clicking \"Hide short videos thumbnails\" and making sure the radio button next to it is selected.", "description": "Help page answer." },
   "infoOptLimitQ": { "message": "3. Limit Mode options", "description": "Help page collapsible question." },
   "infoOptLimitMaxHeading": { "message": "Max videos allowed", "description": "Help page bold subheading." },
-  "infoOptLimitMaxA": { "message": "How many short videos you can watch before Descrollify starts blocking. Type a number from 1 to 30, or use the up/down arrows.", "description": "Help page answer." },
+  "infoOptLimitMaxA": { "message": "How many short videos you can watch before Descrollify starts blocking. Type a number from 1 to 99, or use the up/down arrows.", "description": "Help page answer." },
   "infoOptLimitTimerHeading": { "message": "Remove blocker after", "description": "Help page bold subheading." },
   "infoOptLimitTimerA": { "message": "How long the block lasts once it kicks in. Set it with the Hours, Minutes, and Seconds dropdowns. Leave all three at 0 if you want the block to stay until you change the mode yourself.", "description": "Help page answer." },
 

@@ -131,7 +131,7 @@
   "infoOptFocusA": { "message": "Скрывает превью коротких видео, чтобы они вас не соблазняли. Включите, нажав «Скрывать миниатюры коротких видео» и убедившись, что переключатель рядом активен.", "description": "Help page answer." },
   "infoOptLimitQ": { "message": "3. Настройки режима Лимит", "description": "Help page collapsible question." },
   "infoOptLimitMaxHeading": { "message": "Максимум разрешённых видео", "description": "Help page bold subheading." },
-  "infoOptLimitMaxA": { "message": "Сколько коротких видео вы можете посмотреть, прежде чем Descrollify начнёт блокировку. Введите число от 1 до 30 или используйте стрелки вверх/вниз.", "description": "Help page answer." },
+  "infoOptLimitMaxA": { "message": "Сколько коротких видео вы можете посмотреть, прежде чем Descrollify начнёт блокировку. Введите число от 1 до 99 или используйте стрелки вверх/вниз.", "description": "Help page answer." },
   "infoOptLimitTimerHeading": { "message": "Снять блокировку через", "description": "Help page bold subheading." },
   "infoOptLimitTimerA": { "message": "Как долго длится блокировка после срабатывания. Задайте её с помощью списков «Часы», «Минуты» и «Секунды». Оставьте все три на 0, если хотите, чтобы блокировка сохранялась, пока вы сами не смените режим.", "description": "Help page answer." },
 

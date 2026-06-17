@@ -131,7 +131,7 @@
   "infoOptFocusA": { "message": "Masque les images d'aperçu des vidéos courtes pour qu'elles ne vous tentent pas. Activez-le en cliquant sur « Masquer les miniatures des vidéos courtes » et en vous assurant que le bouton à côté est sélectionné.", "description": "Help page answer." },
   "infoOptLimitQ": { "message": "3. Options du mode Limite", "description": "Help page collapsible question." },
   "infoOptLimitMaxHeading": { "message": "Nombre maximal de vidéos autorisées", "description": "Help page bold subheading." },
-  "infoOptLimitMaxA": { "message": "Combien de vidéos courtes vous pouvez regarder avant que Descrollify ne commence à bloquer. Saisissez un nombre de 1 à 30 ou utilisez les flèches haut/bas.", "description": "Help page answer." },
+  "infoOptLimitMaxA": { "message": "Combien de vidéos courtes vous pouvez regarder avant que Descrollify ne commence à bloquer. Saisissez un nombre de 1 à 99 ou utilisez les flèches haut/bas.", "description": "Help page answer." },
   "infoOptLimitTimerHeading": { "message": "Lever le blocage après", "description": "Help page bold subheading." },
   "infoOptLimitTimerA": { "message": "Combien de temps dure le blocage une fois déclenché. Réglez-le avec les menus déroulants Heures, Minutes et Secondes. Laissez les trois à 0 si vous voulez que le blocage persiste jusqu'à ce que vous changiez le mode vous-même.", "description": "Help page answer." },
 

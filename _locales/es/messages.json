@@ -131,7 +131,7 @@
   "infoOptFocusA": { "message": "Oculta las imágenes de vista previa de los vídeos cortos para que no te tienten. Actívalo haciendo clic en «Ocultar miniaturas de vídeos cortos» y asegurándote de que el botón de al lado esté seleccionado.", "description": "Help page answer." },
   "infoOptLimitQ": { "message": "3. Opciones del modo Límite", "description": "Help page collapsible question." },
   "infoOptLimitMaxHeading": { "message": "Máximo de vídeos permitidos", "description": "Help page bold subheading." },
-  "infoOptLimitMaxA": { "message": "Cuántos vídeos cortos puedes ver antes de que Descrollify empiece a bloquear. Escribe un número del 1 al 30 o usa las flechas arriba/abajo.", "description": "Help page answer." },
+  "infoOptLimitMaxA": { "message": "Cuántos vídeos cortos puedes ver antes de que Descrollify empiece a bloquear. Escribe un número del 1 al 99 o usa las flechas arriba/abajo.", "description": "Help page answer." },
   "infoOptLimitTimerHeading": { "message": "Quitar el bloqueo tras", "description": "Help page bold subheading." },
   "infoOptLimitTimerA": { "message": "Cuánto dura el bloqueo una vez que se activa. Configúralo con los desplegables de Horas, Minutos y Segundos. Deja los tres en 0 si quieres que el bloqueo se mantenga hasta que cambies el modo tú mismo.", "description": "Help page answer." },
 

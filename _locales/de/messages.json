@@ -131,7 +131,7 @@
   "infoOptFocusA": { "message": "Blendet die Vorschaubilder von Kurzvideos aus, damit sie dich nicht in Versuchung führen. Aktiviere es, indem du auf „Vorschaubilder von Kurzvideos ausblenden“ klickst und sicherstellst, dass der Schalter daneben aktiviert ist.", "description": "Help page answer." },
   "infoOptLimitQ": { "message": "3. Optionen des Limit-Modus", "description": "Help page collapsible question." },
   "infoOptLimitMaxHeading": { "message": "Maximal erlaubte Videos", "description": "Help page bold subheading." },
-  "infoOptLimitMaxA": { "message": "Wie viele Kurzvideos du ansehen kannst, bevor Descrollify zu blockieren beginnt. Gib eine Zahl von 1 bis 30 ein oder nutze die Pfeile nach oben/unten.", "description": "Help page answer." },
+  "infoOptLimitMaxA": { "message": "Wie viele Kurzvideos du ansehen kannst, bevor Descrollify zu blockieren beginnt. Gib eine Zahl von 1 bis 99 ein oder nutze die Pfeile nach oben/unten.", "description": "Help page answer." },
   "infoOptLimitTimerHeading": { "message": "Blockierung aufheben nach", "description": "Help page bold subheading." },
   "infoOptLimitTimerA": { "message": "Wie lange die Blockierung dauert, sobald sie greift. Stelle sie mit den Dropdowns für Stunden, Minuten und Sekunden ein. Lass alle drei auf 0, wenn die Blockierung bestehen bleiben soll, bis du den Modus selbst änderst.", "description": "Help page answer." },
 

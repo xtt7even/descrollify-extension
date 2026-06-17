@@ -153,7 +153,7 @@ async function saveOption(key, value) {
 
 function validateInput(input) {
     const regex = /^\d+$/;
-    if (input.value > 30) input.value = 30;
+    if (input.value > 99) input.value = 99;
     if (input.value < 1) input.value = 1;
     if (!regex.test(input.value)) input.value = 1;
 }
