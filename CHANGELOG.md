@@ -5,12 +5,20 @@ All notable changes to Descrollify are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-06-17
+
+### Added
+- **Multi-language support** — the entire UI (popup, settings, help page, and in-page toasts) is now localized, with full translations for English, Spanish, German, French, Portuguese (BR), Russian, and Italian.
+- **Language selector** in settings — defaults to "Auto (browser language)" and lets you override the language manually.
+
+### Fixed
+- The "max videos before blocking" limit can now be set up to 99; the input previously snapped values back down to 30.
+
 ## [1.1.0] - 2026-06-16
 
 ### Added
 - **Configurable redirect** — choose where you land when a Short is blocked ("when blocked, go to" setting).
 - **Limit mode now redirects too** — when you hit your video limit it sends you to your chosen destination instead of showing an on-screen blocker.
-- **Toast notification** shown when Total Focus mode redirects you off a Short.
 - Bundled **Roboto Condensed** font across the popup, settings, help page, and the in-page toast, so the UI looks consistent on every OS instead of falling back to the system default.
 - `GPLv3` **LICENSE** and an open-source-oriented **README**.
 
@@ -27,4 +35,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Toast and UI text no longer fall back to the default system font on Linux.
 
+[1.2.0]: https://github.com/xtt7even/descrollify-extension/releases/tag/v1.2.0
 [1.1.0]: https://github.com/xtt7even/descrollify-extension/releases/tag/v1.1.0
