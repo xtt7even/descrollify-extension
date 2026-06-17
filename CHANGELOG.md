@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Multi-language support** — the entire UI (popup, settings, help page, and in-page toasts) is now localized, with full translations for English, Spanish, German, French, Portuguese (BR), Russian, and Italian.
 - **Language selector** in settings — defaults to "Auto (browser language)" and lets you override the language manually.
+- **Popup footer** showing the current version (pulled from the manifest, linking to the changelog) alongside a link to the GitHub repository.
 
 ### Fixed
 - The "max videos before blocking" limit can now be set up to 99; the input previously snapped values back down to 30.
