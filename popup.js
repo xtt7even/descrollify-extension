@@ -30,6 +30,7 @@
 let stats;
 
 window.addEventListener('load', async function(event) {
+    await i18n.load();
     stats = new Stats();
     addPageButtonsListeners();
     await stats.drawPages();
@@ -117,43 +118,53 @@ class Stats {
     async setCountersDifference() {
         const {"watchSessionsDifference": difference} = await chrome.storage.local.get("watchSessionsDifference");
          
-        this.statsFirstTitle.innerHTML = 'ON AVERAGE, YOU WATCH'
-        this.statsSecondTitle.innerHTML = 'LESS IN THE LIMITER MODE'
-        this.statsField.innerHTML = difference == 1 ? difference + " VIDEO" : difference + " VIDEOS";   
+        this.statsFirstTitle.innerHTML = i18n.getMessage('statsAvgWatchTitle')
+        this.statsSecondTitle.innerHTML = i18n.getMessage('statsLessLimiterTitle')
+        this.statsField.innerHTML = difference == 1
+            ? i18n.getMessage('statsVideo', [String(difference)])
+            : i18n.getMessage('statsVideos', [String(difference)]);
     }
 
     async setEscapes() {
         const {"numberOfEscapes": escapes} = await getStorageData("numberOfEscapes");
 
-        this.statsSecondTitle.innerHTML = escapes > 0 ? 'KEEP THAT MOMENTUM!' : "START USING AND BOOST PRODUCTIVITY!" 
+        this.statsSecondTitle.innerHTML = escapes > 0
+            ? i18n.getMessage('statsKeepMomentum')
+            : i18n.getMessage('statsStartBoost');
         if (escapes == 0) {
-            this.statsField.innerHTML = "NO DATA";
+            this.statsField.innerHTML = i18n.getMessage('statsNoData');
         }
         else {
-            this.statsField.innerHTML = escapes == 1 ? escapes + ' TIME' : escapes + ' TIMES';   
+            this.statsField.innerHTML = escapes == 1
+                ? i18n.getMessage('statsEscapeTime', [String(escapes)])
+                : i18n.getMessage('statsEscapeTimes', [String(escapes)]);
         }
-        
-        this.statsFirstTitle.innerHTML = escapes > 0 ? "YOU'VE ESCAPED SCROLLING" : "WELCOME TO DESCROLLIFY";
+
+        this.statsFirstTitle.innerHTML = escapes > 0
+            ? i18n.getMessage('statsEscapedTitle')
+            : i18n.getMessage('statsWelcomeTitle');
     }
     
     async setSavedTime() {
         const {"savedTime": savedWatchTime} = await chrome.storage.local.get("savedTime");
 
-        this.statsFirstTitle.innerHTML = 'ON AVERAGE YOU SAVE'
-        this.statsSecondTitle.innerHTML = 'WHILE IN THE LIMITER MODE'
-        this.statsField.innerHTML = this.formatToString(savedWatchTime);   
+        this.statsFirstTitle.innerHTML = i18n.getMessage('statsAvgSaveTitle')
+        this.statsSecondTitle.innerHTML = i18n.getMessage('statsWhileLimiterTitle')
+        this.statsField.innerHTML = this.formatToString(savedWatchTime);
     }
     
     formatToString(timeObject) {
-        if (!timeObject) return "0 SECONDS";
-        
+        if (!timeObject) return i18n.getMessage('statsZeroSeconds');
+
         let timeStat;
         if (timeObject.minutes > 0 || timeObject.hours > 0) {
             const time = Math.round((timeObject.hours * 60) + timeObject.minutes + (timeObject.seconds / 60));
-            timeStat = time == 1 ? time + " MINUTE" : time + " MINUTES" 
+            timeStat = time == 1
+                ? i18n.getMessage('statsMinute', [String(time)])
+                : i18n.getMessage('statsMinutes', [String(time)]);
         }
         else {
-            timeStat = Math.round(timeObject.seconds) + " SECONDS";
+            timeStat = i18n.getMessage('statsSeconds', [String(Math.round(timeObject.seconds))]);
         }
         return timeStat;
     }

@@ -14,9 +14,9 @@ function resetStats(resetButton) {
         chrome.storage.local.set({ "sessionWafWatchTimeHistory": []})
         chrome.storage.local.set({ "numberOfEscapes": 0})
 
-        resetButton.innerHTML = "<p>RESET SUCCESSFULLY</p>";
+        resetButton.innerHTML = `<p>${i18n.getMessage('resetSuccess')}</p>`;
         setTimeout(() => {
-            resetButton.innerHTML = "<p>RESET STATISTICS</p>";
+            resetButton.innerHTML = `<p>${i18n.getMessage('resetStatistics')}</p>`;
         }, 3000);
     }
 }
@@ -31,15 +31,19 @@ const countClicks = (function () {
 
 function isResetConfirmed(resetButton) {
     if (countClicks() % 2 == 0) {
-        resetButton.innerHTML = "<p>RESET STATISTICS</p>";
+        resetButton.innerHTML = `<p>${i18n.getMessage('resetStatistics')}</p>`;
         return true;
     }
-    resetButton.innerHTML = "<p>PRESS TO CONFIRM</p>";
+    resetButton.innerHTML = `<p>${i18n.getMessage('resetConfirm')}</p>`;
     return false;
 }
 
 window.addEventListener("load", async function() {
+    await i18n.load();
     const {options} = await chrome.storage.local.get('options');
+
+    // Language selector (overrides the browser language)
+    await setupLanguage();
 
     // Reset statistics
     const resetButton = document.getElementById("reset-btn");
@@ -48,7 +52,7 @@ window.addEventListener("load", async function() {
     // Toggles
     initToggle("hideThumbnails-toggle", "hideThumbnails", options, () => {
         const hint = document.getElementById("hideThumbnails-hint");
-        hint.textContent = "Refresh open YouTube tabs to apply";
+        hint.textContent = i18n.getMessage('hintRefreshTabs');
         setTimeout(() => { hint.textContent = ""; }, 3000);
     });
 
@@ -97,6 +101,19 @@ async function saveTimerField(field, value) {
     const {options} = await chrome.storage.local.get("options");
     options.removeBlockerTimer[field] = parseInt(value);
     await chrome.storage.local.set({options});
+}
+
+// Language override. "auto" follows the browser language; any other value
+// forces that locale. Changing it re-renders this page immediately.
+async function setupLanguage() {
+    const select = document.getElementById("language-select");
+    if (!select) return;
+    const {options} = await chrome.storage.local.get("options");
+    select.value = (options && options.language) || "auto";
+    select.addEventListener("change", async () => {
+        await saveOption("language", select.value);
+        await i18n.reload();
+    });
 }
 
 async function setupBlockRedirect() {

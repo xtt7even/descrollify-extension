@@ -1,0 +1,145 @@
+{
+  "extName": {
+    "message": "Descrollify — YouTube Shorts begrenzen",
+    "description": "Extension name shown in the browser and Chrome Web Store."
+  },
+  "extDesc": {
+    "message": "Eine Erweiterung, die endloses Scrollen durch Kurzvideos verhindert und begrenzt, damit du konzentriert bleibst und Zeit sparst.",
+    "description": "Extension description shown in the browser and Chrome Web Store."
+  },
+
+  "modeOff": { "message": "AUS", "description": "Popup mode selector: no blocking." },
+  "modeLimiter": { "message": "LIMIT", "description": "Popup mode selector: limit number of Shorts." },
+  "modeFocus": { "message": "FOKUS", "description": "Popup mode selector: block all Shorts." },
+
+  "statsUnavailable": { "message": "STATISTIK NICHT VERFÜGBAR", "description": "Placeholder shown before stats load." },
+
+  "statsEscapedTitle": { "message": "DU HAST DAS SCROLLEN VERMIEDEN", "description": "Stats page 1 title when the user has escaped at least once." },
+  "statsWelcomeTitle": { "message": "WILLKOMMEN BEI DESCROLLIFY", "description": "Stats page 1 title before any data exists." },
+  "statsKeepMomentum": { "message": "BLEIB DRAN!", "description": "Stats page 1 subtitle when the user has escaped at least once." },
+  "statsStartBoost": { "message": "LEG LOS UND STEIGERE DEINE PRODUKTIVITÄT!", "description": "Stats page 1 subtitle before any data exists." },
+  "statsNoData": { "message": "KEINE DATEN", "description": "Stats value shown when there is no data yet." },
+  "statsEscapeTime": {
+    "message": "$count$ MAL",
+    "description": "Stats page 1 value, singular (one escape).",
+    "placeholders": { "count": { "content": "$1", "example": "1" } }
+  },
+  "statsEscapeTimes": {
+    "message": "$count$ MAL",
+    "description": "Stats page 1 value, plural (more than one escape).",
+    "placeholders": { "count": { "content": "$1", "example": "5" } }
+  },
+
+  "statsAvgSaveTitle": { "message": "IM DURCHSCHNITT SPARST DU", "description": "Stats page 2 title." },
+  "statsWhileLimiterTitle": { "message": "IM LIMIT-MODUS", "description": "Stats page 2 subtitle." },
+  "statsZeroSeconds": { "message": "0 SEKUNDEN", "description": "Stats saved-time value when zero." },
+  "statsMinute": {
+    "message": "$count$ MINUTE",
+    "description": "Saved-time value, singular.",
+    "placeholders": { "count": { "content": "$1", "example": "1" } }
+  },
+  "statsMinutes": {
+    "message": "$count$ MINUTEN",
+    "description": "Saved-time value, plural.",
+    "placeholders": { "count": { "content": "$1", "example": "12" } }
+  },
+  "statsSeconds": {
+    "message": "$count$ SEKUNDEN",
+    "description": "Saved-time value in seconds.",
+    "placeholders": { "count": { "content": "$1", "example": "45" } }
+  },
+
+  "statsAvgWatchTitle": { "message": "IM DURCHSCHNITT SIEHST DU", "description": "Stats page 3 title." },
+  "statsLessLimiterTitle": { "message": "WENIGER IM LIMIT-MODUS", "description": "Stats page 3 subtitle." },
+  "statsVideo": {
+    "message": "$count$ VIDEO",
+    "description": "Videos-difference value, singular.",
+    "placeholders": { "count": { "content": "$1", "example": "1" } }
+  },
+  "statsVideos": {
+    "message": "$count$ VIDEOS",
+    "description": "Videos-difference value, plural.",
+    "placeholders": { "count": { "content": "$1", "example": "8" } }
+  },
+
+  "githubLink": { "message": "GitHub", "description": "Popup footer link to the GitHub repository." },
+
+  "altHelp": { "message": "Hilfe", "description": "Alt text for the help icon." },
+  "altLogo": { "message": "Logo", "description": "Alt text for the Descrollify logo." },
+  "altSettings": { "message": "Einstellungssymbol", "description": "Alt text for the settings icon." },
+  "altPrevPage": { "message": "vorherige Seite", "description": "Alt text for the previous-stats-page arrow." },
+  "altNextPage": { "message": "nächste Seite", "description": "Alt text for the next-stats-page arrow." },
+  "altBuyMeCoffee": { "message": "Buy Me A Coffee", "description": "Alt text for the Buy Me A Coffee button." },
+
+  "settingsTitle": { "message": "EINSTELLUNGEN", "description": "Settings overlay heading." },
+  "settingsGroupGeneral": { "message": "Allgemein", "description": "Settings group heading." },
+  "settingsGroupLimiter": { "message": "Limit", "description": "Settings group heading." },
+  "settingLanguage": { "message": "Sprache", "description": "Language selector label." },
+  "languageAuto": { "message": "Automatisch (Browser)", "description": "Language selector option that follows the browser language." },
+  "settingHideThumbnails": { "message": "Shorts-Vorschaubilder ausblenden", "description": "Toggle label." },
+  "settingMaxVideos": { "message": "Max. Videos vor dem Blockieren", "description": "Number-input label." },
+  "settingUnblockAfter": { "message": "Entsperren nach", "description": "Timer label." },
+  "settingWhenBlocked": { "message": "Beim Blockieren gehe zu", "description": "Redirect-destination label." },
+  "redirectYoutube": { "message": "YouTube-Startseite", "description": "Redirect destination option." },
+  "redirectBlank": { "message": "Leere Seite", "description": "Redirect destination option." },
+  "redirectCustom": { "message": "Eigene URL", "description": "Redirect destination option." },
+  "redirectClose": { "message": "Tab schließen", "description": "Redirect destination option." },
+  "settingCustomUrl": { "message": "Eigene URL", "description": "Label for the custom-URL input row." },
+  "hintRefreshTabs": { "message": "Offene YouTube-Tabs neu laden, um zu übernehmen", "description": "Hint shown after toggling Hide Shorts thumbnails." },
+
+  "resetStatistics": { "message": "STATISTIK ZURÜCKSETZEN", "description": "Reset button default label." },
+  "resetConfirm": { "message": "ZUM BESTÄTIGEN DRÜCKEN", "description": "Reset button label asking for confirmation." },
+  "resetSuccess": { "message": "ERFOLGREICH ZURÜCKGESETZT", "description": "Reset button label after a successful reset." },
+
+  "descrollifyHeader": { "message": "DESCROLLIFY", "description": "Header on the in-page blocker toast." },
+  "focusNotification": {
+    "message": "DER FOKUS-MODUS HAT DICH AM WEITERSCROLLEN GEHINDERT UND ZURÜCK UMGELEITET. DU KANNST DIESEN MODUS IM DESCROLLIFY-POPUP DEAKTIVIEREN",
+    "description": "Toast shown when Focus mode redirects the user off a Short."
+  },
+  "limitReachedNote": {
+    "message": "DU HAST DEIN SHORTS-LIMIT ERREICHT. ZEIT FÜR EINE PAUSE UND MEHR FOKUS!",
+    "description": "Fallback toast shown when the watch limit is reached and motivational lines fail to load."
+  },
+
+  "infoPageTitle": { "message": "Descrollify — Hilfe", "description": "Help page <title> and heading." },
+  "navInformation": { "message": "Informationen", "description": "Help page nav link." },
+  "navOptionsManual": { "message": "Optionshandbuch", "description": "Help page nav link." },
+  "navFaq": { "message": "FAQ", "description": "Help page nav link." },
+  "infoLead": {
+    "message": "Descrollify hilft dir, weniger Zeit mit Kurzvideos zu verbringen. Hier erfährst du, wie die Modi funktionieren, was jede Option bewirkt, und findest Antworten auf häufige Fragen.",
+    "description": "Help page intro paragraph."
+  },
+  "infoModesTitle": { "message": "Die drei Modi", "description": "Help page section heading." },
+  "infoModesIntro": { "message": "Descrollify hat drei Modi. Wähle den, der dazu passt, wie stark du dich einschränken möchtest:", "description": "Help page paragraph." },
+  "infoModeOffLabel": { "message": "AUS", "description": "Mode name in the help list." },
+  "infoModeOffDesc": { "message": " — Nichts wird blockiert. Sieh dir Kurzvideos wie gewohnt an.", "description": "Description following the OFF mode label." },
+  "infoModeLimitLabel": { "message": "Limit", "description": "Mode name in the help list." },
+  "infoModeLimitDesc": { "message": " — Lege eine tägliche Anzahl an Kurzvideos fest. Sieh dir bis zu dieser Anzahl an, danach blockiert Descrollify den Rest.", "description": "Description following the Limit mode label." },
+  "infoModeFocusLabel": { "message": "Fokus", "description": "Mode name in the help list." },
+  "infoModeFocusDesc": { "message": " — Blockiert alle Kurzvideos und verhindert, dass sich deren Links öffnen, damit nichts durchrutscht. Du kannst auch ihre Vorschaubilder ausblenden, damit du sie gar nicht erst siehst.", "description": "Description following the Focus mode label." },
+  "infoSwitchTitle": { "message": "So wechselst du den Modus", "description": "Help page subheading." },
+  "infoSwitchStep1": { "message": "Klicke auf das Descrollify-Symbol in der Symbolleiste deines Browsers.", "description": "Help page step." },
+  "infoSwitchStep2": { "message": "Wähle einen Modus: AUS, Limit oder Fokus.", "description": "Help page step." },
+  "infoSwitchStep3": { "message": "Ändere bei Bedarf weitere Einstellungen.", "description": "Help page step." },
+  "infoSwitchStep4": { "message": "Das war's — der Modus ist sofort aktiv.", "description": "Help page step." },
+
+  "infoOptionsTitle": { "message": "Optionshandbuch", "description": "Help page section heading." },
+  "infoOptResetQ": { "message": "1. Statistik zurücksetzen", "description": "Help page collapsible question." },
+  "infoOptResetA": { "message": "Löscht alle Nutzungszahlen, die Descrollify erfasst hat, und setzt deine Statistik auf null zurück. Klicke dazu auf STATISTIK ZURÜCKSETZEN.", "description": "Help page answer." },
+  "infoOptFocusQ": { "message": "2. Optionen des Fokus-Modus", "description": "Help page collapsible question." },
+  "infoOptFocusHeading": { "message": "Vorschaubilder von Kurzvideos ausblenden", "description": "Help page bold subheading." },
+  "infoOptFocusA": { "message": "Blendet die Vorschaubilder von Kurzvideos aus, damit sie dich nicht in Versuchung führen. Aktiviere es, indem du auf „Vorschaubilder von Kurzvideos ausblenden“ klickst und sicherstellst, dass der Schalter daneben aktiviert ist.", "description": "Help page answer." },
+  "infoOptLimitQ": { "message": "3. Optionen des Limit-Modus", "description": "Help page collapsible question." },
+  "infoOptLimitMaxHeading": { "message": "Maximal erlaubte Videos", "description": "Help page bold subheading." },
+  "infoOptLimitMaxA": { "message": "Wie viele Kurzvideos du ansehen kannst, bevor Descrollify zu blockieren beginnt. Gib eine Zahl von 1 bis 30 ein oder nutze die Pfeile nach oben/unten.", "description": "Help page answer." },
+  "infoOptLimitTimerHeading": { "message": "Blockierung aufheben nach", "description": "Help page bold subheading." },
+  "infoOptLimitTimerA": { "message": "Wie lange die Blockierung dauert, sobald sie greift. Stelle sie mit den Dropdowns für Stunden, Minuten und Sekunden ein. Lass alle drei auf 0, wenn die Blockierung bestehen bleiben soll, bis du den Modus selbst änderst.", "description": "Help page answer." },
+
+  "infoFaqTitle": { "message": "Häufig gestellte Fragen", "description": "Help page section heading." },
+  "infoFaqWhereQ": { "message": "Blockiert es Kurzvideos überall?", "description": "FAQ question." },
+  "infoFaqWhereA": { "message": "Vorerst blockiert es nur YouTube Shorts. Unterstützung für andere Plattformen ist in Arbeit.", "description": "FAQ answer." },
+  "infoFaqPrivacyQ": { "message": "Verfolgt es meinen Verlauf oder sammelt es meine Daten?", "description": "FAQ question." },
+  "infoFaqPrivacyA": { "message": "Nein. Descrollify sieht sich niemals deinen Wiedergabe- oder Browserverlauf an. Es zählt nur die Kurzvideos, an denen du vorbeiscrollst, um deine Statistik zu erstellen, und alles bleibt auf deinem eigenen Computer. Es speichert keine Videolinks oder andere persönliche Informationen.", "description": "FAQ answer." },
+  "infoDonatePrefix": { "message": "Unterstütze die Entwicklung mit einer Spende: ", "description": "Help page footer text before the donate link." },
+  "infoDonateLink": { "message": "Spenden", "description": "Help page footer donate link." }
+}

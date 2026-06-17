@@ -9,9 +9,6 @@ const SELECTORS = {
     watchFlexy: 'ytd-watch-flexy',
 };
 
-// Toast message shown after Total Focus mode redirects the user off a Short.
-const FOCUS_NOTIFICATION = 'TOTAL FOCUS MODE PREVENTED YOU FROM SCROLLING AND REDIRECTED YOU BACK. YOU CAN TURN THIS MODE OFF IN THE DESCROLLIFY POPUP';
-
 // How long the explanatory toast stays up before we leave the page.
 const LEAVE_DELAY_MS = 3000;
 
@@ -29,6 +26,8 @@ async function blockShortThumbnails() {
 const LANDED_BANNER_MS = 7000;
 
 window.addEventListener('load', async () => {
+    await i18n.load();
+
     // When we redirect to a YouTube page, the toast is queued here and shown
     // once that page loads (snappier than waiting on the Short first).
     const {pendingNotification} = await chrome.storage.local.get("pendingNotification");
@@ -46,7 +45,8 @@ window.addEventListener('load', async () => {
             blockShortThumbnails();
         }
         if(message.message == 'redirect_back') {
-            showToastThenLeave(FOCUS_NOTIFICATION);
+            await i18n.load();
+            showToastThenLeave(i18n.getMessage('focusNotification'));
         }
         return true
     });
@@ -118,7 +118,7 @@ function drawNotification(noteText, durationMs) {
 
     const header = document.createElement('h1');
     header.className = 'totalfocus-notification-header';
-    header.innerText = 'DESCROLLIFY';
+    header.innerText = i18n.getMessage('descrollifyHeader');
 
 
     headerContainer.appendChild(header);
@@ -226,7 +226,8 @@ window.addEventListener('yt-navigate-finish', async function() {
 async function blockShort() {
     await chrome.runtime.sendMessage({message: "blocker_appended"});
 
-    let note = "YOU'VE REACHED YOUR SHORTS LIMIT. TIME TO STEP AWAY AND STAY FOCUSED!";
+    await i18n.load();
+    let note = i18n.getMessage('limitReachedNote');
     try {
         const lines = await pickASetOfLines();
         note = `${lines.upperline} ${lines.lowerline}`;

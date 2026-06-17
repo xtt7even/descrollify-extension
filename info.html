@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Descrollify — Help</title>
+    <title data-i18n="infoPageTitle">Descrollify — Help</title>
+    <script src="./i18n.js"></script>
     <style>
         @font-face {
             font-family: 'Roboto Condensed';
@@ -131,79 +132,79 @@
     <div class="page">
         <nav>
             <ul>
-                <li><a href="#information">Information</a></li>
-                <li><a href="#options-manual">Options Manual</a></li>
-                <li><a href="#faq">FAQ</a></li>
+                <li><a href="#information" data-i18n="navInformation">Information</a></li>
+                <li><a href="#options-manual" data-i18n="navOptionsManual">Options Manual</a></li>
+                <li><a href="#faq" data-i18n="navFaq">FAQ</a></li>
             </ul>
         </nav>
 
-        <h1>Descrollify — Help</h1>
-        <p class="lead">Descrollify helps you spend less time on short videos. Here's how the modes work, what each option does, and answers to common questions.</p>
+        <h1 data-i18n="infoPageTitle">Descrollify — Help</h1>
+        <p class="lead" data-i18n="infoLead">Descrollify helps you spend less time on short videos. Here's how the modes work, what each option does, and answers to common questions.</p>
 
         <section id="information">
-            <h2>The three modes</h2>
-            <p>Descrollify has three modes. Pick the one that matches how much you want to cut back:</p>
+            <h2 data-i18n="infoModesTitle">The three modes</h2>
+            <p data-i18n="infoModesIntro">Descrollify has three modes. Pick the one that matches how much you want to cut back:</p>
             <ul>
-                <li><strong>OFF</strong> — Nothing is blocked. Watch short videos as usual.</li>
-                <li><strong>Limit</strong> — Set a daily number of short videos. Watch up to that many, then Descrollify blocks the rest.</li>
-                <li><strong>Focus</strong> — Blocks all short videos and stops short-video links from opening, so nothing slips through. You can also hide their thumbnails so you don't even see them.</li>
+                <li><strong data-i18n="infoModeOffLabel">OFF</strong><span data-i18n="infoModeOffDesc"> — Nothing is blocked. Watch short videos as usual.</span></li>
+                <li><strong data-i18n="infoModeLimitLabel">Limit</strong><span data-i18n="infoModeLimitDesc"> — Set a daily number of short videos. Watch up to that many, then Descrollify blocks the rest.</span></li>
+                <li><strong data-i18n="infoModeFocusLabel">Focus</strong><span data-i18n="infoModeFocusDesc"> — Blocks all short videos and stops short-video links from opening, so nothing slips through. You can also hide their thumbnails so you don't even see them.</span></li>
             </ul>
 
-            <h3>How to switch modes</h3>
+            <h3 data-i18n="infoSwitchTitle">How to switch modes</h3>
             <ol>
-                <li>Click the Descrollify icon in your browser's toolbar.</li>
-                <li>Choose a mode: OFF, Limit, or Focus.</li>
-                <li>Change any extra settings if you want to.</li>
-                <li>That's it — the mode is active right away.</li>
+                <li data-i18n="infoSwitchStep1">Click the Descrollify icon in your browser's toolbar.</li>
+                <li data-i18n="infoSwitchStep2">Choose a mode: OFF, Limit, or Focus.</li>
+                <li data-i18n="infoSwitchStep3">Change any extra settings if you want to.</li>
+                <li data-i18n="infoSwitchStep4">That's it — the mode is active right away.</li>
             </ol>
         </section>
 
         <section id="options-manual">
-            <h2>Options Manual</h2>
+            <h2 data-i18n="infoOptionsTitle">Options Manual</h2>
 
             <div class="faq">
-                <div class="question">1. Reset Statistics</div>
+                <div class="question" data-i18n="infoOptResetQ">1. Reset Statistics</div>
                 <div class="answer">
-                    <p>Clears all the usage numbers Descrollify has tracked and starts your stats over from zero. Click <b>RESET STATISTICS</b> to do it.</p>
+                    <p data-i18n="infoOptResetA">Clears all the usage numbers Descrollify has tracked and starts your stats over from zero. Click <b>RESET STATISTICS</b> to do it.</p>
                 </div>
             </div>
 
             <div class="faq">
-                <div class="question">2. Focus Mode options</div>
+                <div class="question" data-i18n="infoOptFocusQ">2. Focus Mode options</div>
                 <div class="answer">
-                    <p><b>Hide short video thumbnails</b></p>
-                    <p>Hides the preview images for short videos so they don't tempt you. Turn it on by clicking "Hide short videos thumbnails" and making sure the radio button next to it is selected.</p>
+                    <p><b data-i18n="infoOptFocusHeading">Hide short video thumbnails</b></p>
+                    <p data-i18n="infoOptFocusA">Hides the preview images for short videos so they don't tempt you. Turn it on by clicking "Hide short videos thumbnails" and making sure the radio button next to it is selected.</p>
                 </div>
             </div>
 
             <div class="faq">
-                <div class="question">3. Limit Mode options</div>
+                <div class="question" data-i18n="infoOptLimitQ">3. Limit Mode options</div>
                 <div class="answer">
-                    <p><b>Max videos allowed</b></p>
-                    <p>How many short videos you can watch before Descrollify starts blocking. Type a number from 1 to 30, or use the up/down arrows.</p>
+                    <p><b data-i18n="infoOptLimitMaxHeading">Max videos allowed</b></p>
+                    <p data-i18n="infoOptLimitMaxA">How many short videos you can watch before Descrollify starts blocking. Type a number from 1 to 30, or use the up/down arrows.</p>
 
-                    <p><b>Remove blocker after</b></p>
-                    <p>How long the block lasts once it kicks in. Set it with the Hours, Minutes, and Seconds dropdowns. Leave all three at 0 if you want the block to stay until you change the mode yourself.</p>
+                    <p><b data-i18n="infoOptLimitTimerHeading">Remove blocker after</b></p>
+                    <p data-i18n="infoOptLimitTimerA">How long the block lasts once it kicks in. Set it with the Hours, Minutes, and Seconds dropdowns. Leave all three at 0 if you want the block to stay until you change the mode yourself.</p>
                 </div>
             </div>
         </section>
 
         <section id="faq">
-            <h2>Frequently Asked Questions</h2>
+            <h2 data-i18n="infoFaqTitle">Frequently Asked Questions</h2>
 
             <div class="faq">
-                <div class="question">Does it block short videos everywhere?</div>
-                <div class="answer">For now it only blocks YouTube Shorts. Support for other platforms is in the works.</div>
+                <div class="question" data-i18n="infoFaqWhereQ">Does it block short videos everywhere?</div>
+                <div class="answer" data-i18n="infoFaqWhereA">For now it only blocks YouTube Shorts. Support for other platforms is in the works.</div>
             </div>
 
             <div class="faq">
-                <div class="question">Does it track my history or collect my data?</div>
-                <div class="answer">No. Descrollify never looks at your watch or browser history. It only counts the short videos you scroll past to build your stats, and everything stays on your own computer. It doesn't save video links or any other personal information.</div>
+                <div class="question" data-i18n="infoFaqPrivacyQ">Does it track my history or collect my data?</div>
+                <div class="answer" data-i18n="infoFaqPrivacyA">No. Descrollify never looks at your watch or browser history. It only counts the short videos you scroll past to build your stats, and everything stays on your own computer. It doesn't save video links or any other personal information.</div>
             </div>
         </section>
 
         <footer>
-            <p>Support development by making a donation: <a href="https://www.buymeacoffee.com/kirillgr1" target="_blank" class="donation-link">Donate</a></p>
+            <p><span data-i18n="infoDonatePrefix">Support development by making a donation: </span><a href="https://www.buymeacoffee.com/kirillgr1" target="_blank" class="donation-link" data-i18n="infoDonateLink">Donate</a></p>
         </footer>
     </div>
     <script src="./info.js"></script>

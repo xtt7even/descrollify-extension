@@ -3,27 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="popup.css">
+    <script src="./i18n.js"></script>
     <script src="./popup.js"></script>
 </head>
 <body>
     <div id="popup-container">
         <nav id="popup-navbar">
-            <button class="popup-navbar-btn" id="info-btn"><img class='helping-icons' src="images/question-mark-round-icon.png" alt="help"></button>
-            <button class="popup-navbar-btn"><img id='logo' src="images/logo_transparent_white.png" alt="logo"></button>
-            <button class="popup-navbar-btn" id="settings-btn"><img class='helping-icons' src="images/setting-icon.png" alt="settings icon"></button>
+            <button class="popup-navbar-btn" id="info-btn"><img class='helping-icons' src="images/question-mark-round-icon.png" data-i18n-alt="altHelp" alt="help"></button>
+            <button class="popup-navbar-btn"><img id='logo' src="images/logo_transparent_white.png" data-i18n-alt="altLogo" alt="logo"></button>
+            <button class="popup-navbar-btn" id="settings-btn"><img class='helping-icons' src="images/setting-icon.png" data-i18n-alt="altSettings" alt="settings icon"></button>
         </nav>
         
         <div id="popup-stats-container">
-            <button class="page-change-btn" id="prev-page" type="button"><img class="page-icon" src="images/line-angle-left-icon.png" alt="previous page"></button>
-            <div id="stats-data-container"> 
+            <button class="page-change-btn" id="prev-page" type="button"><img class="page-icon" src="images/line-angle-left-icon.png" data-i18n-alt="altPrevPage" alt="previous page"></button>
+            <div id="stats-data-container">
                 <h3 id="infocontainer-stats-firsttitle"></h3>
                 <div id="stats-field-container">
-                    <h1 id="infocontainer-stats-field">STATS UNAVAILABLE</h1>
+                    <h1 id="infocontainer-stats-field" data-i18n="statsUnavailable">STATS UNAVAILABLE</h1>
                     <!-- <a href="./info.html"><img title="" id="stats-info-img" src="/images/information-mark-circle-outline-icon.png" alt="information"></a> -->
                 </div>
                 <h3 id="infocontainer-stats-secondtitle"></h3>
             </div>
-            <button class="page-change-btn" id="next-page" type="button"><img class="page-icon" src="images/line-angle-right-icon.png" alt="next page"></button>
+            <button class="page-change-btn" id="next-page" type="button"><img class="page-icon" src="images/line-angle-right-icon.png" data-i18n-alt="altNextPage" alt="next page"></button>
             
         </div>
 
@@ -32,29 +33,29 @@
             <button class="popup-modeselector-btn">
                 <!-- <input type="checkbox" name="modeturnoff" class="mode-selector" disabled> -->
                 <div class="modebtn-content">
-                    <p class="modeselector-text" id="LET ME WATCH MODE">OFF</p>
+                    <p class="modeselector-text" id="LET ME WATCH MODE" data-i18n="modeOff">OFF</p>
                 </div>
             </button>
             <button class="popup-modeselector-btn" id="center-button">
                 <!-- <input type="radio" name="modeselector" class="mode-selector" disabled> -->
                 <div class="modebtn-content">
-                    <p class="modeselector-text" id="WATCH A FEW MODE">LIMITER</p>
+                    <p class="modeselector-text" id="WATCH A FEW MODE" data-i18n="modeLimiter">LIMITER</p>
                 </div>
             </button>
             <button class="popup-modeselector-btn">
                 <!-- <input type="radio" name="modeselector" class="mode-selector" disabled> -->
                 <div class="modebtn-content">
-                    <p class="modeselector-text" id="TOTAL FOCUS MODE">FOCUS</p>
+                    <p class="modeselector-text" id="TOTAL FOCUS MODE" data-i18n="modeFocus">FOCUS</p>
                 </div>
             </button>
         </div>
         <div class="support-button-container">
-            <a href="https://www.buymeacoffee.com/kirillgr1" target="_blank"><img src="./images/bmc-button.png" alt="Buy Me A Coffee" style="height: 45px !important;width: 180px !important;" ></a>
+            <a href="https://www.buymeacoffee.com/kirillgr1" target="_blank"><img src="./images/bmc-button.png" data-i18n-alt="altBuyMeCoffee" alt="Buy Me A Coffee" style="height: 45px !important;width: 180px !important;" ></a>
         </div>
         <footer id="popup-footer">
             <a id="footer-version" href="https://github.com/xtt7even/descrollify-extension/blob/main/CHANGELOG.md" target="_blank" rel="noopener"></a>
             <span class="footer-sep">·</span>
-            <a href="https://github.com/xtt7even/descrollify-extension" target="_blank" rel="noopener">GitHub</a>
+            <a href="https://github.com/xtt7even/descrollify-extension" target="_blank" rel="noopener" data-i18n="githubLink">GitHub</a>
         </footer>
     </div>
 </body>

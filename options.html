@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="popup.css" />
+    <script src="./i18n.js"></script>
     <script src="./options.js"></script>
   </head>
   <body>
@@ -13,27 +14,43 @@
           <img
             class="helping-icons"
             src="images/question-mark-round-icon.png"
+            data-i18n-alt="altHelp"
             alt="help"
             style="opacity: 0%"
           />
         </button>
-        <img id="logo" src="images/logo_transparent_white.png" alt="logo" />
+        <img id="logo" src="images/logo_transparent_white.png" data-i18n-alt="altLogo" alt="logo" />
         <button id="close-btn">
           <img
             id="close-btn-image"
             src="images/close-line-icon.png"
+            data-i18n-alt="altLogo"
             alt="logo"
           />
         </button>
       </nav>
       <div id="options-container">
-        <div id="options-header"><h2>SETTINGS</h2></div>
+        <div id="options-header"><h2 data-i18n="settingsTitle">SETTINGS</h2></div>
 
         <div class="settings-list">
-          <div class="settings-group-title">General</div>
+          <div class="settings-group-title" data-i18n="settingsGroupGeneral">General</div>
 
           <div class="setting-row">
-            <span class="setting-label">Hide Shorts thumbnails</span>
+            <span class="setting-label" data-i18n="settingLanguage">Language</span>
+            <select class="setting-select" id="language-select">
+              <option value="auto" data-i18n="languageAuto">Auto (browser)</option>
+              <option value="en">English</option>
+              <option value="es">Español</option>
+              <option value="de">Deutsch</option>
+              <option value="fr">Français</option>
+              <option value="pt_BR">Português (BR)</option>
+              <option value="ru">Русский</option>
+              <option value="it">Italiano</option>
+            </select>
+          </div>
+
+          <div class="setting-row">
+            <span class="setting-label" data-i18n="settingHideThumbnails">Hide Shorts thumbnails</span>
             <label class="switch">
               <input type="checkbox" id="hideThumbnails-toggle" />
               <span class="slider"></span>
@@ -41,10 +58,10 @@
           </div>
           <div class="setting-hint" id="hideThumbnails-hint"></div>
 
-          <div class="settings-group-title">Limiter</div>
+          <div class="settings-group-title" data-i18n="settingsGroupLimiter">Limiter</div>
 
           <div class="setting-row">
-            <span class="setting-label">Max videos before blocking</span>
+            <span class="setting-label" data-i18n="settingMaxVideos">Max videos before blocking</span>
             <input
               type="number"
               id="maxVideos"
@@ -57,7 +74,7 @@
           </div>
 
           <div class="setting-row">
-            <span class="setting-label">Unblock after</span>
+            <span class="setting-label" data-i18n="settingUnblockAfter">Unblock after</span>
             <div class="time-input-container">
               <select class="time-selector" id="hours-select"></select
               ><span class="time-unit">h</span>
@@ -69,12 +86,12 @@
           </div>
 
           <div class="setting-row">
-            <span class="setting-label">When blocked, go to</span>
+            <span class="setting-label" data-i18n="settingWhenBlocked">When blocked, go to</span>
             <select class="setting-select" id="block-redirect-select">
-              <option value="youtube">YouTube home</option>
-              <option value="blank">Blank page</option>
-              <option value="custom">Custom URL</option>
-              <option value="close">Close the tab</option>
+              <option value="youtube" data-i18n="redirectYoutube">YouTube home</option>
+              <option value="blank" data-i18n="redirectBlank">Blank page</option>
+              <option value="custom" data-i18n="redirectCustom">Custom URL</option>
+              <option value="close" data-i18n="redirectClose">Close the tab</option>
             </select>
           </div>
 
@@ -83,7 +100,7 @@
             id="blockRedirectUrlRow"
             style="display: none"
           >
-            <span class="setting-label">Custom URL</span>
+            <span class="setting-label" data-i18n="settingCustomUrl">Custom URL</span>
             <input
               type="text"
               id="block-redirect-url"
@@ -94,7 +111,7 @@
         </div>
 
         <button class="reset-button" id="reset-btn">
-          <p>RESET STATISTICS</p>
+          <p data-i18n="resetStatistics">RESET STATISTICS</p>
         </button>
       </div>
     </div>
